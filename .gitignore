@@ -133,3 +133,4 @@ data/*
 logs
 __cache__
 weights
+outputs
