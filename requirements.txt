@@ -1,0 +1,16 @@
+attrdict
+colorama
+click
+numpy
+opencv-python
+progressbar
+py-cpuinfo
+scikit-learn
+scipy
+tensorboard
+torch
+torchinfo
+torchtext
+torchvision
+tqdm
+torch-tb-profiler

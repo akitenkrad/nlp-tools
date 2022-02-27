@@ -1,1 +1,1 @@
-# pynlp-classifier
+# pytorch skeleton
