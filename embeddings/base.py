@@ -10,6 +10,12 @@ class Embedding(ABC):
         '''embedding dim'''
         pass
 
+    @property
+    @abstractmethod
+    def tokens(self) -> List[str]:
+        '''token list'''
+        pass
+
     @abstractmethod
     def tokenize(self, text:str) -> List[str]:
         '''tokenize the input text

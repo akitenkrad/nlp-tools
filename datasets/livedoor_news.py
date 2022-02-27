@@ -2,14 +2,10 @@ from typing import Tuple, Dict
 from os import PathLike
 from pathlib import Path
 from collections import namedtuple
-import urllib.request
 from glob import glob
-from tqdm import tqdm
 import tarfile
-import numpy as np
 from sklearn.model_selection import train_test_split
 
-from utils.logger import Logger
 from utils.utils import Phase, Config, download
 from embeddings.base import Embedding
 from datasets.base import BaseDataset

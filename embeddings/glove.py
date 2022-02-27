@@ -41,6 +41,10 @@ class GloVe(Embedding):
     def embedding_dim(self) -> int:
         return self.glove_type.value.embedding_dim
 
+    @property
+    def tokens(self) -> List[str]:
+        return self.__words
+
     def tokenize(self, text:str) -> List[str]:
         return self.tokenizer.tokenize(text)
 
@@ -101,7 +105,7 @@ class GloVe(Embedding):
                     # load weights
                     for l in tqdm(f, desc='loading glove weights', total=f_len, leave=False):
                         line = [i.strip() for i in l.strip().split()]
-                        word = line[0]   
+                        word = line[0].decode('utf-8')
                         words.append(word)
                         word2idx[word] = idx
                         idx += 1         

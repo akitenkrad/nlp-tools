@@ -2,14 +2,10 @@ from typing import Tuple, Dict
 from os import PathLike
 from pathlib import Path
 from collections import namedtuple
-import urllib.request
 from glob import glob
-from tqdm import tqdm
 import tarfile
-import numpy as np
 from sklearn.model_selection import train_test_split
 
-from utils.logger import Logger
 from utils.utils import Phase, Config, download
 from embeddings.base import Embedding
 from datasets.base import BaseDataset
@@ -35,11 +31,11 @@ class ImdbDataset(BaseDataset):
             dataset_path (Path): path to dataset
 
         Returns:
-            train_data, valid_data, test_data: dict[idx, LivedoorNewsItem]
+            train_data, valid_data, test_data: dict[idx, ImdbItem]
         '''
-        if not (dataset_path / 'livedoor-corpus').exists():
+        if not (dataset_path / 'imdb').exists():
             url = 'http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz'
-            self.config.log.dataset_log.info(f'download livedoor corpus from {url}')
+            self.config.log.dataset_log.info(f'download imdb corpus from {url}')
 
             (dataset_path / 'imdb').mkdir(parents=True, exist_ok=True)
             download(url, str(dataset_path / 'aclImdb_v1.tar.gz'))
