@@ -21,6 +21,7 @@ model:
 
 data:
     dataset_path: /workplace/pynlp-classifier/data
+    cache_path: /workplace/pynlp-classifier/__cache__
 
 weights:
     global_weights_dir: /workplace/pynlp-classifier/weights

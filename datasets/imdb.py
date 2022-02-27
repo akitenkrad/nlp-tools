@@ -18,7 +18,7 @@ class ImdbDataset(BaseDataset):
         self.config = config
         config.add_logger('dataset_log')
         self.embedding = embedding
-        self.dataset_path = Path('data')
+        self.dataset_path = self.config.data.dataset_path
         self.valid_size = valid_size
 
         self.train_data, self.valid_data, self.test_data = self.__load_data__(self.dataset_path, self.valid_size)

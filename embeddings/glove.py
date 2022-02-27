@@ -85,7 +85,7 @@ class GloVe(Embedding):
 
         # cache path
         tokens, dim = self.glove_type.value.filename.split('.')[-3:-1]
-        cache_dir = Path('__cache__/glove') / f'glove.{tokens}'
+        cache_dir = self.config.data.cache_path / 'glove' / f'glove.{tokens}'
         vector_cache = cache_dir / f'glove.{tokens}.{dim}_vectors.pickle'
         words_cache = cache_dir / f'glove.{tokens}.{dim}_words.pickle'
         word2idx_cache = cache_dir / f'glove.{tokens}.{dim}_word2idx.pickle'

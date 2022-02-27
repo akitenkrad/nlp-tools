@@ -21,11 +21,12 @@ model:
     # dropout: 0.3
 
 data:
-    dataset_path: /content/pynlp-classifier/data
+    dataset_path: /content/drive/MyDrive/Cloud/Temp/pynlp-classifier/data
+    cache_path: /content/drive/MyDrive/Cloud/Temp/pynlp-classifier/__cache__
 
 weights:
-    global_weights_dir: /content/pynlp-classifier/weights
-    log_weights_dir: /content/pynlp-classifier/logs # to be set in utils/utils.py
+    global_weights_dir: /content/drive/MyDrive/Cloud/Temp/pynlp-classifier/weights
+    log_weights_dir: /content/drive/MyDrive/Cloud/Temp/pynlp-classifier/logs # to be set in utils/utils.py
 
 log:
     log_dir: /content/pynlp-classifier/logs
@@ -36,4 +37,4 @@ output:
 
 backup:
     backup: False
-    backup_dir: /content/pynlp-classifier/backup
+    backup_dir: /content/drive/MyDrive/Cloud/Temp/pynlp-classifier/backup
