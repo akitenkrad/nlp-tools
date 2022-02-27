@@ -1,3 +1,4 @@
+from typing import Tuple, Dict
 from os import PathLike
 from pathlib import Path
 from collections import namedtuple
@@ -14,6 +15,7 @@ from embeddings.base import Embedding
 from datasets.base import BaseDataset
 
 LivedoorNewsItem = namedtuple('LiveDoorNewsItem', ('filepath', 'label'))
+LivedoorDs = Dict[int, LivedoorNewsItem]
 
 class LivedoorNewsDataset(BaseDataset):
     def __init__(self, config:Config, embedding:Embedding, test_size:float=0.1, valid_size:float=0.1):
@@ -26,7 +28,7 @@ class LivedoorNewsDataset(BaseDataset):
 
         self.train_data, self.valid_data, self.test_data = self.__load_data__(self.dataset_path, self.test_size, self.valid_size)
 
-    def __load_data__(self, dataset_path:Path, test_size:float, valid_size:float):
+    def __load_data__(self, dataset_path:Path, test_size:float, valid_size:float) -> Tuple[LivedoorDs, LivedoorDs, LivedoorDs]:
         '''load livedoor news corpus dataset
         download tar.gz file if dataset does not exist
 

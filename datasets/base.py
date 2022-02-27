@@ -1,3 +1,4 @@
+from typing import Any
 from os import PathLike
 from pathlib import Path
 import numpy as np
@@ -35,7 +36,7 @@ class BaseDataset(Dataset):
         # return train_data, test_data, label_data
         raise NotImplementedError()
 
-    def __len__(self):
+    def __len__(self) -> int:
         if self.phase == Phase.TRAIN:
             return len(self.train_data)
         elif self.phase == Phase.VALID:
@@ -48,7 +49,7 @@ class BaseDataset(Dataset):
             return len(self.test_data)
         raise RuntimeError(f'Unknown phase: {self.phase}')
 
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> Any:
         if self.phase == Phase.TRAIN:
             raise NotImplementedError()
         elif self.phase == Phase.TEST:

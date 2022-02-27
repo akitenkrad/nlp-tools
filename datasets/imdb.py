@@ -1,3 +1,4 @@
+from typing import Tuple, Dict
 from os import PathLike
 from pathlib import Path
 from collections import namedtuple
@@ -14,6 +15,7 @@ from embeddings.base import Embedding
 from datasets.base import BaseDataset
 
 ImdbItem = namedtuple('ImdbItem', ('filepath', 'label'))
+ImdbDs = Dict[int, ImdbItem]
 
 class ImdbDataset(BaseDataset):
     def __init__(self, config:Config, embedding:Embedding, valid_size:float=0.1):
@@ -25,7 +27,7 @@ class ImdbDataset(BaseDataset):
 
         self.train_data, self.valid_data, self.test_data = self.__load_data__(self.dataset_path, self.valid_size)
 
-    def __load_data__(self, dataset_path:Path, valid_size:float):
+    def __load_data__(self, dataset_path:Path, valid_size:float) -> Tuple[ImdbDs, ImdbDs, ImdbDs]:
         '''load imdb corpus dataset
         download tar.gz file if dataset does not exist
 
@@ -68,7 +70,7 @@ class ImdbDataset(BaseDataset):
 
         return train_data, valid_data, test_data
 
-    def __load_text__(self, path:PathLike):
+    def __load_text__(self, path:PathLike) -> str:
         path: Path = Path(path)
         text = open(path, 'rt').read().strip()
         return text

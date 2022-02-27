@@ -1,3 +1,4 @@
+from typing import List
 from pathlib import Path
 import pickle
 from tqdm import tqdm
@@ -40,7 +41,7 @@ class GloVe(Embedding):
     def embedding_dim(self) -> int:
         return self.glove_type.value.embedding_dim
 
-    def tokenize(self, text:str) -> list[str]:
+    def tokenize(self, text:str) -> List[str]:
         return self.tokenizer.tokenize(text)
 
     def index2token(self, index: int) -> str:
@@ -49,7 +50,7 @@ class GloVe(Embedding):
     def token2index(self, token: str) -> int:
         return self.__word2idx[token]
 
-    def embed(self, index_list:list[int]) -> np.ndarray:
+    def embed(self, index_list:List[int]) -> np.ndarray:
         embed_vector = np.array([self.__vectors[idx] for idx in index_list])
         return embed_vector
 
@@ -116,7 +117,7 @@ class GloVe(Embedding):
         self.config.log.glove_log.info(f'Finished loading glove tokens: total={len(words)} words.')
         return np.array(vectors), words, word2idx
 
-    def get_weights_matrix(self):
+    def get_weights_matrix(self) -> np.ndarray:
         '''load pretrained glove weights matrix from
     
         Returns:
