@@ -49,10 +49,17 @@ class GloVe(Embedding):
         return self.tokenizer.tokenize(text)
 
     def index2token(self, index: int) -> str:
-        return self.__idx2word[index]
+        if index not in self.__idx2word:
+            return 'unknonw'
+        else:
+            return self.__idx2word[index]
 
     def token2index(self, token: str) -> int:
-        return self.__word2idx[token]
+        if token not in self.__word2idx:
+            return -1
+        else:
+            return self.__word2idx[token]
+
 
     def embed(self, index_list:List[int]) -> np.ndarray:
         embed_vector = np.array([self.__vectors[idx] for idx in index_list])
@@ -111,6 +118,12 @@ class GloVe(Embedding):
                         idx += 1         
                         vect = np.array(line[1:]).astype(np.float)
                         vectors.append(vect)
+                
+                # for unknown token
+                vectors.append(np.mean(vectors, axis=0))
+                words.append('unknonw')
+                word2idx['unknonw'] = idx
+
                 vectors = np.array(vectors)
 
             # cache weights
