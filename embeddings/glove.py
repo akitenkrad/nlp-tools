@@ -11,7 +11,7 @@ from utils.utils import download, Config
 from utils.tokenizers import WordTokenizer
 from embeddings.base import Embedding
 
-GloVeInfo = namedtuple('GloveInfo', ('filename', 'zipname', 'embedding_dim', 'tokenizer'))
+GloVeInfo = namedtuple('GloveInfo', ('filename', 'zipname', 'embedding_dim'))
 
 class GloVeType(Enum):
     B6_D50 = GloVeInfo('glove.6B.50d.txt', 'glove.6B.zip', 50)
