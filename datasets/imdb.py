@@ -47,10 +47,10 @@ class ImdbDataset(BaseDataset):
             with tarfile.open(dataset_path / 'aclImdb_v1.tar.gz', 'r:gz') as tar:
                 tar.extractall(path=str(dataset_path / 'imdb'))
         
-        train_pos_files = [Path(f) for f in glob(str(dataset_path / 'imdb' / 'train' / 'pos' / '*.txt'))]
-        train_neg_files = [Path(f) for f in glob(str(dataset_path / 'imdb' / 'train' / 'neg' / '*.txt'))]
-        test_pos_files = [Path(f) for f in glob(str(dataset_path / 'imdb' / 'test' / 'pos' / '*.txt'))]
-        test_neg_files = [Path(f) for f in glob(str(dataset_path / 'imdb' / 'test' / 'neg' / '*.txt'))]
+        train_pos_files = [Path(f) for f in glob(str(dataset_path / 'imdb' / 'aclImdb' / 'train' / 'pos' / '*.txt'))]
+        train_neg_files = [Path(f) for f in glob(str(dataset_path / 'imdb' / 'aclImdb' / 'train' / 'neg' / '*.txt'))]
+        test_pos_files = [Path(f) for f in glob(str(dataset_path / 'imdb' / 'aclImdb' / 'test' / 'pos' / '*.txt'))]
+        test_neg_files = [Path(f) for f in glob(str(dataset_path / 'imdb' / 'aclImdb' / 'test' / 'neg' / '*.txt'))]
 
         train_data = []
         train_data += [ImdbItem(p, 1) for p in train_pos_files]
