@@ -1,3 +1,4 @@
+from typing import List
 from abc import ABC, abstractmethod
 from nltk import word_tokenize
 
@@ -17,13 +18,13 @@ class WordTokenizer(Tokenizer):
         self.PAD = pad
         self.max_sent_len = max_sent_len
         
-    def preprocess(self, text):
+    def preprocess(self, text) -> str:
         # lowercase
         text = text.lower()
 
         return text
     
-    def tokenize(self, text:str, disable_max_len=False):
+    def tokenize(self, text:str, disable_max_len=False) -> List[str]:
         '''tokenize a sentence
         
         Args:
@@ -53,13 +54,13 @@ class CharTokenizer(Tokenizer):
         self.max_sent_len = max_sent_len
         self.max_word_len = max_word_len
         
-    def preprocess(self, text):
+    def preprocess(self, text) -> str:
         # lowercase
         text = text.lower()
         
         return text
     
-    def tokenize(self, text:str):
+    def tokenize(self, text:str) -> List[List[str]]:
         '''tokenize a sentence
         
         Return:

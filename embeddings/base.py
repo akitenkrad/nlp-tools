@@ -1,3 +1,4 @@
+from typing import List
 from abc import ABC, abstractmethod, abstractproperty
 import numpy as np
 
@@ -10,7 +11,7 @@ class Embedding(ABC):
         pass
 
     @abstractmethod
-    def tokenize(self, text:str) -> list[str]:
+    def tokenize(self, text:str) -> List[str]:
         '''tokenize the input text
         
         Args:
@@ -46,7 +47,7 @@ class Embedding(ABC):
         pass
 
     @abstractmethod
-    def embed(self, index_list:list[int]) -> np.ndarray:
+    def embed(self, index_list:List[int]) -> np.ndarray:
         '''embed token index list into vector
         
         Args:
