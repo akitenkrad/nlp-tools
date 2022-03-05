@@ -82,7 +82,5 @@ class ImdbDataset(BaseDataset):
             raise ValueError(f'Invalid Phase: {self.phase}')
 
         text = self.__load_text__(data.filepath)
-        tokens = self.embedding.tokenize(text)
-        indices = [self.embedding.token2index(token) for token in tokens]
-        embedding = self.embedding.embed(indices)
+        embedding = self.embedding.embed(text)
         return embedding, data.label

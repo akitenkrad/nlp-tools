@@ -1,6 +1,7 @@
 from typing import List
 from abc import ABC, abstractmethod
 from nltk import word_tokenize
+from nltk.stem.porter import PorterStemmer
 
 class Tokenizer(ABC):
     
@@ -14,9 +15,10 @@ class Tokenizer(ABC):
 
 class WordTokenizer(Tokenizer):
     
-    def __init__(self, pad='<pad>', max_sent_len=-1):
+    def __init__(self, pad='<pad>', max_sent_len=-1, stemming=False):
         self.PAD = pad
         self.max_sent_len = max_sent_len
+        self.porter: PorterStemmer = PorterStemmer() if stemming == True else None
         
     def preprocess(self, text) -> str:
         # lowercase
@@ -39,6 +41,9 @@ class WordTokenizer(Tokenizer):
         # words = [word for word in word_tokenize(text) if word not in list(string.punctuation)]
         
         words = [word for word in word_tokenize(text)]
+
+        if self.porter is not None:
+            words = [self.porter.stem(word) for word in words]
         
         # pad sentence
         if self.max_sent_len > 0 and disable_max_len == False:
@@ -49,10 +54,11 @@ class WordTokenizer(Tokenizer):
 
 class CharTokenizer(Tokenizer):
     
-    def __init__(self, pad='<pad>', max_sent_len=-1, max_word_len=-1):
+    def __init__(self, pad='<pad>', max_sent_len=-1, max_word_len=-1, stemming=False):
         self.PAD = pad
         self.max_sent_len = max_sent_len
         self.max_word_len = max_word_len
+        self.porter: PorterStemmer = PorterStemmer() if stemming == True else None
         
     def preprocess(self, text) -> str:
         # lowercase
@@ -72,6 +78,9 @@ class CharTokenizer(Tokenizer):
         # words = [word for word in word_tokenize(text) if word not in list(string.punctuation)]
         
         words = [word for word in word_tokenize(text)]
+
+        if self.porter is not None:
+            words = [self.porter.stem(word) for word in words]
            
         chars = []
         for word in words:

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 from abc import ABC, abstractmethod, abstractproperty
 import numpy as np
 
@@ -53,11 +53,11 @@ class Embedding(ABC):
         pass
 
     @abstractmethod
-    def embed(self, index_list:List[int]) -> np.ndarray:
+    def embed(self, input_text:str) -> np.ndarray:
         '''embed token index list into vector
         
         Args:
-            index_list (list[int]): input index list which was converted from tokens
+            input_text (str): input text
         
         Returns:
             embedded vector. np.array: (text_length, embedding_dim)

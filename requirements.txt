@@ -1,6 +1,7 @@
 attrdict
 colorama
 click
+cpuinfo
 numpy
 opencv-python
 progressbar

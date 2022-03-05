@@ -60,9 +60,10 @@ class GloVe(Embedding):
         else:
             return self.__word2idx[token]
 
-
-    def embed(self, index_list:List[int]) -> np.ndarray:
-        embed_vector = np.array([self.__vectors[idx] for idx in index_list])
+    def embed(self, input_text:str) -> np.ndarray:
+        tokens = self.tokenize(input_text)
+        indices = [self.token2index(token) for token in tokens]
+        embed_vector = np.array([self.__vectors[idx] for idx in indices])
         return embed_vector
 
     def __load_glove__(self, no_cache:bool=False):

@@ -15,6 +15,7 @@ import urllib.request
 import subprocess
 from attrdict import AttrDict
 from enum import Enum
+import nltk
 import torch
 from torchinfo import summary
 
@@ -52,6 +53,8 @@ class Config(object):
 
     def __init__(self, config_path:PathLike):
         self.__load_config__(config_path)
+
+        nltk.download('punkt', quiet=True)
 
     def __getattr__(self, __name: str) -> Any:
         if __name in self.__config__:
