@@ -56,7 +56,7 @@ class GRU_Ln(BaseModel):
 
         for i in range(1, self.n + 1):
             l_layer = getattr(self, f'linear_{i}')
-            b_layer = getattr(self, f'linear_{i}')
+            b_layer = getattr(self, f'batch_norm_{i}')
             out = l_layer(out)
             out = b_layer(out)
             out = self.dropout(out)
