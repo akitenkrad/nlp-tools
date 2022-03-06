@@ -20,7 +20,6 @@ class BaseModel(ABC, nn.Module):
         self.config = config
         self.config.add_logger('train_log')
         self.name = name
-        self.__device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     @abstractmethod
     def build(self):
@@ -41,7 +40,7 @@ class BaseModel(ABC, nn.Module):
         '''
         raise NotImplementedError()
 
-    def __validate(self, epoch:int, valid_dl:DataLoader, loss_func:Callable):
+    def validate(self, epoch:int, valid_dl:DataLoader, loss_func:Callable):
         loss_watcher = LossWatcher('loss')
         with tqdm(valid_dl, total=len(valid_dl), desc=f'[Epoch {epoch:4d} - Validate]', leave=False) as valid_it:
             for x, y in valid_it:
@@ -73,7 +72,7 @@ class BaseModel(ABC, nn.Module):
             lr_scheduler (Any): scheduler for learning rate. ex. optim.lr_scheduler.ExponentialLR.
             loss_func (Callable): loss function
         '''
-        self.train().to(self.__device)
+        self.train().to(self.config.train.device)
         global_step = 0
         tensorboard_dir = self.config.log.log_dir / 'tensorboard' / f'exp_{self.config.now().strftime("%Y%m%d-%H%M%S")}'
 
@@ -123,7 +122,7 @@ class BaseModel(ABC, nn.Module):
                                         self.config.log.train_log.info(log)
 
                             # evaluation
-                            val_loss = self.__validate(epoch, valid_dl, loss_func)
+                            val_loss = self.validate(epoch, valid_dl, loss_func)
 
                             # step scheduler
                             lr_scheduler.step()
