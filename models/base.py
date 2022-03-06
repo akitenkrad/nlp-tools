@@ -96,6 +96,7 @@ class BaseModel(ABC, nn.Module):
             loss_func (Callable): loss function
         '''
         self.train().to(self.config.train.device)
+        ds.to_train()
         global_step = 0
         tensorboard_dir = self.config.log.log_dir / 'tensorboard' / f'exp_{self.config.now().strftime("%Y%m%d-%H%M%S")}'
 
@@ -237,7 +238,7 @@ class BaseModel(ABC, nn.Module):
                 optimizer.param_groups[0]['lr'] = lr
 
             # save figure
-            save_path = self.config.log.log_dir / 'lr_finder' / 'lr_loss_curve.png'
+            save_path = self.config.log.log_dir / 'lr_finder' / f'{self.name}_lr_loss_curve.png'
             save_path.parent.mkdir(parents=True, exist_ok=True)
             plt.plot(log_lrs[10:-5], losses[10:-5])
             plt.xscale('log')
