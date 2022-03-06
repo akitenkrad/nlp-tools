@@ -271,3 +271,7 @@ class BaseModel(ABC, nn.Module):
         results = np.concatenate(results, axis=0)
         labels = np.concatenate(labels, axis=0)
         return results, labels
+
+    def describe(self, ds:BaseDataset):
+        x, y = next(iter(DataLoader(ds, batch_size=1)))
+        self.config.describe_model(self, input_size=x.shape)
