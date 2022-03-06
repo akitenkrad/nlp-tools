@@ -1,6 +1,7 @@
 from typing import Callable, Tuple, Any
 from abc import ABC, abstractmethod
 from pathlib import Path
+import numpy as np
 from sklearn.model_selection import KFold
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -264,10 +265,11 @@ class BaseModel(ABC, nn.Module):
         results = []
         labels = []
         for x, y in tqdm(dl, total=len(dl)):
-            out = self.step_wo_loss(x, y)
-            results.append(out)
-            labels.append(y)
+            with torch.no_grad():
+                out = self.step_wo_loss(x, y)
+            results.append(out.cpu().numpy().copy())
+            labels.append(y.cpu().numpy().copy())
         
-        results = torch.vstack(results)
-        labels = torch.vstack(labels)
+        results = np.concatenate(results, axis=0)
+        labels = np.concatenate(labels, axis=0)
         return results, labels
