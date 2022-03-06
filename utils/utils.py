@@ -97,7 +97,12 @@ class Config(object):
         attrdict_attrs = list(dir(AttrDict()))
         for key, value in self.__config__.items():
             if key not in attrdict_attrs:
-                self.log.logger.info(f'config: {key:20s}: {value}')
+                if isinstance(value, dict):
+                    for key_2, value_2 in value.items():
+                        if key_2 not in attrdict_attrs:
+                            self.log.logger.info(f'config: {key:15s}-{key_2:20s}: {value_2}')
+                else:
+                    self.log.logger.info(f'config: {key:35s}: {value}')
         self.log.logger.info('============================')
 
         # CPU info
