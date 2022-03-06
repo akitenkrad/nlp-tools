@@ -177,7 +177,7 @@ class BaseModel(ABC, nn.Module):
         self.train().to(self.config.train.device)
         self.config.add_logger('lr_finder')
         ds.to_train()
-        dl = DataLoader(ds, batch_size=self.config.train.batch_size)
+        dl = DataLoader(ds, batch_size=32)
         num = len(dl) - 1
         mult = (final_value / init_value) ** (1 / num)
         lr = init_value
@@ -223,7 +223,7 @@ class BaseModel(ABC, nn.Module):
                 optimizer.param_groups[0]['lr'] = lr
 
             # save figure
-            save_path = self.log.log_dir / 'lr_finder' / 'lr_loss_curve.png'
+            save_path = self.config.log.log_dir / 'lr_finder' / 'lr_loss_curve.png'
             save_path.parent.mkdir(parents=True, exist_ok=True)
             plt.plot(log_lrs[10:-5], losses[10:-5])
             plt.xscale('log')
