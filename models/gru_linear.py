@@ -33,8 +33,8 @@ class GRU_Linear(BaseModel):
     def build(self):
         self.gru = nn.GRU(self.embedding_dim, self.hidden_dim, 1, batch_first=True)
 
+        self.batch_norm_0 = nn.BatchNorm1d(self.hidden_dim)
         self.linear_0 = nn.Linear(self.hidden_dim, self.hidden_dim // 2)
-        self.batch_norm_0 = nn.BatchNorm1d(self.hidden_dim // 2)
 
         for i in range(1, self.n + 1):
             setattr(self, f'linear_{i}', nn.Linear(self.hidden_dim // 2, self.hidden_dim // 2))
