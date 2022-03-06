@@ -59,8 +59,8 @@ class GRU_Linear(BaseModel):
     def forward(self, x):
         _, hidden = self.gru(x)
         hidden = hidden.reshape(-1, self.hidden_dim)
-        out = self.batch_norm_0(out)
-        out = self.linear_0(hidden)
+        out = self.batch_norm_0(hidden)
+        out = self.linear_0(out)
 
         for i in range(1, self.n + 1):
             b_layer = getattr(self, f'batch_norm_{i}')
