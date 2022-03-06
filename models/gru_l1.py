@@ -22,7 +22,7 @@ class GRU_L1(BaseModel):
         self.build()
 
     def build(self):
-        self.gru = nn.GRU(self.embedding_dim, self.hidden_dim, 1)
+        self.gru = nn.GRU(self.embedding_dim, self.hidden_dim, 1, batch_first=True)
         self.linear_1 = nn.Linear(self.hidden_dim, self.hidden_dim // 2)
         self.batch_norm_1 = nn.BatchNorm1d(self.hidden_dim // 2)
         self.output = nn.Linear(self.hidden_dim // 2, self.n_class)
@@ -42,7 +42,7 @@ class GRU_L1(BaseModel):
         return out
 
     def forward(self, x):
-        _, hidden = self.gru(x, batch_first=True)
+        _, hidden = self.gru(x)
         hidden = hidden.reshape(-1, self.hidden_dim)
         out = self.linear_1(hidden)
         out = self.batch_norm_1(out)
