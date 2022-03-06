@@ -134,7 +134,7 @@ class BaseModel(ABC, nn.Module):
                             # logging
                             last_lr = lr_scheduler.get_last_lr()[0]
                             log = f'[Fold {fold:2d} / Epoch {epoch:3d}] Train Loss: {loss_watcher.mean:.5f} | Valid Loss:{val_loss:.5f} | LR: {last_lr:.7f}'
-                            self.log.train_log.info(log)
+                            self.config.log.train_log.info(log)
                             tb_writer.add_scalar('valid loss', val_loss, global_step)
 
                             # save best model
