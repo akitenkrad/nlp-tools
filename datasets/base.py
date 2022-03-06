@@ -1,4 +1,5 @@
 from typing import Any
+from abc import ABC, abstractmethod
 from os import PathLike
 from pathlib import Path
 import numpy as np
@@ -14,18 +15,18 @@ if is_colab():
 else:
     from tqdm import tqdm
 
-class BaseDataset(Dataset):
-    def __init__(self, config:Config, phase:Phase=Phase.TRAIN, logger:Logger=None):
+class BaseDataset(ABC, Dataset):
+    def __init__(self, config:Config, phase:Phase=Phase.TRAIN):
         super().__init__()
         self.config = config
+        self.config.add_logger('dataset_log')
         self.dataset_path = Path(config.dataset_path)
         self.valid_size = config.valid_size
         self.test_size = config.test_size
         self.phase = phase
-        self.logger = logger if logger is not None else get_logger('Dataset')
 
-        self.train_data, self.valid_data, self.test_data = self.__load_data__(self.dataset_path)
-        self.dev_data = {idx: self.train_data[idx] for idx in range(1000)}
+        # self.train_data, self.valid_data, self.test_data = self.__load_data__(self.dataset_path)
+        # self.dev_data = {idx: self.train_data[idx] for idx in range(1000)}
 
     def __load_data__(self, dataset_path:PathLike, test_size:float, valid_size:float):
         '''load train and test data

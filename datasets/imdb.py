@@ -15,14 +15,13 @@ ImdbDs = Dict[int, ImdbItem]
 
 class ImdbDataset(BaseDataset):
     def __init__(self, config:Config, embedding:Embedding):
-        self.config = config
-        config.add_logger('dataset_log')
+        super().__init__(config, Phase.TRAIN)
         self.embedding = embedding
-        self.dataset_path = self.config.data.data_path
         self.n_class = 2
 
         self.train_data, self.test_data = self.__load_data__(self.dataset_path)
         self.valid_data = self.train_data
+        self.dev_data = {idx: self.train_data[idx] for idx in range(1000)}
 
     def __load_data__(self, dataset_path:Path) -> Tuple[ImdbDs, ImdbDs, ImdbDs]:
         '''load imdb corpus dataset
