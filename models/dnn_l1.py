@@ -31,7 +31,7 @@ class DnnL1(BaseModel):
     def step(self, x: torch.Tensor, y: torch.Tensor, loss_func: Callable) -> Tuple[float, torch.Tensor]:
         x = x.type(torch.float32).to(self.config.train.device)
         y = y.type(torch.long).to(self.config.train.device)
-        out = self(x)
+        out = self(x).squeeze()
         loss = loss_func(out, y)
         return loss, out
 
