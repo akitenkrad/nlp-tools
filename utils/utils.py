@@ -80,12 +80,12 @@ class Config(object):
         self.__config__['config_path'] = Path(config_path)
         self.__config__['timestamp'] = self.now()
         self.__config__['train']['device'] = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.__config__['log']['log_dir'] = str(Path(self.__config__['log']['log_dir']) / self.__config__['timestamp'].strftime('%Y%m%d%H%M%S'))
-        self.__config__['log']['log_file'] = str(Path(self.__config__['log']['log_dir']) / self.__config__['log']['log_filename'])
+        self.__config__['log']['log_dir'] = Path(self.__config__['log']['log_dir']) / self.__config__['timestamp'].strftime('%Y%m%d%H%M%S')
+        self.__config__['log']['log_file'] = Path(self.__config__['log']['log_dir']) / self.__config__['log']['log_filename']
         self.__config__['weights']['log_weights_dir'] = str(Path(self.__config__['log']['log_dir']) / 'weights')
         self.__config__['data']['data_path'] = Path(self.__config__['data']['data_path'])
         self.__config__['data']['cache_path'] = Path(self.__config__['data']['cache_path'])
-        self.__config__['backup']['backup_dir'] = str(Path(self.__config__['backup']['backup_dir']) / Path(self.__config__['log']['log_dir']).name)
+        self.__config__['backup']['backup_dir'] = Path(self.__config__['backup']['backup_dir']) / Path(self.__config__['log']['log_dir']).name
         self.__config__['log']['loggers'] = {}
 
         if hasattr(self, '__logger') and isinstance(self.__logger, Logger):
