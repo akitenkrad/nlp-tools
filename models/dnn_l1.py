@@ -32,7 +32,7 @@ class DnnL1(BaseModel):
         x = x.type(torch.float32).to(self.config.train.device)
         y = y.type(torch.long).to(self.config.train.device)
         out = self(x)
-        loss = loss_func(out)
+        loss = loss_func(out, y)
         return loss, out
 
     def forward(self, x):
