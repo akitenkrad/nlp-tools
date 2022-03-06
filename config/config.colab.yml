@@ -36,5 +36,5 @@ output:
     out_dir: /content/pynlp-classifier/outputs
 
 backup:
-    backup: False
+    backup: True
     backup_dir: /content/drive/MyDrive/Cloud/Temp/pynlp-classifier/backup
