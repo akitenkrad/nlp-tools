@@ -177,7 +177,7 @@ class BaseModel(ABC, nn.Module):
         self.train().to(self.config.train.device)
         self.config.add_logger('lr_finder')
         ds.to_train()
-        dl = DataLoader(ds)
+        dl = DataLoader(ds, batch_size=self.config.train.batch_size)
         num = len(dl) - 1
         mult = (final_value / init_value) ** (1 / num)
         lr = init_value
