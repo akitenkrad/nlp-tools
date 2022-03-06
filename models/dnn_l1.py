@@ -29,8 +29,8 @@ class DnnL1(BaseModel):
         self.dropout = nn.Dropout(0.2)
 
     def step(self, x: torch.Tensor, y: torch.Tensor, loss_func: Callable) -> Tuple[float, torch.Tensor]:
-        x = x.type(torch.double).to(self.config.train.device)
-        y = y.type(torch.double).to(self.config.train.device)
+        x = x.type(torch.float32).to(self.config.train.device)
+        y = y.type(torch.long).to(self.config.train.device)
         out = self(x)
         loss = loss_func(out)
         return loss, out
