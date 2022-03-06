@@ -160,8 +160,8 @@ class Config(object):
         backup_dir.parent.mkdir(parents=True, exist_ok=True)
         shutil.copytree(self.log.log_dir, self.backup.backup_dir)
 
-    def add_logger(self, name:str):
-        self.__config__['log']['loggers'][name]= get_logger(name=name, logfile=self.__config__['log']['log_file'])
+    def add_logger(self, name:str, silent:bool=False):
+        self.__config__['log']['loggers'][name]= get_logger(name=name, logfile=self.__config__['log']['log_file'], silent=silent)
         self.__config__['log'][name] = self.__config__['log']['loggers'][name]
 
 def __show_progress__(block_count, block_size, total_size):

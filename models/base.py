@@ -27,7 +27,7 @@ class BaseModel(ABC, nn.Module):
     def __init__(self, config:Config, name:str):
         super().__init__()
         self.config = config
-        self.config.add_logger('train')
+        self.config.add_logger('train', silent=True)
         self.name = name
 
     @abstractmethod

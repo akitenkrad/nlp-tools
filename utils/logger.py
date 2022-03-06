@@ -55,12 +55,13 @@ def get_json_liner(name:str, logfile:str='') -> Logger:
 
     return logger
 
-def get_logger(name, logfile='') -> Logger:
+def get_logger(name, logfile:str='', silent:bool=False) -> Logger:
     """Generate Logger instance
 
     Args:
-        name: (str) name of the logger
-        logfile: (str) logfile name
+        name (str): name of the logger
+        logfile (str): logfile name
+        silent (bool): if True, not log into stream
     Returns:
         Logger
     """
@@ -91,10 +92,11 @@ def get_logger(name, logfile='') -> Logger:
         # --------------------------------
         # 2. handler configuration
         # --------------------------------
-        stream_handler = StreamHandler()
-        stream_handler.setLevel(logging.INFO)
-        stream_handler.setFormatter(handler_format)
-        logger.addHandler(stream_handler)
+        if not silent:
+            stream_handler = StreamHandler()
+            stream_handler.setLevel(logging.INFO)
+            stream_handler.setFormatter(handler_format)
+            logger.addHandler(stream_handler)
 
         # --------------------------------
         # 3. log file configuration
