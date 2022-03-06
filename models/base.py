@@ -1,7 +1,6 @@
 from typing import Callable, Tuple, Any
 from abc import ABC, abstractmethod
 from pathlib import Path
-from tqdm import tqdm
 from sklearn.model_selection import KFold
 import torch
 import torch.nn as nn
@@ -9,9 +8,15 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-from utils.utils import Config
+from utils.utils import Config, is_colab
 from utils.watchers import LossWatcher
 from datasets.base import BaseDataset
+
+if is_colab():
+    from tqdm.notebook import tqdm
+    print('running on google colab -> use tqdm.notebook')
+else:
+    from tqdm import tqdm
 
 class BaseModel(ABC, nn.Module):
 
