@@ -15,9 +15,10 @@ class DnnL1(BaseModel):
         (batch_size, n_class)
     '''
     def __init__(self, config:Config, embedding_dim:int, n_class:int, name:str='dnn-l1'):
+        super().__init__(config, name)
         self.embedding_dim = embedding_dim
         self.n_class = n_class 
-        super().__init__(config, name)
+        self.build()
 
     def build(self):
         self.linear_1 = nn.Linear(self.embedding_dim, self.embedding_dim // 2)

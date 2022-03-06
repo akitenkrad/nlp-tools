@@ -19,7 +19,6 @@ class BaseModel(ABC, nn.Module):
         self.config = config
         self.config.add_logger('train_log')
         self.name = name
-        self.__build()
         self.__device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     @abstractmethod
