@@ -12,7 +12,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-from utils.utils import Config, is_colab
+from utils.utils import Config, is_colab, Phase
 from utils.watchers import LossWatcher
 from datasets.base import BaseDataset
 
@@ -46,6 +46,19 @@ class BaseModel(ABC, nn.Module):
 
         Returns:
             loss, output of the model
+        '''
+        raise NotImplementedError()
+
+    @abstractmethod
+    def step_wo_loss(self, x:torch.Tensor, y:torch.Tensor) -> torch.Tensor:
+        '''calculate output without loss
+        
+        Args:
+            x (torch.Tensor): input
+            y (torch.Tensor): label
+
+        Returns:
+            output of the model
         '''
         raise NotImplementedError()
 
@@ -233,3 +246,28 @@ class BaseModel(ABC, nn.Module):
             print('saved ->', save_path)
 
             return log_lrs, losses
+
+    def predict(self, ds:BaseDataset, phase:Phase) -> Tuple[torch.Tensor, torch.Tensor]:
+        '''predict
+
+        Args:
+            ds (BaseDataset): instance of BaseDataset
+            phase (Phase): one of phases
+
+        Returns:
+            outputs, labels
+        '''
+        self.eval().to(self.config.train.device)
+        ds.to(phase)
+        dl = DataLoader(ds, batch_size=self.config.train.batch_size)
+
+        results = []
+        labels = []
+        for x, y in tqdm(dl, total=len(dl)):
+            out = self.step_wo_loss(x, y)
+            results.append(out)
+            labels.append(y)
+        
+        results = torch.vstack(results)
+        labels = torch.vstack(labels)
+        return results, labels

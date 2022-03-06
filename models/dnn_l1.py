@@ -35,6 +35,12 @@ class DnnL1(BaseModel):
         loss = loss_func(out, y)
         return loss, out
 
+    def step_wo_loss(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        x = x.type(torch.float32).to(self.config.train.device)
+        y = y.type(torch.long).to(self.config.train.device)
+        out = self(x).squeeze()
+        return out
+
     def forward(self, x):
         out = self.linear_1(x)
         out = self.layer_norm_1(out)

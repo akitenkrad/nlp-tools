@@ -66,8 +66,19 @@ class BaseDataset(ABC, Dataset):
         self.phase = Phase.TEST
     def to_dev(self):
         self.phase = Phase.DEV
-    def to_submittion(self):
+    def to_submission(self):
         self.phase = Phase.SUBMISSION
+    def to(self, phase:Phase):
+        if phase == Phase.TRAIN:
+            self.to_train()
+        elif phase == Phase.VALID:
+            self.to_valid()
+        elif phase == Phase.TEST:
+            self.to_test()
+        elif phase == Phase.DEV:
+            self.to_dev()
+        elif phase == Phase.SUBMISSION:
+            self.to_submission()
 
     def refresh(self):
         pass
