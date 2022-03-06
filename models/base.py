@@ -23,12 +23,12 @@ class BaseModel(ABC, nn.Module):
         self.__device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     @abstractmethod
-    def __build(self):
+    def build(self):
         '''build a model'''
         raise NotImplementedError()
     
     @abstractmethod
-    def __step(self, x:torch.Tensor, y:torch.Tensor, loss_func:Callable) -> Tuple[float, torch.Tensor]:
+    def step(self, x:torch.Tensor, y:torch.Tensor, loss_func:Callable) -> Tuple[float, torch.Tensor]:
         '''calculate output and loss
         
         Args:
@@ -46,7 +46,7 @@ class BaseModel(ABC, nn.Module):
         with tqdm(valid_dl, total=len(valid_dl), desc=f'[Epoch {epoch:4d} - Validate]', leave=False) as valid_it:
             for x, y in valid_it:
                 with torch.no_grad():
-                    loss, out = self.__step(x, y, loss_func)
+                    loss, out = self.step(x, y, loss_func)
                     loss_watcher.put(loss.item())
         return loss_watcher.mean
 
@@ -103,7 +103,7 @@ class BaseModel(ABC, nn.Module):
                                 for batch, (x, y) in batch_it:
 
                                     # process model and calculate loss
-                                    loss, out = self.__step(x, y, loss_func)
+                                    loss, out = self.step(x, y, loss_func)
 
                                     # update parameters
                                     optimizer.zero_grad()

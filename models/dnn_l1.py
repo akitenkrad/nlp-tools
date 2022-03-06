@@ -19,7 +19,7 @@ class DnnL1(BaseModel):
         self.n_class = n_class 
         super().__init__(config, name)
 
-    def __build(self):
+    def build(self):
         self.linear_1 = nn.Linear(self.embedding_dim, self.embedding_dim // 2)
         self.layer_norm_1 = nn.LayerNorm(self.embedding_dim // 2)
         self.linear_2 = nn.Linear(self.embedding_dim // 2, self.embedding_dim // 4)
@@ -27,7 +27,7 @@ class DnnL1(BaseModel):
         self.output = nn.Linear(self.embedding_dim // 4, self.n_class)
         self.dropout = nn.Dropout(0.2)
 
-    def __step(self, x: torch.Tensor, y: torch.Tensor, loss_func: Callable) -> Tuple[float, torch.Tensor]:
+    def step(self, x: torch.Tensor, y: torch.Tensor, loss_func: Callable) -> Tuple[float, torch.Tensor]:
         x = x.to(self.__device)
         y = y.to(self.__device)
         out = self(x)
