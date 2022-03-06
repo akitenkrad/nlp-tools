@@ -5,14 +5,22 @@ import torch.nn as nn
 from utils.utils import Config
 from models.base import BaseModel
 
-class GRU_Ln(BaseModel):
-    '''GRU with n layer
+class GRU_Linear(BaseModel):
+    '''GRU with n Linear layer
     
     Input:
         (batch_size, sentence_length, embedding_dim)
     
     Output:
         (batch_size, n_class)
+
+    Args:
+        config (Config): instance of Config
+        embedding_dim (int): embedding dim
+        hidden_dim (int): hidden dim of the GRU
+        n (int): number of Linear layers following GRU layer
+        n_class (int): number of output class
+        name (str): name of the model
     '''
     def __init__(self, config:Config, embedding_dim:int, hidden_dim:int, n:int=1, n_class:int=1, name:str='dnn-l1'):
         super().__init__(config, name)
@@ -51,16 +59,16 @@ class GRU_Ln(BaseModel):
     def forward(self, x):
         _, hidden = self.gru(x)
         hidden = hidden.reshape(-1, self.hidden_dim)
-        out = self.linear_0(hidden)
         out = self.batch_norm_0(out)
+        out = self.linear_0(hidden)
 
         for i in range(1, self.n + 1):
-            l_layer = getattr(self, f'linear_{i}')
             b_layer = getattr(self, f'batch_norm_{i}')
-            out = l_layer(out)
+            l_layer = getattr(self, f'linear_{i}')
             out = b_layer(out)
-            out = self.dropout(out)
+            out = l_layer(out)
 
+        out = self.dropout(out)
         out = self.output(out)
         if self.n_class < 2:
             out = torch.sigmoid(out)
