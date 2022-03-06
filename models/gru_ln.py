@@ -5,8 +5,8 @@ import torch.nn as nn
 from utils.utils import Config
 from models.base import BaseModel
 
-class GRU_L1(BaseModel):
-    '''GRU with 1 layer
+class GRU_Ln(BaseModel):
+    '''GRU with n layer
     
     Input:
         (batch_size, sentence_length, embedding_dim)
