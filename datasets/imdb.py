@@ -14,17 +14,17 @@ ImdbItem = namedtuple('ImdbItem', ('filepath', 'label'))
 ImdbDs = Dict[int, ImdbItem]
 
 class ImdbDataset(BaseDataset):
-    def __init__(self, config:Config, embedding:Embedding, valid_size:float=0.1):
+    def __init__(self, config:Config, embedding:Embedding):
         self.config = config
         config.add_logger('dataset_log')
         self.embedding = embedding
         self.dataset_path = self.config.data.data_path
-        self.valid_size = valid_size
         self.n_class = 2
 
-        self.train_data, self.valid_data, self.test_data = self.__load_data__(self.dataset_path, self.valid_size)
+        self.train_data, self.test_data = self.__load_data__(self.dataset_path)
+        self.valid_data = self.train_data
 
-    def __load_data__(self, dataset_path:Path, valid_size:float) -> Tuple[ImdbDs, ImdbDs, ImdbDs]:
+    def __load_data__(self, dataset_path:Path) -> Tuple[ImdbDs, ImdbDs, ImdbDs]:
         '''load imdb corpus dataset
         download tar.gz file if dataset does not exist
 
@@ -57,15 +57,11 @@ class ImdbDataset(BaseDataset):
         test_data += [ImdbItem(p, 1) for p in test_pos_files]
         test_data += [ImdbItem(p, 0) for p in test_neg_files]
 
-        # split data -> train, valid, test
-        train_data, valid_data = train_test_split(train_data, test_size=valid_size)
-
         # list -> dict
         train_data = {idx: item for idx, item in enumerate(train_data)}
-        valid_data = {idx: item for idx, item in enumerate(valid_data)}
         test_data = {idx: item for idx, item in enumerate(test_data)}
 
-        return train_data, valid_data, test_data
+        return train_data, test_data
 
     def __load_text__(self, path:PathLike) -> str:
         path: Path = Path(path)
