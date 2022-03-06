@@ -15,6 +15,7 @@ import urllib.request
 import subprocess
 from attrdict import AttrDict
 from enum import Enum
+import numpy as np
 import nltk
 import torch
 from torchinfo import summary
@@ -168,6 +169,14 @@ class Config(object):
     def add_logger(self, name:str, silent:bool=False):
         self.__config__['log']['loggers'][name]= get_logger(name=name, logfile=self.__config__['log']['log_file'], silent=silent)
         self.__config__['log'][name] = self.__config__['log']['loggers'][name]
+
+    def fix_seed(seed=42):
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        torch.backends.cudnn.deterministic = True
+        torch.use_deterministic_algorithms = True
 
 def __show_progress__(block_count, block_size, total_size):
     percentage = 100.0 * block_count * block_size / total_size
