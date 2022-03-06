@@ -20,9 +20,9 @@ class BaseDataset(ABC, Dataset):
         super().__init__()
         self.config = config
         self.config.add_logger('dataset_log')
-        self.dataset_path = Path(config.dataset_path)
-        self.valid_size = config.valid_size
-        self.test_size = config.test_size
+        self.dataset_path = Path(self.config.data.data_path)
+        self.valid_size = self.config.train.valid_size
+        self.test_size = self.config.train.test_size
         self.phase = phase
 
         # self.train_data, self.valid_data, self.test_data = self.__load_data__(self.dataset_path)

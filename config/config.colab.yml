@@ -1,24 +1,18 @@
-
 train:
     k_folds: 3
     epochs: 5
     batch_size: 1024
-    logging_per_batch: 25
     valid_size: 0.1
     test_size: 0.1
     lr: 0.001
     lr_decay: 0.9
     early_stop_patience: 5
+    logging_per_batch: 25
 
 lr_finder:
     initial_value: 0.000000001
     final_value: 10.0
     beta: 0.98
-
-model: 
-    name: dla34
-    # hidden_dim: 300
-    # dropout: 0.3
 
 data:
     data_path: /content/drive/MyDrive/Cloud/Temp/pynlp-classifier/data
