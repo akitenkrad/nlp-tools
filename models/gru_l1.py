@@ -42,7 +42,7 @@ class GRU_L1(BaseModel):
         return out
 
     def forward(self, x):
-        _, hidden = self.gru(x)
+        _, hidden = self.gru(x, batch_first=True)
         hidden = hidden.reshape(-1, self.hidden_dim)
         out = self.linear_1(hidden)
         out = self.batch_norm_1(out)
