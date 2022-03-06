@@ -155,6 +155,6 @@ class BaseModel(ABC, nn.Module):
                             if self.config.backup.backup:
                                 self.config.log.train_log.info('start backup process')
                                 self.config.backup_logs()
-                                self.log.train_log.info(f'finished backup process: backup logs -> {str(Path(self.config.backup.backup_dir).resolve().absolute())}')
+                                self.config.log.train_log.info(f'finished backup process: backup logs -> {str(Path(self.config.backup.backup_dir).resolve().absolute())}')
 
                         self.save_model(f'{self.name}_last_f{fold}.pt')

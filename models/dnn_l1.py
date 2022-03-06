@@ -43,4 +43,8 @@ class DnnL1(BaseModel):
         out = self.layer_norm_2(out)
         out = self.dropout(out)
         out = self.output(out)
+        if self.n_class < 2:
+            out = torch.sigmoid(out)
+        else:
+            out = torch.softmax(out, dim=-1)
         return out
