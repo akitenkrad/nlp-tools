@@ -33,12 +33,14 @@ class GRU_Linear(BaseModel):
     def build(self):
         self.gru = nn.GRU(self.embedding_dim, self.hidden_dim, 1, batch_first=True)
 
-        self.batch_norm_0 = nn.BatchNorm1d(self.hidden_dim)
         self.linear_0 = nn.Linear(self.hidden_dim, self.hidden_dim // 2)
+        self.batch_norm_0 = nn.BatchNorm1d(self.hidden_dim // 2)
+        self.relu_0 = nn.LeakyReLU()
 
         for i in range(1, self.n + 1):
             setattr(self, f'linear_{i}', nn.Linear(self.hidden_dim // 2, self.hidden_dim // 2))
             setattr(self, f'batch_norm_{i}', nn.BatchNorm1d(self.hidden_dim // 2))
+            setattr(self, f'relu_{i}', nn.LeakyReLU())
 
         self.output = nn.Linear(self.hidden_dim // 2, self.n_class)
         self.dropout = nn.Dropout(0.2)
@@ -59,14 +61,17 @@ class GRU_Linear(BaseModel):
     def forward(self, x):
         _, hidden = self.gru(x)
         hidden = hidden.reshape(-1, self.hidden_dim)
-        out = self.batch_norm_0(hidden)
-        out = self.linear_0(out)
+        out = self.linear_0(hidden)
+        out = self.batch_norm_0(out)
+        out = self.relu_0(out)
 
         for i in range(1, self.n + 1):
-            b_layer = getattr(self, f'batch_norm_{i}')
             l_layer = getattr(self, f'linear_{i}')
-            out = b_layer(out)
+            b_layer = getattr(self, f'batch_norm_{i}')
+            relu = getattr(self, f'relu_{i}')
             out = l_layer(out)
+            out = b_layer(out)
+            out = relu(out)
 
         out = self.dropout(out)
         out = self.output(out)

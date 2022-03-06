@@ -245,6 +245,7 @@ class BaseModel(ABC, nn.Module):
             plt.xlabel('Learning Rate')
             plt.ylabel('Loss')
             plt.savefig(str(save_path))
+            plt.close()
             self.config.log.lr_finder.info(f'saved -> {str(save_path.resolve().absolute())}')
 
     def predict(self, ds:BaseDataset, phase:Phase) -> Tuple[torch.Tensor, torch.Tensor]:
