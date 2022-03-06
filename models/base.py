@@ -213,7 +213,7 @@ class BaseModel(ABC, nn.Module):
 
                 # stop if the loss is exploding
                 if idx > 0 and smoothed_loss > 4 * best_loss:
-                    return log_lrs, losses
+                    break
 
                 # record the best loss
                 if smoothed_loss < best_loss or idx == 0:
@@ -244,9 +244,7 @@ class BaseModel(ABC, nn.Module):
             plt.xlabel('Learning Rate')
             plt.ylabel('Loss')
             plt.savefig(str(save_path))
-            print('saved ->', save_path)
-
-            return log_lrs, losses
+            self.config.log.lr_finder.info('saved ->', save_path)
 
     def predict(self, ds:BaseDataset, phase:Phase) -> Tuple[torch.Tensor, torch.Tensor]:
         '''predict
