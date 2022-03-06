@@ -16,6 +16,7 @@ from datasets.base import BaseDataset
 class BaseModel(ABC, nn.Module):
 
     def __init__(self, config:Config, name:str):
+        super().__init__()
         self.config = config
         self.config.add_logger('train_log')
         self.name = name
