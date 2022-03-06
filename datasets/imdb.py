@@ -20,6 +20,7 @@ class ImdbDataset(BaseDataset):
         self.embedding = embedding
         self.dataset_path = self.config.data.data_path
         self.valid_size = valid_size
+        self.n_class = 2
 
         self.train_data, self.valid_data, self.test_data = self.__load_data__(self.dataset_path, self.valid_size)
 

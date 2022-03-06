@@ -1,5 +1,5 @@
 from typing import Callable, Tuple, Any
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from pathlib import Path
 from tqdm import tqdm
 from sklearn.model_selection import KFold
@@ -13,7 +13,7 @@ from utils.utils import Config
 from utils.watchers import LossWatcher
 from datasets.base import BaseDataset
 
-class BaseModel(nn.Module):
+class BaseModel(ABC, nn.Module):
 
     def __init__(self, config:Config, name:str):
         self.config = config
