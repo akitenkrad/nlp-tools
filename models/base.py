@@ -189,7 +189,7 @@ class BaseModel(ABC, nn.Module):
 
     def find_lr(self, ds:BaseDataset, optimizer:optim.Optimizer, loss_func:Callable, init_value:float=1e-8, final_value:float=10.0, beta:float=0.98):
         self.train().to(self.config.train.device)
-        self.config.add_logger('lr_finder')
+        self.config.add_logger('lr_finder', silent=True)
         ds.to_train()
         dl = DataLoader(ds, batch_size=32)
         num = len(dl) - 1
