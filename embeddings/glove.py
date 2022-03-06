@@ -46,7 +46,7 @@ class GloVe(Embedding):
         return self.__words
 
     def tokenize(self, text:str) -> List[str]:
-        return self.tokenizer.tokenize(text)
+        return self.tokenizer.tokenize(text, ex_punc=True)
 
     def index2token(self, index: int) -> str:
         if index not in self.__idx2word:
@@ -61,7 +61,7 @@ class GloVe(Embedding):
             return self.__word2idx[token]
 
     def embed(self, input_text:str) -> np.ndarray:
-        tokens = self.tokenize(input_text)
+        tokens = self.tokenize(input_text, ex_punc=True)
         indices = [self.token2index(token) for token in tokens]
         embed_vector = np.array([self.__vectors[idx] for idx in indices])
         return embed_vector

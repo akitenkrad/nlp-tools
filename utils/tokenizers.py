@@ -1,5 +1,6 @@
 from typing import List
 from abc import ABC, abstractmethod
+import string
 from nltk import word_tokenize
 from nltk.stem.porter import PorterStemmer
 
@@ -26,11 +27,12 @@ class WordTokenizer(Tokenizer):
 
         return text
     
-    def tokenize(self, text:str, disable_max_len=False) -> List[str]:
+    def tokenize(self, text:str, ex_punc:bool=False, disable_max_len:bool=False) -> List[str]:
         '''tokenize a sentence
         
         Args:
-            disable_max_len: if True, ignore the "max_sent_len" setting
+            ex_punc (bool): if True, remove punctuations
+            disable_max_len (bool): if True, ignore the "max_sent_len" setting
             
         Return:
             [t_1, t_2, t_3, ...]
@@ -38,8 +40,9 @@ class WordTokenizer(Tokenizer):
         text = self.preprocess(text)
         
         # remove punctuation
-        # words = [word for word in word_tokenize(text) if word not in list(string.punctuation)]
-        
+        if ex_punc:
+            words = [word for word in word_tokenize(text) if word not in list(string.punctuation)]
+
         words = [word for word in word_tokenize(text)]
 
         if self.porter is not None:

@@ -170,7 +170,8 @@ class Config(object):
         self.__config__['log']['loggers'][name]= get_logger(name=name, logfile=self.__config__['log']['log_file'], silent=silent)
         self.__config__['log'][name] = self.__config__['log']['loggers'][name]
 
-    def fix_seed(seed=42):
+    def fix_seed(self, seed=42):
+        self.log.logger.info(f'seed - {seed}')
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
