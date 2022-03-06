@@ -2,6 +2,10 @@ from typing import Callable, Tuple, Any
 from abc import ABC, abstractmethod
 from pathlib import Path
 from sklearn.model_selection import KFold
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set()
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -23,7 +27,7 @@ class BaseModel(ABC, nn.Module):
     def __init__(self, config:Config, name:str):
         super().__init__()
         self.config = config
-        self.config.add_logger('train_log')
+        self.config.add_logger('train')
         self.name = name
 
     @abstractmethod
@@ -124,7 +128,7 @@ class BaseModel(ABC, nn.Module):
 
                                     if batch > 0 and batch % self.config.train.logging_per_batch == 0:
                                         log = f'[Fold {fold:02d} | Epoch {epoch:03d} | Batch {batch:05d}/{len(train_dl):05d} ({(batch/len(train_dl)) * 100.0:.2f}%)] Loss:{loss.item():.3f}'
-                                        self.config.log.train_log.info(log)
+                                        self.config.log.train.info(log)
 
                             # evaluation
                             val_loss = self.validate(epoch, valid_dl, loss_func)
@@ -139,7 +143,7 @@ class BaseModel(ABC, nn.Module):
                             # logging
                             last_lr = lr_scheduler.get_last_lr()[0]
                             log = f'[Fold {fold:2d} / Epoch {epoch:3d}] Train Loss: {loss_watcher.mean:.5f} | Valid Loss:{val_loss:.5f} | LR: {last_lr:.7f}'
-                            self.config.log.train_log.info(log)
+                            self.config.log.train.info(log)
                             tb_writer.add_scalar('valid loss', val_loss, global_step)
 
                             # save best model
@@ -153,14 +157,14 @@ class BaseModel(ABC, nn.Module):
 
                             # early stopping
                             if valid_loss_watcher.early_stop:
-                                self.config.log.train_log.info(f'====== Early Stopping @epoch: {epoch} @Loss: {valid_loss_watcher.best_score:5.10f} ======')
+                                self.config.log.train.info(f'====== Early Stopping @epoch: {epoch} @Loss: {valid_loss_watcher.best_score:5.10f} ======')
                                 break
 
                             # backup files
                             if self.config.backup.backup:
-                                self.config.log.train_log.info('start backup process')
+                                self.config.log.train.info('start backup process')
                                 self.config.backup_logs()
-                                self.config.log.train_log.info(f'finished backup process: backup logs -> {str(Path(self.config.backup.backup_dir).resolve().absolute())}')
+                                self.config.log.train.info(f'finished backup process: backup logs -> {str(Path(self.config.backup.backup_dir).resolve().absolute())}')
 
                         self.save_model(f'{self.name}_last_f{fold}.pt')
 
@@ -168,3 +172,63 @@ class BaseModel(ABC, nn.Module):
                     # end of Epoch
             # end of k-fold
             self.config.backup_logs()
+
+    def find_lr(self, ds:BaseDataset, optimizer:optim.Optimizer, loss_func:Callable, init_value:float=1e-8, final_value:float=10.0, beta:float=0.98):
+        self.config.add_logger('lr_finder')
+        ds.to_train()
+        dl = DataLoader(ds)
+        num = len(dl) - 1
+        mult = (final_value / init_value) ** (1 / num)
+        lr = init_value
+        optimizer.param_groups[0]['lr'] = lr
+        avg_loss = 0.0
+        best_loss = 0.0
+        losses = []
+        log_lrs = []
+
+        with tqdm(enumerate(dl), total=len(dl), desc='[B:{:05d}] lr:{:.8f} best_loss:{:.3f}'.format(0, lr, -1)) as it:
+            for idx, (x, y) in it:
+
+                # process model and calculate loss
+                loss, out = self.step(x, y, loss_func)
+
+                # compute the smoothed loss
+                avg_loss = beta * avg_loss + (1-beta) * loss.item()
+                smoothed_loss = avg_loss / (1 - beta**(idx+1))
+
+                # stop if the loss is exploding
+                if idx > 0 and smoothed_loss > 4 * best_loss:
+                    return log_lrs, losses
+
+                # record the best loss
+                if smoothed_loss < best_loss or idx == 0:
+                    best_loss = smoothed_loss
+
+                # store the values
+                losses.append(smoothed_loss)
+                log_lrs.append(lr)
+
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+
+                # update progress bar
+                desc = '[B:{:05d}] lr:{:.10f} best_loss:{:.6f} loss:{:.6f}'.format(idx+1, lr, best_loss, loss.item())
+                it.set_description(desc)
+                self.config.log.lr_finder.info(desc)
+
+                # update learning rate
+                lr *= mult
+                optimizer.param_groups[0]['lr'] = lr
+
+            # save figure
+            save_path = self.log.log_dir / 'lr_finder' / 'lr_loss_curve.png'
+            save_path.parent.mkdir(parents=True, exist_ok=True)
+            plt.plot(log_lrs[10:-5], losses[10:-5])
+            plt.xscale('log')
+            plt.xlabel('Learning Rate')
+            plt.ylabel('Loss')
+            plt.savefig(str(save_path))
+            print('saved ->', save_path)
+
+            return log_lrs, losses
