@@ -5,31 +5,20 @@ import torch.nn as nn
 from utils.utils import Config
 from models.base import BaseModel
 
-class ResidualBlock(nn.Module):
-    def __init__(self, input_dim, hidden_dim, dropout=0.3):
+class HighwayBlock(nn.Module):
+    def __init__(self, input_dim):
         super().__init__()
-        self.input_dim = input_dim
-        self.hidden_dim = hidden_dim
-        self.linear_1 = nn.Linear(input_dim, hidden_dim)
-        self.batch_norm_1 = nn.BatchNorm1d(input_dim)
-        self.linear_2 = nn.Linear(hidden_dim, input_dim)
-        self.batch_norm_2 = nn.BatchNorm1d(hidden_dim)
-        self.activation = nn.LeakyReLU()
-        self.dropout = nn.Dropout(dropout)
+        self.h = nn.Linear(input_dim, input_dim, bias=False)
+        self.t = nn.Linear(input_dim, input_dim, bias=False)
+
+        nn.init.constant_(self.t.weight, -1.0)
 
     def forward(self, x):
-        out = self.batch_norm_1(x)
-        out = self.activation(out)
-        out = self.linear_1(out)
-        out = self.batch_norm_2(out)
-        out = self.activation(out)
-        out = self.dropout(out)
-        out = self.linear_2(out)
-        out = out + x
+        out = self.h(x) * self.t(x) + x * (1 - self.t(x))
         return out
 
-class GRU_Resnet(BaseModel):
-    '''GRU with n Resnet layer
+class GRU_Highway(BaseModel):
+    '''GRU with n Highway layer
     
     Input:
         (batch_size, sentence_length, embedding_dim)
@@ -60,7 +49,7 @@ class GRU_Resnet(BaseModel):
         self.batch_norm_0 = nn.BatchNorm1d(self.hidden_dim // 2)
 
         for i in range(1, self.n + 1):
-            setattr(self, f'resblock_{i}', ResidualBlock(self.hidden_dim // 2, self.hidden_dim // 4, dropout=0.1))
+            setattr(self, f'highway_{i}', HighwayBlock(self.hidden_dim // 2))
 
         self.output = nn.Linear(self.hidden_dim // 2, self.n_class)
         self.dropout = nn.Dropout(0.2)
@@ -85,7 +74,7 @@ class GRU_Resnet(BaseModel):
         out = self.batch_norm_0(out)
 
         for i in range(1, self.n + 1):
-            resblock = getattr(self, f'resblock_{i}')
+            resblock = getattr(self, f'highway_{i}')
             out = resblock(out)
 
         out = self.output(out)

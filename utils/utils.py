@@ -146,14 +146,14 @@ class Config(object):
                 col_names=['input_size', 'output_size', 'num_params', 'kernel_size', 'mult_adds'],
                 col_width=18,
                 row_settings=['var_names'],
-                verbose=0)
+                verbose=2)
         else:
             summary_str = summary(model,
                 input_data=input_data,
                 col_names=['input_size', 'output_size', 'num_params', 'kernel_size', 'mult_adds'],
                 col_width=18,
                 row_settings=['var_names'],
-                verbose=0)
+                verbose=2)
 
         for line in summary_str.__str__().split('\n'):
             self.log.logger.info(line)
