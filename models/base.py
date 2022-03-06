@@ -158,3 +158,8 @@ class BaseModel(ABC, nn.Module):
                                 self.config.log.train_log.info(f'finished backup process: backup logs -> {str(Path(self.config.backup.backup_dir).resolve().absolute())}')
 
                         self.save_model(f'{self.name}_last_f{fold}.pt')
+
+                            # end of Batch
+                    # end of Epoch
+            # end of k-fold
+            self.config.backup_logs()
