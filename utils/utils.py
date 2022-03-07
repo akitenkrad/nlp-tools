@@ -113,6 +113,10 @@ class Config(object):
         if torch.cuda.is_available():
             self.describe_gpu()
 
+    @property
+    def config_dict(self):
+        return self.__config__
+    
     def describe_cpu(self):
         self.log.logger.info('====== cpu info ============')
         for key, value in cpuinfo.get_cpu_info().items():

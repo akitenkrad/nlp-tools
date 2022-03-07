@@ -1,7 +1,7 @@
 version: '3'
 services:
   python:
-    container_name: 'python-pytorch-skeleton'
+    container_name: 'python.pynlp-classifier'
     image: akitenkrad/python:cpu.base
     platform: linux/amd64 # for Apple Mac M1
     user: root
