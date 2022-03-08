@@ -13,7 +13,6 @@ class HighwayBlock(nn.Module):
         self.linear = nn.ModuleList([nn.Linear(input_dim, input_dim) for _ in range(n_layers)])
         self.gate = nn.ModuleList([nn.Linear(input_dim, input_dim) for _ in range(n_layers)])
         self.batch_norm_1 = nn.ModuleList([nn.BatchNorm1d(input_dim) for _ in range(n_layers)])
-        self.batch_norm_2 = nn.ModuleList([nn.BatchNorm1d(input_dim) for _ in range(n_layers)])
         self.dropout = nn.Dropout(0.2)
         self.activation = activation
 
@@ -24,15 +23,12 @@ class HighwayBlock(nn.Module):
     def forward(self, x):
         for layer in range(self.n_layers):
             x = self.batch_norm_1[layer](x)
-            x = self.activation(x)
 
             gate = torch.sigmoid(self.gate[layer](x))
             non_linear = self.activation(self.non_linear[layer](x))
             linear = self.linear[layer](x)
             x = gate * non_linear + (1 - gate) * linear
 
-            x = self.batch_norm_2[layer](x)
-            x = self.activation(x)
             x = self.dropout(x)
         return x
 
