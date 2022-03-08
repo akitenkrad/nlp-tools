@@ -52,8 +52,8 @@ class Config(object):
         'utilization.memory'
     )
 
-    def __init__(self, config_path:PathLike, **kwargs):
-        self.__load_config__(config_path, **kwargs)
+    def __init__(self, config_path:PathLike, ex_args:dict=None):
+        self.__load_config__(config_path, ex_args)
 
         nltk.download('punkt', quiet=True)
 
@@ -76,10 +76,10 @@ class Config(object):
         JST = timezone(timedelta(hours=9))
         return datetime.now(JST)
 
-    def __load_config__(self, config_path:PathLike, **kwargs):
+    def __load_config__(self, config_path:PathLike, ex_args:dict=None):
         self.__config__ = AttrDict(yaml.safe_load(open(config_path)))
-        if kwargs is not None:
-            self.__config__ = self.__config + kwargs
+        if ex_args is not None:
+            self.__config__ = self.__config__ + ex_args
         self.__config__['config_path'] = Path(config_path)
         self.__config__['timestamp'] = self.now()
         self.__config__['train']['device'] = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
