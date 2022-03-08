@@ -54,7 +54,7 @@ class GRU_Highway(BaseModel):
 
         self.linear_0 = nn.Linear(self.hidden_dim, self.hidden_dim // 2)
         self.batch_norm_0 = nn.BatchNorm1d(self.hidden_dim // 2)
-        self.highway = HighwayBlock(self.hidden_dim // 2, n, nn.LeakyReLU())
+        self.highway = HighwayBlock(self.hidden_dim // 2, self.n, nn.LeakyReLU())
         self.output = nn.Linear(self.hidden_dim // 2, self.n_class)
         self.dropout = nn.Dropout(0.2)
 
