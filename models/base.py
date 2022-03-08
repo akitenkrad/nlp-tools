@@ -201,6 +201,7 @@ class BaseModel(ABC, nn.Module):
         best_loss = 0.0
         losses = []
         log_lrs = []
+        stop_counter = 10
 
         with tqdm(enumerate(dl), total=len(dl), desc='[B:{:05d}] lr:{:.8f} best_loss:{:.3f}'.format(0, lr, -1)) as it:
             for idx, (x, y) in it:
@@ -213,8 +214,11 @@ class BaseModel(ABC, nn.Module):
                 smoothed_loss = avg_loss / (1 - beta**(idx+1))
 
                 # stop if the loss is exploding
-                if idx > 0 and smoothed_loss > 100 * best_loss:
-                    break
+                if idx > 0 and smoothed_loss > 1e+3 * (best_loss + 1e-10):
+                    stop_counter -= 1
+
+                    if stop_counter <= 0:
+                        break
 
                 # record the best loss
                 if smoothed_loss < best_loss or idx == 0:
