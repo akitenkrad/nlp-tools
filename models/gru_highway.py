@@ -4,33 +4,7 @@ import torch.nn as nn
 
 from utils.utils import Config
 from models.base import BaseModel
-
-class HighwayBlock(nn.Module):
-    def __init__(self, input_dim:int, n_layers:int, activation=nn.LeakyReLU()):
-        super().__init__()
-        self.n_layers = n_layers
-        self.non_linear = nn.ModuleList([nn.Linear(input_dim, input_dim) for _ in range(n_layers)])
-        self.linear = nn.ModuleList([nn.Linear(input_dim, input_dim) for _ in range(n_layers)])
-        self.gate = nn.ModuleList([nn.Linear(input_dim, input_dim) for _ in range(n_layers)])
-        self.batch_norm_1 = nn.ModuleList([nn.BatchNorm1d(input_dim) for _ in range(n_layers)])
-        self.dropout = nn.Dropout(0.2)
-        self.activation = activation
-
-        for layer in range(n_layers):
-            gate = self.gate[layer]
-            nn.init.constant_(gate.bias, -1.0)
-
-    def forward(self, x):
-        for layer in range(self.n_layers):
-            x = self.batch_norm_1[layer](x)
-
-            gate = torch.sigmoid(self.gate[layer](x))
-            non_linear = self.activation(self.non_linear[layer](x))
-            linear = self.linear[layer](x)
-            x = gate * non_linear + (1 - gate) * linear
-
-            x = self.dropout(x)
-        return x
+from models.layers import Highway
 
 class GRU_Highway(BaseModel):
     '''GRU with n Highway layer
@@ -62,7 +36,7 @@ class GRU_Highway(BaseModel):
 
         self.linear_0 = nn.Linear(self.hidden_dim, self.hidden_dim // 2)
         self.batch_norm_0 = nn.BatchNorm1d(self.hidden_dim // 2)
-        self.highway = HighwayBlock(self.hidden_dim // 2, self.n_highway_layers, nn.LeakyReLU())
+        self.highway = Highway(self.hidden_dim // 2, self.n_highway_layers, nn.LeakyReLU())
         self.batch_norm_1 = nn.BatchNorm1d(self.hidden_dim // 2)
         self.relu = nn.LeakyReLU()
         self.output = nn.Linear(self.hidden_dim // 2, self.n_class)

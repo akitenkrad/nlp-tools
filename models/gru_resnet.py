@@ -4,34 +4,7 @@ import torch.nn as nn
 
 from utils.utils import Config
 from models.base import BaseModel
-
-class ResidualBlock(nn.Module):
-    def __init__(self, input_dim, hidden_dim, n_layers, dropout=0.3):
-        super().__init__()
-        self.input_dim = input_dim
-        self.hidden_dim = hidden_dim
-        self.n_layers = n_layers
-
-        self.batch_norm_1 = nn.ModuleList([nn.BatchNorm1d(input_dim) for _ in range(n_layers)])
-        self.linear_1 = nn.ModuleList([nn.Linear(input_dim, hidden_dim) for _ in range(n_layers)])
-        self.batch_norm_2 = nn.ModuleList([nn.BatchNorm1d(hidden_dim) for _ in range(n_layers)])
-        self.linear_2 = nn.ModuleList([nn.Linear(hidden_dim, input_dim) for _ in range(n_layers)])
-
-        self.activation = nn.LeakyReLU()
-        self.dropout = nn.Dropout(dropout)
-
-    def forward(self, x):
-        x_org = torch.clone(x)
-        for layer in range(self.n_layers):
-            x = self.batch_norm_1[layer](x)
-            x = self.activation(x)
-            x = self.linear_1[layer](x)
-            x = self.batch_norm_2[layer](x)
-            x = self.activation(x)
-            x = self.dropout(x)
-            x = self.linear_2[layer](x)
-            x = x + x_org
-        return x
+from models.layers import ResidualNet
 
 class GRU_Resnet(BaseModel):
     '''GRU with n Resnet layer
@@ -63,7 +36,7 @@ class GRU_Resnet(BaseModel):
 
         self.linear_0 = nn.Linear(self.hidden_dim, self.hidden_dim // 2)
         self.batch_norm_0 = nn.BatchNorm1d(self.hidden_dim // 2)
-        self.resblocks = ResidualBlock(self.hidden_dim // 2, self.hidden_dim // 4, n_layers=self.n_resnet_layers, dropout=0.1)
+        self.resnets = ResidualNet(self.hidden_dim // 2, self.hidden_dim // 4, n_layers=self.n_resnet_layers, dropout=0.1)
         self.output = nn.Linear(self.hidden_dim // 2, self.n_class)
 
     def step(self, x: torch.Tensor, y: torch.Tensor, loss_func: Callable) -> Tuple[float, torch.Tensor]:
@@ -84,7 +57,7 @@ class GRU_Resnet(BaseModel):
         hidden = hidden.reshape(-1, self.hidden_dim)
         out = self.linear_0(hidden)
         out = self.batch_norm_0(out)
-        out = self.resblocks(out)
+        out = self.resnets(out)
         out = self.output(out)
         if self.n_class < 2:
             out = torch.sigmoid(out)

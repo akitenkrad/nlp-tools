@@ -4,6 +4,7 @@ import torch.nn as nn
 
 from utils.utils import Config
 from models.base import BaseModel
+from models.layers import LinearNet
 
 class GRU_Linear(BaseModel):
     '''GRU with n Linear layer
@@ -18,15 +19,15 @@ class GRU_Linear(BaseModel):
         config (Config): instance of Config
         embedding_dim (int): embedding dim
         hidden_dim (int): hidden dim of the GRU
-        n (int): number of Linear layers following GRU layer
+        n_layers (int): number of Linear layers following GRU layer
         n_class (int): number of output class
         name (str): name of the model
     '''
-    def __init__(self, config:Config, embedding_dim:int, hidden_dim:int, n:int=1, n_class:int=1, name:str='dnn-l1'):
+    def __init__(self, config:Config, embedding_dim:int, hidden_dim:int, n_layers:int=1, n_class:int=1, name:str='dnn-l1'):
         super().__init__(config, name)
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
-        self.n = n
+        self.n_layers = n_layers
         self.n_class = n_class 
         self.build()
 
@@ -36,12 +37,7 @@ class GRU_Linear(BaseModel):
         self.linear_0 = nn.Linear(self.hidden_dim, self.hidden_dim // 2)
         self.batch_norm_0 = nn.BatchNorm1d(self.hidden_dim // 2)
         self.relu_0 = nn.LeakyReLU()
-
-        for i in range(1, self.n + 1):
-            setattr(self, f'linear_{i}', nn.Linear(self.hidden_dim // 2, self.hidden_dim // 2))
-            setattr(self, f'batch_norm_{i}', nn.BatchNorm1d(self.hidden_dim // 2))
-            setattr(self, f'relu_{i}', nn.LeakyReLU())
-
+        self.linear_nets = LinearNet(self.hidden_dim // 2, self.hidden_dim // 2, self.n_layers)
         self.output = nn.Linear(self.hidden_dim // 2, self.n_class)
         self.dropout = nn.Dropout(0.2)
 
@@ -64,15 +60,7 @@ class GRU_Linear(BaseModel):
         out = self.linear_0(hidden)
         out = self.batch_norm_0(out)
         out = self.relu_0(out)
-
-        for i in range(1, self.n + 1):
-            l_layer = getattr(self, f'linear_{i}')
-            b_layer = getattr(self, f'batch_norm_{i}')
-            relu = getattr(self, f'relu_{i}')
-            out = l_layer(out)
-            out = b_layer(out)
-            out = relu(out)
-
+        out = self.linear_nets(out)
         out = self.dropout(out)
         out = self.output(out)
         if self.n_class < 2:
