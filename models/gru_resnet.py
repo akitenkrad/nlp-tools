@@ -41,7 +41,7 @@ class GRU_Resnet(BaseModel):
         config (Config): instance of Config
         embedding_dim (int): embedding dim
         hidden_dim (int): hidden dim of the GRU
-        n (int): number of Linear layers following GRU layer
+        n (int): number of ResNet layers following GRU layer
         n_class (int): number of output class
         name (str): name of the model
     '''
@@ -58,10 +58,7 @@ class GRU_Resnet(BaseModel):
 
         self.linear_0 = nn.Linear(self.hidden_dim, self.hidden_dim // 2)
         self.batch_norm_0 = nn.BatchNorm1d(self.hidden_dim // 2)
-
-        for i in range(1, self.n + 1):
-            setattr(self, f'resblock_{i}', ResidualBlock(self.hidden_dim // 2, self.hidden_dim // 4, dropout=0.1))
-
+        self.resblocks = nn.Module([ResidualBlock(self.hidden_dim // 2, self.hidden_dim // 4, dropout=0.1) for _ in range(self.n)])
         self.output = nn.Linear(self.hidden_dim // 2, self.n_class)
         self.dropout = nn.Dropout(0.2)
 
@@ -84,9 +81,8 @@ class GRU_Resnet(BaseModel):
         out = self.linear_0(hidden)
         out = self.batch_norm_0(out)
 
-        for i in range(1, self.n + 1):
-            resblock = getattr(self, f'resblock_{i}')
-            out = resblock(out)
+        for layer in range(self.n):
+            out = self.resblocks[layer](out)
 
         out = self.output(out)
         if self.n_class < 2:

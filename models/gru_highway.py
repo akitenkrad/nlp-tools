@@ -6,16 +6,23 @@ from utils.utils import Config
 from models.base import BaseModel
 
 class HighwayBlock(nn.Module):
-    def __init__(self, input_dim):
+    def __init__(self, input_dim:int, n_layers:int, activation=nn.LeakyReLU()):
         super().__init__()
-        self.h = nn.Linear(input_dim, input_dim, bias=False)
-        self.t = nn.Linear(input_dim, input_dim, bias=False)
+        self.n_layers = n_layers
+        self.non_linear = nn.ModuleList([nn.Linear(input_dim, input_dim) for _ in range(n_layers)])
+        self.linear = nn.ModuleList([nn.Linear(input_dim, input_dim) for _ in range(n_layers)])
+        self.gate = nn.ModuleList([nn.Linear(input_dim, input_dim) for _ in range(n_layers)])
 
-        nn.init.constant_(self.t.weight, -1.0)
+        self.activation = activation
 
     def forward(self, x):
-        out = self.h(x) * self.t(x) + x * (1 - self.t(x))
-        return out
+        for layer in range(self.n_layers):
+            gate = torch.sigmoid(self.gate[layer](x))
+            non_linear = self.activation(self.non_linear[layer](x))
+            linear = self.linear[layer](x)
+
+            x = gate * non_linear + (1 - gate) * linear
+        return x
 
 class GRU_Highway(BaseModel):
     '''GRU with n Highway layer
@@ -30,7 +37,7 @@ class GRU_Highway(BaseModel):
         config (Config): instance of Config
         embedding_dim (int): embedding dim
         hidden_dim (int): hidden dim of the GRU
-        n (int): number of Linear layers following GRU layer
+        n (int): number of Highway layers following GRU layer
         n_class (int): number of output class
         name (str): name of the model
     '''
@@ -47,10 +54,7 @@ class GRU_Highway(BaseModel):
 
         self.linear_0 = nn.Linear(self.hidden_dim, self.hidden_dim // 2)
         self.batch_norm_0 = nn.BatchNorm1d(self.hidden_dim // 2)
-
-        for i in range(1, self.n + 1):
-            setattr(self, f'highway_{i}', HighwayBlock(self.hidden_dim // 2))
-
+        self.highway = HighwayBlock(self.hidden_dim // 2, n, nn.LeakyReLU())
         self.output = nn.Linear(self.hidden_dim // 2, self.n_class)
         self.dropout = nn.Dropout(0.2)
 
@@ -72,11 +76,7 @@ class GRU_Highway(BaseModel):
         hidden = hidden.reshape(-1, self.hidden_dim)
         out = self.linear_0(hidden)
         out = self.batch_norm_0(out)
-
-        for i in range(1, self.n + 1):
-            resblock = getattr(self, f'highway_{i}')
-            out = resblock(out)
-
+        out = self.highway(out)
         out = self.output(out)
         if self.n_class < 2:
             out = torch.sigmoid(out)
