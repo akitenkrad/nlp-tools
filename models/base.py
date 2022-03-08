@@ -147,6 +147,7 @@ class BaseModel(ABC, nn.Module):
                                         log = f'[Fold {fold:02d} | Epoch {epoch:03d} | Batch {batch:05d}/{len(train_dl):05d} ({(batch/len(train_dl)) * 100.0:.2f}%)] Loss:{loss.item():.3f}'
                                         self.config.log.train.info(log)
 
+                            # end of Batch
                             # evaluation
                             val_loss = self.validate(epoch, valid_dl, loss_func)
 
@@ -177,8 +178,7 @@ class BaseModel(ABC, nn.Module):
                                 self.config.log.train.info(f'====== Early Stopping @epoch: {epoch} @Loss: {valid_loss_watcher.best_score:5.10f} ======')
                                 break
 
-                            # end of Batch
-
+                    # end of Epoch
                     # backup files
                     if self.config.backup.backup:
                         self.config.log.train.info('start backup process')
@@ -187,7 +187,6 @@ class BaseModel(ABC, nn.Module):
 
                     self.save_model(f'{self.name}_last_f{fold}.pt')
 
-                    # end of Epoch
             # end of k-fold
             self.config.backup_logs()
 
