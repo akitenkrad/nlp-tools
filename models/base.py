@@ -188,11 +188,11 @@ class BaseModel(ABC, nn.Module):
             # end of k-fold
             self.config.backup_logs()
 
-    def find_lr(self, ds:BaseDataset, optimizer:optim.Optimizer, loss_func:Callable, init_value:float=1e-8, final_value:float=10.0, beta:float=0.98):
+    def find_lr(self, ds:BaseDataset, optimizer:optim.Optimizer, loss_func:Callable, batch_size:int=8, init_value:float=1e-8, final_value:float=10.0, beta:float=0.98):
         self.train().to(self.config.train.device)
         self.config.add_logger('lr_finder', silent=True)
         ds.to_train()
-        dl = DataLoader(ds, batch_size=32)
+        dl = DataLoader(ds, batch_size=batch_size)
         num = len(dl) - 1
         mult = (final_value / init_value) ** (1 / num)
         lr = init_value
@@ -213,7 +213,7 @@ class BaseModel(ABC, nn.Module):
                 smoothed_loss = avg_loss / (1 - beta**(idx+1))
 
                 # stop if the loss is exploding
-                if idx > 0 and smoothed_loss > 4 * best_loss:
+                if idx > 0 and smoothed_loss > 100 * best_loss:
                     break
 
                 # record the best loss
