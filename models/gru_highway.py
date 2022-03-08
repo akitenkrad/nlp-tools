@@ -15,6 +15,10 @@ class HighwayBlock(nn.Module):
 
         self.activation = activation
 
+        for layer in range(n_layers):
+            gate = self.gate[layer]
+            nn.init.constant_(gate.bias, -1.0)
+
     def forward(self, x):
         for layer in range(self.n_layers):
             gate = torch.sigmoid(self.gate[layer](x))
@@ -41,11 +45,11 @@ class GRU_Highway(BaseModel):
         n_class (int): number of output class
         name (str): name of the model
     '''
-    def __init__(self, config:Config, embedding_dim:int, hidden_dim:int, n:int=1, n_class:int=1, name:str='dnn-l1'):
+    def __init__(self, config:Config, embedding_dim:int, hidden_dim:int, n_highway_layers:int=1, n_class:int=1, name:str='dnn-l1'):
         super().__init__(config, name)
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
-        self.n = n
+        self.n_highway_layers = n_highway_layers
         self.n_class = n_class 
         self.build()
 
@@ -54,7 +58,7 @@ class GRU_Highway(BaseModel):
 
         self.linear_0 = nn.Linear(self.hidden_dim, self.hidden_dim // 2)
         self.batch_norm_0 = nn.BatchNorm1d(self.hidden_dim // 2)
-        self.highway = HighwayBlock(self.hidden_dim // 2, self.n, nn.LeakyReLU())
+        self.highway = HighwayBlock(self.hidden_dim // 2, self.n_highway_layers, nn.LeakyReLU())
         self.output = nn.Linear(self.hidden_dim // 2, self.n_class)
         self.dropout = nn.Dropout(0.2)
 
