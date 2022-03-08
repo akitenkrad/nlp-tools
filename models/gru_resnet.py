@@ -21,6 +21,7 @@ class ResidualBlock(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
+        x_org = torch.clone(x)
         for layer in range(self.n_layers):
             x = self.batch_norm_1[layer](x)
             x = self.activation(x)
@@ -29,6 +30,7 @@ class ResidualBlock(nn.Module):
             x = self.activation(x)
             x = self.dropout(x)
             x = self.linear_2[layer](x)
+            x = x + x_org
         return x
 
 class GRU_Resnet(BaseModel):
