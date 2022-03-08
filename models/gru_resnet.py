@@ -63,7 +63,6 @@ class GRU_Resnet(BaseModel):
         self.batch_norm_0 = nn.BatchNorm1d(self.hidden_dim // 2)
         self.resblocks = ResidualBlock(self.hidden_dim // 2, self.hidden_dim // 4, n_layers=self.n_resnet_layers, dropout=0.1)
         self.output = nn.Linear(self.hidden_dim // 2, self.n_class)
-        self.dropout = nn.Dropout(0.2)
 
     def step(self, x: torch.Tensor, y: torch.Tensor, loss_func: Callable) -> Tuple[float, torch.Tensor]:
         x = x.type(torch.float32).to(self.config.train.device)

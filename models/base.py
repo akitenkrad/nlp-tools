@@ -244,10 +244,11 @@ class BaseModel(ABC, nn.Module):
             # save figure
             save_path = self.config.log.log_dir / 'lr_finder' / f'{self.name}_lr_loss_curve.png'
             save_path.parent.mkdir(parents=True, exist_ok=True)
+            plt.figure(figsize=(10, 20))
             plt.plot(log_lrs[10:-5], losses[10:-5])
             plt.xscale('log')
-            plt.xlabel('Learning Rate')
-            plt.ylabel('Loss')
+            plt.xlabel('Learning Rate', fontsize=16)
+            plt.ylabel('Loss', fontsize=16)
             plt.savefig(str(save_path))
             plt.close()
             self.config.log.lr_finder.info(f'saved -> {str(save_path.resolve().absolute())}')

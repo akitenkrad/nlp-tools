@@ -59,6 +59,8 @@ class GRU_Highway(BaseModel):
         self.linear_0 = nn.Linear(self.hidden_dim, self.hidden_dim // 2)
         self.batch_norm_0 = nn.BatchNorm1d(self.hidden_dim // 2)
         self.highway = HighwayBlock(self.hidden_dim // 2, self.n_highway_layers, nn.LeakyReLU())
+        self.batch_norm_1 = nn.BatchNorm1d(self.hidden_dim // 2)
+        self.relu = nn.LeakeyReLU()
         self.output = nn.Linear(self.hidden_dim // 2, self.n_class)
         self.dropout = nn.Dropout(0.2)
 
@@ -81,7 +83,10 @@ class GRU_Highway(BaseModel):
         out = self.linear_0(hidden)
         out = self.batch_norm_0(out)
         out = self.highway(out)
+        out = self.batch_norm_1(out)
+        out = self.relu(out)
         out = self.output(out)
+        out = self.dropout(out)
         if self.n_class < 2:
             out = torch.sigmoid(out)
         else:
