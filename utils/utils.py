@@ -52,8 +52,8 @@ class Config(object):
         'utilization.memory'
     )
 
-    def __init__(self, config_path:PathLike):
-        self.__load_config__(config_path)
+    def __init__(self, config_path:PathLike, **kwargs):
+        self.__load_config__(config_path, **kwargs)
 
         nltk.download('punkt', quiet=True)
 
@@ -76,12 +76,14 @@ class Config(object):
         JST = timezone(timedelta(hours=9))
         return datetime.now(JST)
 
-    def __load_config__(self, config_path:PathLike):
+    def __load_config__(self, config_path:PathLike, **kwargs):
         self.__config__ = AttrDict(yaml.safe_load(open(config_path)))
+        if kwargs is not None:
+            self.__config__ = self.__config + kwargs
         self.__config__['config_path'] = Path(config_path)
         self.__config__['timestamp'] = self.now()
         self.__config__['train']['device'] = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.__config__['log']['log_dir'] = Path(self.__config__['log']['log_dir']) / self.__config__['timestamp'].strftime('%Y%m%d%H%M%S')
+        self.__config__['log']['log_dir'] = Path(self.__config__['log']['log_dir']) / f"{self.__config['traim']['exp_name']}_{self.__config__['timestamp'].strftime('%Y%m%d%H%M%S')}"
         self.__config__['log']['log_file'] = Path(self.__config__['log']['log_dir']) / self.__config__['log']['log_filename']
         self.__config__['weights']['log_weights_dir'] = str(Path(self.__config__['log']['log_dir']) / 'weights')
         self.__config__['data']['data_path'] = Path(self.__config__['data']['data_path'])

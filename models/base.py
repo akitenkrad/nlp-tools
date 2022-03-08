@@ -3,7 +3,9 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 import numpy as np
 from sklearn.model_selection import KFold
+from sklearn.metrics import roc_auc_score, roc_curve, accuracy_score, precision_score, recall_score, f1_score
 import matplotlib.pyplot as plt
+from matplotlib.colors import cnames
 import seaborn as sns
 sns.set()
 
@@ -282,3 +284,46 @@ class BaseModel(ABC, nn.Module):
     def describe(self, ds:BaseDataset):
         x, y = next(iter(DataLoader(ds, batch_size=1)))
         self.config.describe_model(self, input_size=x.shape)
+
+    def evaluate_binary_problem(self, ds: BaseDataset):
+        '''evaluate binary problem
+        
+        Args:
+            ds (BaseDataset): dataset
+
+        Returns:
+            metrics dict. (auc, accuracy, precision, recall, f1)
+        '''
+        scores, labels = self.predict(ds, Phase.TEST)
+        preds = [1 if s > 0.5 else 0 for s in scores]
+
+        auc = roc_auc_score(labels, scores)
+        fpr, tpr, _ = roc_curve(labels, scores)
+        accuracy = accuracy_score(labels, preds)
+        precision = precision_score(labels, preds)
+        recall = recall_score(labels, preds)
+        f1 = f1_score(labels, preds)
+
+        self.config.log.logger.info(f'{self.name} - auc:       {auc:0.3f}')
+        self.config.log.logger.info(f'{self.name} - accuracy:  {accuracy:0.3f}')
+        self.config.log.logger.info(f'{self.name} - precision: {precision:0.3f}')
+        self.config.log.logger.info(f'{self.name} - recall:    {recall:0.3f}')
+        self.config.log.logger.info(f'{self.name} - F1:        {f1:0.3f}')
+
+        plt.figure(figsize=(8, 8))
+        plt.plot(fpr, tpr, color=cnames['salmon'], lw=2, label=f'ROC Curve (AREA = {auc:0.2f})')
+        plt.plot([0, 1], [0, 1], color=cnames['dodgerblue'], lw=2, linestyle='--')
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.05])
+        plt.title('ROC CURVE', fontsize=16)
+        plt.legend(loc='lower right', fontsize=15)
+        plt.savefig(str(self.config.log.log_dir / f'{self.name}_roc_curve.png'))
+        plt.close()
+
+        return {
+            'auc': auc,
+            'accuracy': accuracy,
+            'precision': precision,
+            'recall': recall,
+            'f1': f1
+        }

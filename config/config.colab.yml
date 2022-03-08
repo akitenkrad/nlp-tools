@@ -1,4 +1,5 @@
 train:
+    exp_name: exp
     k_folds: 3
     epochs: 5
     batch_size: 512
