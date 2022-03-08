@@ -177,15 +177,16 @@ class BaseModel(ABC, nn.Module):
                                 self.config.log.train.info(f'====== Early Stopping @epoch: {epoch} @Loss: {valid_loss_watcher.best_score:5.10f} ======')
                                 break
 
-                            # backup files
-                            if self.config.backup.backup:
-                                self.config.log.train.info('start backup process')
-                                self.config.backup_logs()
-                                self.config.log.train.info(f'finished backup process: backup logs -> {str(Path(self.config.backup.backup_dir).resolve().absolute())}')
-
-                        self.save_model(f'{self.name}_last_f{fold}.pt')
-
                             # end of Batch
+
+                    # backup files
+                    if self.config.backup.backup:
+                        self.config.log.train.info('start backup process')
+                        self.config.backup_logs()
+                        self.config.log.train.info(f'finished backup process: backup logs -> {str(Path(self.config.backup.backup_dir).resolve().absolute())}')
+
+                    self.save_model(f'{self.name}_last_f{fold}.pt')
+
                     # end of Epoch
             # end of k-fold
             self.config.backup_logs()
