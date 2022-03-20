@@ -22,6 +22,9 @@ from torchinfo import summary
 
 from utils.logger import get_logger, kill_logger
 
+nltk.download('punkt', quiet=True)
+nltk.download('averaged_perceptron_tagger', quiet=True)
+
 def is_colab():
     return 'google.colab' in sys.modules
 

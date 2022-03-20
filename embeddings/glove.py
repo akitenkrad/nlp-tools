@@ -50,7 +50,7 @@ class GloVe(Embedding):
 
     def index2token(self, index: int) -> str:
         if index not in self.__idx2word:
-            return 'unknonw'
+            return 'unknown'
         else:
             return self.__idx2word[index]
 

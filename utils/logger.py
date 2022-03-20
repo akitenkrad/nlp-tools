@@ -33,6 +33,8 @@ def get_json_liner(name:str, logfile:str='') -> Logger:
     # 1. logger configuration
     # --------------------------------
     logger = getLogger(name)
+    for h in logger.handlers:
+        logger.removeHandler(h)
     logger.setLevel(logging.DEBUG)
 
     if logger.hasHandlers():
