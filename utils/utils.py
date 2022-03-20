@@ -30,7 +30,6 @@ def is_colab():
 
 if is_colab():
     from tqdm.notebook import tqdm
-    print('running on google colab -> use tqdm.notebook')
 else:
     from tqdm import tqdm
 
