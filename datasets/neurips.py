@@ -1,6 +1,6 @@
 from pathlib import Path
 import json
-from utils.google_drive import GDriveObjects 
+from utils.google_drive import GDriveObjects, download_from_google_drive
 
 def download_neurips_2021() -> dict:
     cache_path = Path('__cache__/datasets/neurips_2021.json')
