@@ -4,6 +4,7 @@ from typing import Any
 import string
 import random
 import cpuinfo
+from glob import glob
 import gzip
 from colorama import Fore, Style
 from pathlib import Path
@@ -32,6 +33,9 @@ if is_colab():
     from tqdm.notebook import tqdm
 else:
     from tqdm import tqdm
+
+class Lang(Enum):
+    ENGLISH = 'english'
 
 class Phase(Enum):
     DEV = 1
@@ -210,3 +214,29 @@ def download(url:str, filepath:PathLike):
     urllib.request.urlretrieve(url, str(filepath), __show_progress__)
     print('') # 改行
     print(Style.RESET_ALL, end="")
+
+def word_cloud(input_text:str, out_path:PathLike, mask_path:PathLike=''):
+    mask = get_mask(mask_path)
+    
+    wc = WordCloud(
+        font_path=str(Path(__file__).parent / '../fonts/Utatane-Regular.ttf'),
+        background_color='white',
+        max_words=200,
+        stopwords=set(STOPWORDS),
+        contour_width=3,
+        contour_color='steelblue',
+        mask=mask
+    )
+    wc.generate(input_text)
+    wc.to_file(str(out_path))
+
+def get_mask(mask_path:PathLike='') -> Path:
+    if mask_path == '':
+        mask_dir = Path(__file__).parent / 'resources/mask_images'
+        mask_files = [Path(f) for f in glob(str(mask_dir / '*.png'))]
+        mask_path = random.choice(mask_files)
+
+    mask_image = Image.open(str(mask_path)).convert('L')
+    mask = np.array(mask_image, 'f')
+    mask = (mask > 128) * 255
+    return mask
