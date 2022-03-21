@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union, Tuple
 from abc import ABC, abstractmethod
 import string
 import nltk
