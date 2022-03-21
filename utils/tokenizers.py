@@ -34,7 +34,7 @@ class WordTokenizer(Tokenizer):
         self.add_tag:bool = add_tag
         self.porter:PorterStemmer = PorterStemmer() if stemming == True else None
     
-    def tokenize(self, text:str, disable_max_len:bool=False) -> List[Union(str, Tuple[str, str])]:
+    def tokenize(self, text:str, disable_max_len:bool=False) -> List[Union[str, Tuple[str, str]]]:
         '''tokenize a sentence
         
         Args:
