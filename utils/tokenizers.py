@@ -44,7 +44,7 @@ class WordTokenizer(Tokenizer):
         text = text.lower()
         
         # remove punctuation
-        if self.remove_punctuation:
+        if self.remove_punctuations:
             words = [word for word in word_tokenize(text) if word not in list(string.punctuation)]
 
         # tokenize
