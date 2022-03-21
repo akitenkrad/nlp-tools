@@ -52,7 +52,7 @@ class WordTokenizer(Tokenizer):
 
         # remove stopwords
         if self.remove_stopwords:
-            stop_words = stopwords.words(self.lang.value)
+            stop_words = stopwords.words(self.language.value)
             words = [word for word in words if word not in stop_words]
 
         # add tag
