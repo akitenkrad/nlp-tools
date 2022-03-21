@@ -1,6 +1,7 @@
 from typing import List
 from abc import ABC, abstractmethod
 import string
+import nltk
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
