@@ -11,13 +11,15 @@ def download_neurips_2021() -> List[Text]:
     json_data = json.load(open(cache_path))
     data = []
     for paper in json_data:
-        text = Text(title=paper['title'], summary=paper['abstract'], **{
-            'url': paper['url'],
-            'authors': paper['authors'],
-            'pdf_url': paper['pdf_url'],
-            'keywords': paper['keywords'],
-            'grade': paper['grade'],
-            'date': paper['date']
-        })
+        text = Text(title=paper['title'], summary=paper['abstract'],
+                    keywords=paper['keywords'], pdf_url=paper['pdf_url'],
+                    authors=paper['authors'],
+                    **{
+                        'url': paper['url'],
+                        'authors': paper['authors'],
+                        'grade': paper['grade'],
+                        'date': paper['date']
+                    }
+        )
         data.append(text)
     return data

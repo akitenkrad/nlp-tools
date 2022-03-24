@@ -11,11 +11,14 @@ else:
     import tqdm
 
 class Text(object):
-    def __init__(self, title:str, summary:str, **kwargs):
-        self.title = title
-        self.summary = summary
+    def __init__(self, title:str, summary:str, keywords:List[str], pdf_url:str, authors:List[str], **kwargs):
+        self.title:str = title
+        self.summary:str = summary
+        self.keywords:List[str] = keywords
+        self.pdf_url:str = pdf_url
+        self.authors:List[str] = authors
         for name, value in kwargs.items():
-            if name not in ['title', 'summary']:
+            if hasattr(self, name) == False:
                 setattr(self, name, value)
     def __str__(self):
         return f'<Text {self.title[:10]}...>'
@@ -34,7 +37,7 @@ class DocStat(object):
         texts = [' '.join([word[0] for word in word_list if word[1].startswith('N')]) for word_list in words]
         return texts
 
-    def analyze(self, texts:List[Text], keywords:List[str]):
+    def analyze(self, texts:List[Text]):
         with tqdm(total=2, desc='analyzing...', leave=False) as progress:
             def update_progress(desc_text:str):
                 progress.update(1)
@@ -52,7 +55,7 @@ class DocStat(object):
             self.topic_model_attrs['probs'] = probs
 
             # Topics per Class
-            keywords = [p['keywords'][0] for p in data]
+            keywords = [text.keywords[0] for text in texts]
             topics_per_class = topic_model.topics_per_class(texts, topics, classes=keywords)
             self.topic_model_attrs['topics_per_class'] = topics_per_class
 
