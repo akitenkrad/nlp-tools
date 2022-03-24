@@ -4,7 +4,7 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
-from stats.stats import DocStat
+from stats.stats import DocStat, Text
 
 class HtmlBuilder(object):
     def __init__(self, title:str):
