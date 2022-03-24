@@ -33,7 +33,7 @@ class DocStat(object):
 
     def __topic_model_preprocess(self, texts:List[str]) -> List[str]:
         '''extract only Noun words'''
-        words = [tokenizer.tokenize(text) for text in tqdm(texts)]
+        words = [self.tokenizer.tokenize(text) for text in tqdm(texts)]
         texts = [' '.join([word[0] for word in word_list if word[1].startswith('N')]) for word_list in words]
         return texts
 
