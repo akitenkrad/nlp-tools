@@ -15,7 +15,12 @@ class Text(object):
         self.title = title
         self.summary = summary
         for name, value in kwargs.items():
-            setattr(self, name, value)
+            if name not in ['title', 'summary']:
+                setattr(self, name, value)
+    def __str__(self):
+        return f'<Text {self.title[:10]}...>'
+    def __repr__(self):
+        return self.__str__()
 
 class DocStat(object):
     def __init__(self):
