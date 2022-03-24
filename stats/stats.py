@@ -49,7 +49,7 @@ class DocStat(object):
             # Topic Modeling
             update_progress('Topic Modeling...')
             texts_for_tp = [text.title + '\n' + text.summary for text in texts]
-            texts_for_tp = self.__topic_model_preprocess(texts)
+            texts_for_tp = self.__topic_model_preprocess(texts_for_tp)
             topics, probs = self.topic_model.fit_transform(texts_for_tp)
             self.topic_model_attrs['topics'] = topics
             self.topic_model_attrs['probs'] = probs
