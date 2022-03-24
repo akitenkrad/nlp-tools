@@ -56,7 +56,7 @@ class DocStat(object):
 
             # Topics per Class
             keywords = [text.keywords[0] for text in texts]
-            topics_per_class = topic_model.topics_per_class(texts, topics, classes=keywords)
+            topics_per_class = self.topic_model.topics_per_class(texts, topics, classes=keywords)
             self.topic_model_attrs['topics_per_class'] = topics_per_class
 
             self.topic_model_attrs['topic_docs'] = OrderedDict()
@@ -66,4 +66,3 @@ class DocStat(object):
                 self.topic_model_attrs['topic_docs'][topic]['title'] = text.title
                 self.topic_model_attrs['topic_docs'][topic]['summary'] = text.summary
                 self.topic_model_attrs['topic_docs'][topic]['prob'] = prob
-
