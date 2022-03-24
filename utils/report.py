@@ -133,7 +133,7 @@ class Report(object):
 
             ## BarChart
             update_progress('Reporting: Topic Model - BarChart')
-            fig = self.stats.topic_model.visualize_barchart(top_n_topics=len(topic_model.topics), n_words=8, width=300)
+            fig = self.stats.topic_model.visualize_barchart(top_n_topics=len(self.stats.topic_model.topics), n_words=8, width=300)
             with open(html_dir / 'barchart.html', mode='wt', encoding='utf-8') as wf:
                 wf.write(fig.to_html())
             self.builder.add_html_section('Topic Word Score', str(html_dir / 'barchart.html'))
