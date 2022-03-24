@@ -16,7 +16,6 @@ def download_neurips_2021() -> List[Text]:
                     authors=paper['authors'],
                     **{
                         'url': paper['url'],
-                        'authors': paper['authors'],
                         'grade': paper['grade'],
                         'date': paper['date']
                     }
