@@ -8,5 +8,5 @@ def download_neurips_2021() -> dict:
     if not cache_path.exists():
         download_from_google_drive(GDriveObjects.NeurIPS_2021.value, str(cache_path))
     data = json.load(open(cache_path))
-    data = [Text(title=paper['title'], summary=paper['abstract'], **paper) for paper in data]
+    data = [Text(summary=paper['abstract'], **paper) for paper in data]
     return data
