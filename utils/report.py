@@ -89,11 +89,13 @@ class HtmlBuilder(object):
             wf.write(html_text)
 
 class Report(object):
-    def __init__(self, report_title:str, stats:DocStat):
-        self.stats:DocStat = stats
+    def __init__(self, report_title:str, texts:List[Text]):
+        self.stats:DocStat = DocStat()
         self.builder:HtmlBuilder = HtmlBuilder(report_title)
 
-    def report(self, texts:List[str], out_dir:PathLike):
+        self.stats.analyze(texts)
+
+    def report(self, out_dir:PathLike):
 
         with tqdm(total=10, desc='Reporting...', leave=True) as progress:
             def update_progress(text:str):
@@ -143,7 +145,6 @@ class Report(object):
 
             ## Topic Probability Distribution
             # for topic_idx, topic_info in self.stats.topic_model_attrs['topic_docs'].items():
-                
 
         # save index.html
         self.builder.save(out_dir / 'index.html')
