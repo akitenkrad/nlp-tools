@@ -37,7 +37,7 @@ class HtmlBuilder(object):
     def body(self):
         return self.__body
 
-    def new_tag(name, **kwargs) -> Tag:
+    def new_tag(self, name, **kwargs) -> Tag:
         return self.__soup.new_tag(name, **kwargs)
 
     def __add_title(self, title:str):
