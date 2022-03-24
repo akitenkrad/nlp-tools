@@ -4,7 +4,13 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
+from utils.utils import is_notebook
 from stats.stats import DocStat, Text
+
+if is_notebook():
+    from tqdm.notebook import tqdm
+else:
+    from tqdm import tqdm
 
 class HtmlBuilder(object):
     def __init__(self, title:str):
