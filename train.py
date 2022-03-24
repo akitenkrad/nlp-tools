@@ -11,11 +11,11 @@ from torch.utils.data import DataLoader
 
 from utils.logger import Logger
 from utils.watchers import LossWatcher
-from utils.utils import is_colab, backup
+from utils.utils import is_notebook, backup
 from utils.step import step
 from datasets.base import BaseDataset
 
-if is_colab():
+if is_notebook():
     from tqdm.notebook import tqdm
 else:
     from tqdm import tqdm

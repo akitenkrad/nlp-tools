@@ -8,9 +8,9 @@ import matplotlib.animation as animation
 import seaborn as sns
 sns.set()
 
-from utils.utils import Path, is_colab
+from utils.utils import Path, is_notebook
 
-if is_colab():
+if is_notebook():
     from tqdm.notebook import tqdm
 else:
     from tqdm import tqdm

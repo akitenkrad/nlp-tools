@@ -15,11 +15,11 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-from utils.utils import Config, is_colab, Phase
+from utils.utils import Config, is_notebook, Phase
 from utils.watchers import LossWatcher
 from datasets.base import BaseDataset
 
-if is_colab():
+if is_notebook():
     from tqdm.notebook import tqdm
     print('running on google colab -> use tqdm.notebook')
 else:

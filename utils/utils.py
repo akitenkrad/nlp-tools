@@ -26,10 +26,10 @@ from utils.logger import get_logger, kill_logger
 nltk.download('punkt', quiet=True)
 nltk.download('averaged_perceptron_tagger', quiet=True)
 
-def is_colab():
-    return 'google.colab' in sys.modules
+def is_notebook():
+    return 'google.colab' in sys.modules or 'ipykernel' in sys.modules
 
-if is_colab():
+if is_notebook():
     from tqdm.notebook import tqdm
 else:
     from tqdm import tqdm

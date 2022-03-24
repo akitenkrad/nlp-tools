@@ -5,12 +5,12 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from utils.utils import Path, now, is_colab
+from utils.utils import Path, now, is_notebook
 from utils.logger import Logger
 from utils.step import step_without_loss
 from datasets.base import BaseDataset
 
-if is_colab():
+if is_notebook():
     from tqdm.notebook import tqdm
 else:
     from tqdm import tqdm

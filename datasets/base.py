@@ -8,9 +8,9 @@ from torchvision.transforms import transforms
 from torch.utils.data import Dataset
 
 from utils.logger import get_logger, Logger
-from utils.utils import Phase, is_colab, Config
+from utils.utils import Phase, is_notebook, Config
 
-if is_colab():
+if is_notebook():
     from tqdm.notebook import tqdm
 else:
     from tqdm import tqdm
