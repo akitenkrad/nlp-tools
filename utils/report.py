@@ -90,7 +90,7 @@ class HtmlBuilder(object):
         self.body.insert(idx, details)
 
     def save(self, outpath:PathLike):
-        html_text = self.__soup.prettify(encoding='utf-8')
+        html_text = self.__soup.prettify()
         with open(outpath, mode='wt', encoding='utf-8') as wf:
             wf.write(html_text)
 
