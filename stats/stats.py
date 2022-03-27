@@ -1,5 +1,6 @@
 from typing import List
 from collections import OrderedDict
+import numpy as np
 from bertopic import BERTopic
 
 from utils.utils import Lang, is_notebook
@@ -17,6 +18,8 @@ class Text(object):
         self.keywords:List[str] = keywords
         self.pdf_url:str = pdf_url
         self.authors:List[str] = authors
+        self.topic = -99
+        self.prob = np.array([])
         for name, value in kwargs.items():
             if hasattr(self, name) == False:
                 setattr(self, name, value)
@@ -59,13 +62,7 @@ class DocStat(object):
             topics_per_class = self.topic_model.topics_per_class(texts_for_tp, topics, classes=keywords)
             self.topic_model_attrs['topics_per_class'] = topics_per_class
 
-            self.topic_model_attrs['topic_docs'] = OrderedDict()
-            for idx, name in self.topic_model.topic_names.items():
-                self.topic_model_attrs['topic_docs'][idx] = {'name': name}
             for topic, text, prob in zip(topics, texts, probs):
-                self.topic_model_attrs['topic_docs'][topic]['title'] = text.title
-                self.topic_model_attrs['topic_docs'][topic]['summary'] = text.summary
-                self.topic_model_attrs['topic_docs'][topic]['authors'] = text.authors
-                self.topic_model_attrs['topic_docs'][topic]['keywords'] = text.keywords
-                self.topic_model_attrs['topic_docs'][topic]['pdf_url'] = text.pdf_url
-                self.topic_model_attrs['topic_docs'][topic]['prob'] = prob
+                text.topic = topic
+                text.prob = prob
+            self.topic_model_attrs['texts'] = texts

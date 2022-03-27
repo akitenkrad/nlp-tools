@@ -1,7 +1,7 @@
 version: '3'
 services:
   python:
-    container_name: 'python.pynlp-classifier'
+    container_name: 'python.nlp-tools'
     image: akitenkrad/python:cpu.base
     platform: linux/amd64 # for Apple Mac M1
     user: root

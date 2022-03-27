@@ -1,6 +1,8 @@
 from typing import List
 from os import PathLike
 from pathlib import Path
+import hashlib
+from collections import namedtuple
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
@@ -12,10 +14,13 @@ if is_notebook():
 else:
     from tqdm import tqdm
 
+OptionObject = namedtuple('OptionOject', {'path', 'option'})
+
 class HtmlBuilder(object):
     def __init__(self, title:str):
         self.__build_base_html()
         self.__add_title(title)
+        self.__javascript = []
 
     def __build_base_html(self):
         self.__soup = BeautifulSoup('<HTML></HTML>', 'html.parser')
@@ -26,6 +31,14 @@ class HtmlBuilder(object):
 
         metatag = self.__soup.new_tag('meta', attrs={'charset': 'UTF-8'})
         self.head.insert(0, metatag)
+
+        self.__js_filename = 'main.js'
+        js_script = self.__soup.new_tag('script', attrs={'src': self.__js_filename})
+        self.head.insert(1, js_script)
+
+        self.__classes = {
+            'select': 'select_class'
+        }
 
     @property
     def html(self):
@@ -40,27 +53,33 @@ class HtmlBuilder(object):
     def new_tag(self, name, **kwargs) -> Tag:
         return self.__soup.new_tag(name, **kwargs)
 
+    def new_iframe(self, html_path:str, width:int, height:int):
+        return self.new_tag('iframe', attrs={'src': html_path, 'target':'_blank', 'style': f'width:{width}px; height:{height}px;'})
+    
+    def new_image(self, image_path:str):
+        return self.new_tag('img', attrs={'src': image_path, 'alt': image_path})
+    
     def __add_title(self, title:str):
         title_tag = self.__soup.new_tag('title')
         title_tag.string = title
         idx = len(list(self.head.children))
         self.head.insert(idx, title_tag)
 
-    def add_html_section(self, title:str, html_path:str, text:str=''):
+    def add_iframe_section(self, title:str, description:str='', html_path:str='', width:int=800, height:int=800):
         idx = len(list(self.body.children))
         h2 = self.new_tag('h2')
         h2.string = title
-        iframe = self.new_tag('iframe', attrs={'src': html_path, 'target':'_blank'})
+        iframe = self.new_iframe(html_path, width, height)
 
         self.body.insert(idx, h2)
         self.body.insert(idx + 1, iframe)
 
-        if text != '':
+        if description != '':
             div = self.new_tag('div')
-            div.string = text
+            div.string = description
             self.body.insert(idx + 1, div)
 
-    def add_image_section(self, title:str, image_path:str, text:str=''):
+    def add_image_section(self, title:str, image_path:str, description:str=''):
         idx = len(list(self.body.children))
         h2 = self.new_tag('h2')
         h2.string = title
@@ -69,9 +88,9 @@ class HtmlBuilder(object):
         self.body.insert(idx, h2)
         self.body.insert(idx + 1, img)
 
-        if text != '':
+        if description != '':
             div = self.new_tag('div')
-            div.string = text
+            div.string = description
             self.body.insert(idx + 1, div)
 
     def add_detail_section(self, title:str, description:str='', contents:List[Tag]=[]):
@@ -89,10 +108,57 @@ class HtmlBuilder(object):
         
         self.body.insert(idx, details)
 
-    def save(self, outpath:PathLike):
+    def add_select_section(self, title:str, options:List[OptionObject], description:str=''):
+        idx = len(list(self.body.children))
+        div = self.new_tag('div')
+        select_id = hashlib.md5((title+description).encode('utf-8')).hexdigest()
+        js_func = f'{select_id[:5]}_onChange'
+        
+        # select
+        select = self.new_tag('select', attrs={'id': select_id, 'class':self.__classes['select'], 'onchange':f'"{js_func}();"'})
+        options = []
+        for idx, option in enumerate(options):
+            opt_id = f'{hash[:5]}_option_{idx}_id'
+            opt_val = f'{hash[:5]}_option_{idx}_val'
+            opt_tag = self.new_tag('option', attrs={'id': opt_id, 'value': opt_val})
+            opt_tag.text = option.option
+            select.insert(idx, opt_tag)
+            options.append({'id': opt_id, 'tag': opt_tag, 'switch_case':
+            f'''
+                        case {opt_val}:
+                            document.getElementById('{opt_id}').style.display = "";
+            '''})
+
+        display_all_none = []
+        for option in options:
+            display_all_none.append(f'''
+                    document.getElementById('{option["id"]}').style.display = "none";
+            ''')
+        display_all_none = ''.join(display_all_none)
+
+        switch_case = ''.join(option['switch_case'] for option in options)
+
+        js = f'''
+            function {js_func}(){{
+                if(document.getElementById('{select_id}')){{
+                    {display_all_none}
+                    opt_val = document.getElementById('{select_id}').value;
+                    switch(opt_val) {{
+                    {switch_case}
+                }}
+            window.onload = viewChange;
+            }}
+        '''
+        self.__javascript.append(js)
+
+    def save(self, out_dir:PathLike):
         html_text = self.__soup.prettify()
-        with open(outpath, mode='wt', encoding='utf-8') as wf:
+        with open(out_dir / 'index.html', mode='wt', encoding='utf-8') as wf:
             wf.write(html_text)
+
+        js_text = '\n'.join(self.__javascript)
+        with open(out_dir / self.__js_filename, mode='wt', encoding='utf-8') as wf:
+            wf.write(js_text)
 
 class Report(object):
     def __init__(self, report_title:str, texts:List[Text]):
@@ -108,49 +174,94 @@ class Report(object):
                 progress.update(1)
                 progress.set_description(text)
 
-            # prepare directory
+            # 1. prepare directory
             update_progress('Reporting: Prepare Directory...')
             out_dir:Path = Path(out_dir)
-            img_dir = out_dir / 'images'
-            html_dir = out_dir / 'html'
+            _img_dir = Path('images')
+            _html_dir = Path('html')
+            img_dir = out_dir / _img_dir 
+            html_dir = out_dir / _html_dir
             img_dir.mkdir(parents=True, exist_ok=True)
             html_dir.mkdir(parents=True, exist_ok=True)
 
             # Topic Model
-            ## intertopic Distance Map
+            # 2. intertopic Distance Map
             update_progress('Reporting: Topic Model - Intertopic Distance Map')
             fig = self.stats.topic_model.visualize_topics(width=800, height=800)
             with open(html_dir / 'intertopic_distance_map.html', mode='wt', encoding='utf-8') as wf:
                 wf.write(fig.to_html())
-            self.builder.add_html_section('Intertopic Distance Map', str(html_dir / 'intertopic_distance_map.html'))
+            self.builder.add_iframe_section(
+                title='Intertopic Distance Map',
+                description='',
+                html_path=str(_html_dir / 'intertopic_distance_map.html'),
+                width=fig.layout.width+50, height=fig.layout.height+50
+            )
 
-            ## Hierarchical Clustering
+            # 3. Hierarchical Clustering
             update_progress('Reporting: Topic Model - Hierarchical Clustering')
             fig = self.stats.topic_model.visualize_hierarchy()
             with open(html_dir / 'hierarchical_clustering.html', mode='wt', encoding='utf-8') as wf:
                 wf.write(fig.to_html())
-            self.builder.add_html_section('Hierarchical Clustering', str(html_dir / 'hierarchical_clustering.html'))
+            self.builder.add_iframe_section(
+                title='Hierarchical Clustering',
+                desctiption='',
+                html_path=str(_html_dir / 'hierarchical_clustering.html'),
+                width=fig.layout.width+50, height=fig.layout.height+50
+            )
 
-            ## BarChart
+            # 4. BarChart
             update_progress('Reporting: Topic Model - BarChart')
             fig = self.stats.topic_model.visualize_barchart(top_n_topics=len(self.stats.topic_model.topics), n_words=8, width=300)
             with open(html_dir / 'barchart.html', mode='wt', encoding='utf-8') as wf:
                 wf.write(fig.to_html())
-            self.builder.add_html_section('Topic Word Score', str(html_dir / 'barchart.html'))
+            self.builder.add_iframe_section(
+                title='Topic Word Score',
+                description='',
+                html_path=str(_html_dir / 'barchart.html'),
+                width=fig.layout.width+50, height=fig.layout.height+50
+            )
 
-            ## Similarity Matrix
+            # 5. Similarity Matrix
             update_progress('Reporting: Topic Model - Similarity Matrix')
             fig = self.stats.topic_model.visualize_heatmap()
             with open(html_dir / 'similarity_matrix.html', mode='wt', encoding='utf-8') as wf:
                 wf.write(fig.to_html())
-            self.builder.add_html_section('Similarity Matrix', str(html_dir / 'similarity_matrix.html'))
+            self.builder.add_iframe_section(
+                title='Similarity Matrix',
+                description='',
+                html_path=str(_html_dir / 'similarity_matrix.html'),
+                width=fig.layout.width+50, height=fig.layout.height+50
+            )
 
-            ## Topics Per Cpass
+            # 6. Topics Per Cpass
             update_progress('Reporting: Topic Model - Topics per Class')
             fig = self.stats.topic_model.visualize_topics_per_class(self.stats.topic_model_attrs['topics_per_class'])
+            with open(html_dir / 'topics_per_class.html', mode='wt', encoding='utf-8') as wf:
+                wf.write(fig.to_html())
+            self.builder.add_iframe_section(
+                title='Topics per Class',
+                description='',
+                html_path=str(_html_dir / 'topics_per_class.html'),
+                width=fig.layout.width+50, height=fig.layout.height+50
+            )
 
-            ## Topic Probability Distribution
-            # for topic_idx, topic_info in self.stats.topic_model_attrs['topic_docs'].items():
+            # 7. Topic Probability Distribution
+            update_progress('Reporting: Topic Model - Topic Probability Distribution')
+            prob_dist_dir = img_dir / 'topic_model_prob_dist'
+            prob_dist_dir.mkdir(parents=True, exist_ok=True)
+            options = []
+            for idx, text in enumerate(tqdm(self.stats.topic_model_attrs['texts'], desc='Reporting Topic Prob Dist...', leave=False)):
+                fig = self.topic_model.visualize_distribution(text.prob, min_probability=0.001)
+                path = prob_dist_dir / '{idx:08d}.html'
+                with open(path, mode='wt', encoding='utf-8') as wf:
+                    wf.write(fig.to_html())
+                options.append(OptionObject(path, text.title))
+
+            self.builder.add_select_section(
+                title='Topic Probability Distribution',
+                description='',
+                options=options,
+            )
 
         # save index.html
-        self.builder.save(out_dir / 'index.html')
+        self.builder.save(out_dir)
