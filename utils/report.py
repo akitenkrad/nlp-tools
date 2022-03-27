@@ -125,8 +125,8 @@ class HtmlBuilder(object):
         div.insert(0, select)
         option_tags = []
         for idx, option in enumerate(options):
-            opt_id = f'{hash[:5]}_option_{idx}_id'
-            opt_val = f'{hash[:5]}_option_{idx}_val'
+            opt_id = f'{select_id[:5]}_option_{idx}_id'
+            opt_val = f'{select_id[:5]}_option_{idx}_val'
             opt_tag = self.new_tag('option', attrs={'id': opt_id, 'value': opt_val})
             opt_tag.text = option.option
             select.insert(idx, opt_tag)
