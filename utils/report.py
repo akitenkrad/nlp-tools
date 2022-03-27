@@ -128,7 +128,7 @@ class HtmlBuilder(object):
         js_func = f'{select_id[:5]}_onChange'
         
         # select
-        select = self.new_tag('select', attrs={'id': select_id, 'class':self.__classes['select'], 'onchange':f'"{js_func}();"'})
+        select = self.new_tag('select', attrs={'id': select_id, 'class':self.__classes['select'], 'onchange':f'{js_func}();'})
         div.insert(0, select)
         option_tags = []
         js_array = []
@@ -150,10 +150,10 @@ function {js_func}(){{
     if(document.getElementById('{select_id}')){{
         const opt_val = document.getElementById('{select_id}').value;
         var new_iframe = document.createElement('iframe');
-        new_iframe.style.width = {select_id[:5]}_array['opt_val'].width + 'px';
-        new_iframe.style.height = {select_id[:5]}_array['opt_val'].height + 'px';
+        new_iframe.style.width = {select_id[:5]}_array[opt_val].width + 'px';
+        new_iframe.style.height = {select_id[:5]}_array[opt_val].height + 'px';
         new_iframe.target = '_blank';
-        new_iframe.src = {select_id[:5]}_array['opt_val'].path;
+        new_iframe.src = {select_id[:5]}_array[opt_val].path;
         new_iframe.id = '{select_id[:5]}_iframe';
 
         var old_iframe = document.getElementById('{select_id[:5]}_iframe')
@@ -275,7 +275,7 @@ class Report(object):
                 path = prob_dist_dir / f'{idx:08d}.html'
                 with open(path, mode='wt', encoding='utf-8') as wf:
                     wf.write(fig.to_html())
-                options.append(IframeOptionObject(text.title, f'htmls/topic_model_prob_dist{idx:08d}.html', fig.layout.width+50, fig.layout.height+50))
+                options.append(IframeOptionObject(text.title, f'htmls/topic_model_prob_dist/{idx:08d}.html', fig.layout.width+50, fig.layout.height+50))
 
             self.builder.add_iframe_select_section(
                 title='Topic Probability Distribution',
