@@ -162,9 +162,10 @@ class HtmlBuilder(object):
                     opt_val = document.getElementById('{select_id}').value;
                     switch(opt_val) {{
                     {switch_case}
+                    }}
                 }}
-            window.onload = {js_func};
             }}
+            window.onload = {js_func};
         '''
         self.__javascript.append(js)
 
