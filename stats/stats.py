@@ -59,7 +59,7 @@ class DocStat(object):
 
             # Topics per Class
             keywords = [text.keywords[0] for text in texts]
-            topics_per_class = self.topic_model.topics_per_class(texts_for_tp, classes=keywords, top_n_topics=len(topics))
+            topics_per_class = self.topic_model.topics_per_class(texts_for_tp, topics, classes=keywords)
             self.topic_model_attrs['topics_per_class'] = topics_per_class
 
             for topic, text, prob in zip(topics, texts, probs):

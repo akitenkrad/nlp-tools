@@ -255,7 +255,7 @@ class Report(object):
 
             # 6. Topics Per Cpass
             update_progress('Reporting: Topic Model - Topics per Class')
-            fig = self.stats.topic_model.visualize_topics_per_class(self.stats.topic_model_attrs['topics_per_class'])
+            fig = self.stats.topic_model.visualize_topics_per_class(self.stats.topic_model_attrs['topics_per_class'], top_n_topics=50)
             with open(html_dir / 'topics_per_class.html', mode='wt', encoding='utf-8') as wf:
                 wf.write(fig.to_html())
             self.builder.add_iframe_section(
