@@ -282,7 +282,7 @@ class Report(object):
                 path = prob_dist_dir / f'{idx:08d}.html'
                 with open(path, mode='wt', encoding='utf-8') as wf:
                     wf.write(fig.to_html())
-                content = self.new_iframe(_html_dir / path)
+                content = self.builder.new_iframe(_html_dir / path)
                 options.append(OptionObject(str(_html_dir / 'topic_model_prob_dist' / f'{idx:08d}.html'), text.title, content))
 
             self.builder.add_select_section(
