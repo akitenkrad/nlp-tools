@@ -153,7 +153,7 @@ class HtmlBuilder(object):
             ''')
         display_all_none = ''.join(display_all_none)
 
-        switch_case = ''.join(option['switch_case'] for option in options)
+        switch_case = ''.join(option['switch_case'] for option in option_tags)
 
         js = f'''
             function {js_func}(){{
