@@ -15,7 +15,7 @@ if is_notebook():
 else:
     from tqdm import tqdm
 
-OptionObject = namedtuple('OptionOject', {'path', 'option'})
+OptionObject = namedtuple('OptionOject', ('path', 'option', 'content'))
 
 class HtmlBuilder(object):
     def __init__(self, title:str):
@@ -57,11 +57,18 @@ class HtmlBuilder(object):
     def new_tag(self, name, **kwargs) -> Tag:
         return self.__soup.new_tag(name, **kwargs)
 
-    def new_iframe(self, html_path:str, width:int, height:int):
-        return self.new_tag('iframe', attrs={'src': html_path, 'target':'_blank', 'style': f'width:{width}px; height:{height}px;'})
+    def new_iframe(self, html_path:str, width:int, height:int, attrs:dict={}):
+        _attrs = {'src': html_path, 'target':'_blank', 'style': f'width:{width}px; height:{height}px;'}
+        if 'style' in attrs:
+            style = attrs.pop('style')
+            _attrs['style'] = f"{_attrs['style']} {style}"
+        _attrs.update(attrs)
+        return self.new_tag('iframe', attrs=_attrs)
     
-    def new_image(self, image_path:str):
-        return self.new_tag('img', attrs={'src': image_path, 'alt': image_path})
+    def new_image(self, image_path:str, attrs:dict={}):
+        _attrs = {'src': image_path, 'alt': image_path}
+        _attrs.update(attrs)
+        return self.new_tag('img', attrs=_attrs)
     
     def __add_title(self, title:str):
         title_tag = self.__soup.new_tag('title')
@@ -73,7 +80,7 @@ class HtmlBuilder(object):
         idx = len(list(self.body.children))
         h2 = self.new_tag('h2')
         h2.string = title
-        iframe = self.new_iframe(html_path, width, height)
+        iframe = self.new_iframe(str(html_path), width, height)
 
         self.body.insert(idx, h2)
         self.body.insert(idx + 1, iframe)
@@ -125,16 +132,19 @@ class HtmlBuilder(object):
         div.insert(0, select)
         option_tags = []
         for idx, option in enumerate(options):
-            opt_id = f'{select_id[:5]}_option_{idx}_id'
+            content_id = f'{select_id[:5]}_content_{idx}_id'
             opt_val = f'{select_id[:5]}_option_{idx}_val'
-            opt_tag = self.new_tag('option', attrs={'id': opt_id, 'value': opt_val})
+            opt_tag = self.new_tag('option', attrs={'value': opt_val})
             opt_tag.string = option.option
             select.insert(idx, opt_tag)
-            option_tags.append({'id': opt_id, 'tag': opt_tag, 'switch_case':
+            option_tags.append({'id': content_id, 'tag': opt_tag, 'switch_case':
             f'''
                         case {opt_val}:
-                            document.getElementById('{opt_id}').style.display = "";
+                            document.getElementById('{content_id}').style.display = "";
             '''})
+            content_div = self.new_tag('div', attrs={'id': content_id, 'style': 'display:none;'})
+            content_div.insert(0, option.content)
+            div.insert(idx+1, content_div)
 
         display_all_none = []
         for option in option_tags:
@@ -264,15 +274,16 @@ class Report(object):
 
             # 7. Topic Probability Distribution
             update_progress('Reporting: Topic Model - Topic Probability Distribution')
-            prob_dist_dir = img_dir / 'topic_model_prob_dist'
+            prob_dist_dir = html_dir / 'topic_model_prob_dist'
             prob_dist_dir.mkdir(parents=True, exist_ok=True)
             options = []
             for idx, text in enumerate(tqdm(self.stats.topic_model_attrs['texts'], desc='Reporting Topic Prob Dist...', leave=False)):
                 fig = self.stats.topic_model.visualize_distribution(text.prob, min_probability=0.001)
-                path = prob_dist_dir / '{idx:08d}.html'
+                path = prob_dist_dir / f'{idx:08d}.html'
                 with open(path, mode='wt', encoding='utf-8') as wf:
                     wf.write(fig.to_html())
-                options.append(OptionObject(path, text.title))
+                content = self.new_iframe(_html_dir / path)
+                options.append(OptionObject(str(_html_dir / 'topic_model_prob_dist' / f'{idx:08d}.html'), text.title, content))
 
             self.builder.add_select_section(
                 title='Topic Probability Distribution',
