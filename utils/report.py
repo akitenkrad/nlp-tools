@@ -137,27 +137,29 @@ class HtmlBuilder(object):
             opt_tag = self.new_tag('option', attrs={'value': idx})
             opt_tag.string = option.text
             select.insert(idx, opt_tag)
-            js_array.append(f'{idx}: {{path: {option.html_path}, width: {option.width}, height: {option.height}}}')
+            js_array.append(f"'{idx}': {{path: '{option.html_path}', width: {option.width}, height: {option.height}}}")
 
         initial_iframe = self.new_iframe(options[0].html_path, options[0].width, options[0].height, attrs={'id': f'{select_id[:5]}_iframe'})
         div.insert(1, initial_iframe)
 
         js = f'''
-            const {select_id[:5]}_array = {{{(','+linesep).join(js_array)}}}
-            function {js_func}(){{
-                if(document.getElementById('{select_id}')){{
-                    const opt_val = document.getElementById('{select_id}').value;
-                    var new_iframe = document.createElement('iframe');
-                    new_iframe.style.width = {select_id[:5]}_array['opt_val'].width + 'px';
-                    new_iframe.style.height = {select_id[:5]}_array['opt_val'].height + 'px';
-                    new_iframe.target = '_blank';
-                    new_iframe.src = {select_id[:5]}_array['opt_val'].path;
-                    new_iframe.id = '{select_id[:5]}_iframe';
+const {select_id[:5]}_array = {{
+    {(','+linesep+'    ').join(js_array)}
+}};
+function {js_func}(){{
+    if(document.getElementById('{select_id}')){{
+        const opt_val = document.getElementById('{select_id}').value;
+        var new_iframe = document.createElement('iframe');
+        new_iframe.style.width = {select_id[:5]}_array['opt_val'].width + 'px';
+        new_iframe.style.height = {select_id[:5]}_array['opt_val'].height + 'px';
+        new_iframe.target = '_blank';
+        new_iframe.src = {select_id[:5]}_array['opt_val'].path;
+        new_iframe.id = '{select_id[:5]}_iframe';
 
-                    var old_iframe = document.getElementById('{select_id[:5]}_iframe')
-                    old_iframe.replaceWith(new_iframe);
-                }}
-            }}
+        var old_iframe = document.getElementById('{select_id[:5]}_iframe')
+        old_iframe.replaceWith(new_iframe);
+    }};
+}};
         '''
         self.__javascript.append(js)
 
