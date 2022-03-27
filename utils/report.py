@@ -128,7 +128,7 @@ class HtmlBuilder(object):
             opt_id = f'{select_id[:5]}_option_{idx}_id'
             opt_val = f'{select_id[:5]}_option_{idx}_val'
             opt_tag = self.new_tag('option', attrs={'id': opt_id, 'value': opt_val})
-            opt_tag.text = option.option
+            opt_tag.string = option.option
             select.insert(idx, opt_tag)
             option_tags.append({'id': opt_id, 'tag': opt_tag, 'switch_case':
             f'''
