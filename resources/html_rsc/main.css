@@ -1,0 +1,31 @@
+h2 {
+    position: relative;
+    overflow: hidden;
+    padding: 1.5rem 2rem 1.5rem 130px;
+    border-top: 3px solid #000;
+  }
+  
+  h2:before {
+    position: absolute;
+    top: -150%;
+    left: -100px;
+    width: 200px;
+    height: 300%;
+    content: '';
+    -webkit-transform: rotate(25deg);
+    transform: rotate(25deg);
+    background: #000;
+  }
+  
+  h2 span {
+    font-size: 40px;
+    font-size: 4rem;
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    display: block;
+    padding-top: 3px;
+    padding-left: 16px;
+    color: #fff;
+  }

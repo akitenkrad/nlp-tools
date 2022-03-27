@@ -2,6 +2,7 @@ from typing import List
 from os import PathLike
 from pathlib import Path
 import hashlib
+import shutil
 from collections import namedtuple
 from bs4 import BeautifulSoup
 from bs4.element import Tag
@@ -110,12 +111,13 @@ class HtmlBuilder(object):
 
     def add_select_section(self, title:str, options:List[OptionObject], description:str=''):
         idx = len(list(self.body.children))
-        div = self.new_tag('div')
         select_id = hashlib.md5((title+description).encode('utf-8')).hexdigest()
+        div = self.new_tag('div', attrs={'id': f'{select_id[:5]}_div', 'class': 'select_div'})
         js_func = f'{select_id[:5]}_onChange'
         
         # select
         select = self.new_tag('select', attrs={'id': select_id, 'class':self.__classes['select'], 'onchange':f'"{js_func}();"'})
+        div.insert(0, select)
         options = []
         for idx, option in enumerate(options):
             opt_id = f'{hash[:5]}_option_{idx}_id'
@@ -151,14 +153,23 @@ class HtmlBuilder(object):
         '''
         self.__javascript.append(js)
 
+        self.body.insert(idx, select)
+
     def save(self, out_dir:PathLike):
+        # save index.html
         html_text = self.__soup.prettify()
         with open(out_dir / 'index.html', mode='wt', encoding='utf-8') as wf:
             wf.write(html_text)
 
+        # save javascript
         js_text = '\n'.join(self.__javascript)
         with open(out_dir / self.__js_filename, mode='wt', encoding='utf-8') as wf:
             wf.write(js_text)
+
+        # copy css
+        css_from = Path(__file__).parent.parent / 'resources' / 'html_rsc' / 'main.css'
+        css_to = out_dir / 'main.css'
+        shutil.copy(str(css_from), str(css_to))
 
 class Report(object):
     def __init__(self, report_title:str, texts:List[Text]):
@@ -168,8 +179,8 @@ class Report(object):
         self.stats.analyze(texts)
 
     def report(self, out_dir:PathLike):
-
-        with tqdm(total=10, desc='Reporting...', leave=True) as progress:
+        total = 7
+        with tqdm(total=total, desc='Reporting...', leave=True) as progress:
             def update_progress(text:str):
                 progress.update(1)
                 progress.set_description(text)
