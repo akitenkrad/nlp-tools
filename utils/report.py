@@ -204,7 +204,7 @@ class Report(object):
                 wf.write(fig.to_html())
             self.builder.add_iframe_section(
                 title='Hierarchical Clustering',
-                desctiption='',
+                description='',
                 html_path=str(_html_dir / 'hierarchical_clustering.html'),
                 width=fig.layout.width+50, height=fig.layout.height+50
             )
