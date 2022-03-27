@@ -251,7 +251,7 @@ class Report(object):
             prob_dist_dir.mkdir(parents=True, exist_ok=True)
             options = []
             for idx, text in enumerate(tqdm(self.stats.topic_model_attrs['texts'], desc='Reporting Topic Prob Dist...', leave=False)):
-                fig = self.topic_model.visualize_distribution(text.prob, min_probability=0.001)
+                fig = self.stats.topic_model.visualize_distribution(text.prob, min_probability=0.001)
                 path = prob_dist_dir / '{idx:08d}.html'
                 with open(path, mode='wt', encoding='utf-8') as wf:
                     wf.write(fig.to_html())
