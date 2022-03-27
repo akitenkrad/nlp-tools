@@ -2,7 +2,7 @@ version: '3'
 services:
   python:
     container_name: 'python.nlp-tools'
-    image: akitenkrad/python:cpu.base
+    image: akitenkrad/python.cpu:latest
     platform: linux/amd64 # for Apple Mac M1
     user: root
     tty: true
@@ -11,3 +11,12 @@ services:
     environment:
       TZ: Asia/Tokyo
     working_dir: /workplace
+  
+  web:
+    container_name: 'nginx.nlp-tools'
+    image: nginx
+    volumes:
+      - ../outputs/:/usr/share/nginx/html
+    ports:
+      - 8080:80
+

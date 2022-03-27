@@ -205,11 +205,9 @@ class Report(object):
             # 1. prepare directory
             update_progress('Reporting: Prepare Directory...')
             out_dir:Path = Path(out_dir)
-            _img_dir = Path('images')
-            _html_dir = Path('html')
-            img_dir = out_dir / _img_dir 
-            html_dir = out_dir / _html_dir
-            img_dir.mkdir(parents=True, exist_ok=True)
+            image_dir = out_dir / 'images'
+            html_dir = out_dir / 'htmls'
+            image_dir.mkdir(parents=True, exist_ok=True)
             html_dir.mkdir(parents=True, exist_ok=True)
 
             # Topic Model
@@ -221,7 +219,7 @@ class Report(object):
             self.builder.add_iframe_section(
                 title='Intertopic Distance Map',
                 description='',
-                html_path=str(_html_dir / 'intertopic_distance_map.html'),
+                html_path='htmls/intertopic_distance_map.html',
                 width=fig.layout.width+50, height=fig.layout.height+50
             )
 
@@ -233,7 +231,7 @@ class Report(object):
             self.builder.add_iframe_section(
                 title='Hierarchical Clustering',
                 description='',
-                html_path=str(_html_dir / 'hierarchical_clustering.html'),
+                html_path='htmls/hierarchical_clustering.html',
                 width=fig.layout.width+50, height=fig.layout.height+50
             )
 
@@ -245,7 +243,7 @@ class Report(object):
             self.builder.add_iframe_section(
                 title='Topic Word Score',
                 description='',
-                html_path=str(_html_dir / 'barchart.html'),
+                html_path='htmls/barchart.html',
                 width=fig.layout.width+50, height=fig.layout.height+50
             )
 
@@ -257,7 +255,7 @@ class Report(object):
             self.builder.add_iframe_section(
                 title='Similarity Matrix',
                 description='',
-                html_path=str(_html_dir / 'similarity_matrix.html'),
+                html_path='htmls/similarity_matrix.html',
                 width=fig.layout.width+50, height=fig.layout.height+50
             )
 
@@ -269,7 +267,7 @@ class Report(object):
             self.builder.add_iframe_section(
                 title='Topics per Class',
                 description='',
-                html_path=str(_html_dir / 'topics_per_class.html'),
+                html_path='htmls/topics_per_class.html',
                 width=fig.layout.width+50, height=fig.layout.height+50
             )
 
@@ -283,8 +281,8 @@ class Report(object):
                 path = prob_dist_dir / f'{idx:08d}.html'
                 with open(path, mode='wt', encoding='utf-8') as wf:
                     wf.write(fig.to_html())
-                content = self.builder.new_iframe(_html_dir / path, width=fig.layout.width+50, height=fig.layout.height+50)
-                options.append(OptionObject(str(_html_dir / 'topic_model_prob_dist' / f'{idx:08d}.html'), text.title, content))
+                content = self.builder.new_iframe(f'htmls/topic_model_prob_dist/{idx:08d}.html', width=fig.layout.width+50, height=fig.layout.height+50)
+                options.append(OptionObject(f'htmls/topic_model_prob_dist{idx:08d}.html', text.title, content))
 
             self.builder.add_select_section(
                 title='Topic Probability Distribution',
