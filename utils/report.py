@@ -139,7 +139,7 @@ class HtmlBuilder(object):
             select.insert(idx, opt_tag)
             option_tags.append({'id': content_id, 'tag': opt_tag, 'switch_case':
             f'''
-                        case {opt_val}:
+                        case "{opt_val}":
                             document.getElementById('{content_id}').style.display = "";
             '''})
             content_div = self.new_tag('div', attrs={'id': content_id, 'style': 'display:none;'})
