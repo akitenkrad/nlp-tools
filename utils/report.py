@@ -33,9 +33,12 @@ class HtmlBuilder(object):
         metatag = self.__soup.new_tag('meta', attrs={'charset': 'UTF-8'})
         self.head.insert(0, metatag)
 
+        css = self.__soup.new_tag('link', attrs={'rel': 'stylesheet', 'href': 'main.css'})
+        self.head.insert(1, css)
+
         self.__js_filename = 'main.js'
         js_script = self.__soup.new_tag('script', attrs={'src': self.__js_filename})
-        self.head.insert(1, js_script)
+        self.head.insert(2, js_script)
 
         self.__classes = {
             'select': 'select_class'
