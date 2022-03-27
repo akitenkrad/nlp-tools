@@ -1,5 +1,5 @@
 from typing import List
-from os import PathLike
+from os import PathLike, linesep
 from pathlib import Path
 import hashlib
 import shutil
@@ -15,7 +15,7 @@ if is_notebook():
 else:
     from tqdm import tqdm
 
-OptionObject = namedtuple('OptionOject', ('path', 'option', 'content'))
+IframeOptionObject = namedtuple('OptionOject', ('text', 'html_path', 'width', 'height'))
 
 class HtmlBuilder(object):
     def __init__(self, title:str):
@@ -24,7 +24,7 @@ class HtmlBuilder(object):
         self.__javascript = []
 
     def __build_base_html(self):
-        self.__soup = BeautifulSoup('<HTML></HTML>', 'html.parser')
+        self.__soup = BeautifulSoup('<!DOCTYPE html><HTML lang="en"></HTML>', 'html.parser')
         self.__head = self.__soup.new_tag('head')
         self.__soup.html.insert(0, self.__head)
         self.__body = self.__soup.new_tag('body')
@@ -119,7 +119,7 @@ class HtmlBuilder(object):
         
         self.body.insert(idx, details)
 
-    def add_select_section(self, title:str, options:List[OptionObject], description:str=''):
+    def add_iframe_select_section(self, title:str, options:List[IframeOptionObject], description:str=''):
         idx = len(list(self.body.children))
         h2 = self.new_tag('h2')
         h2.string = title
@@ -131,41 +131,33 @@ class HtmlBuilder(object):
         select = self.new_tag('select', attrs={'id': select_id, 'class':self.__classes['select'], 'onchange':f'"{js_func}();"'})
         div.insert(0, select)
         option_tags = []
+        js_array = []
         for idx, option in enumerate(options):
-            content_id = f'{select_id[:5]}_content_{idx}_id'
             opt_val = f'{select_id[:5]}_option_{idx}_val'
-            opt_tag = self.new_tag('option', attrs={'value': opt_val})
-            opt_tag.string = option.option
+            opt_tag = self.new_tag('option', attrs={'value': idx})
+            opt_tag.string = option.text
             select.insert(idx, opt_tag)
-            option_tags.append({'id': content_id, 'tag': opt_tag, 'switch_case':
-            f'''
-                        case "{opt_val}":
-                            document.getElementById('{content_id}').style.display = "";
-            '''})
-            content_div = self.new_tag('div', attrs={'id': content_id, 'style': 'display:none;'})
-            content_div.insert(0, option.content)
-            div.insert(idx+1, content_div)
+            js_array.append(f'{idx}: {{path: {option.html_path}, width: {option.width}, height: {option.height}}}')
 
-        display_all_none = []
-        for option in option_tags:
-            display_all_none.append(f'''
-                    document.getElementById('{option["id"]}').style.display = "none";
-            ''')
-        display_all_none = ''.join(display_all_none)
-
-        switch_case = ''.join(option['switch_case'] for option in option_tags)
+        initial_iframe = self.new_iframe(options[0].html_path, options[0].width, options[0].height, attrs={'id': f'{select_id[:5]}_iframe'})
+        div.insert(1, initial_iframe)
 
         js = f'''
+            const {select_id[:5]}_array = {{{(','+linesep).join(js_array)}}}
             function {js_func}(){{
                 if(document.getElementById('{select_id}')){{
-                    {display_all_none}
-                    opt_val = document.getElementById('{select_id}').value;
-                    switch(opt_val) {{
-                    {switch_case}
-                    }}
+                    const opt_val = document.getElementById('{select_id}').value;
+                    var new_iframe = document.createElement('iframe');
+                    new_iframe.style.width = {select_id[:5]}_array['opt_val'].width + 'px';
+                    new_iframe.style.height = {select_id[:5]}_array['opt_val'].height + 'px';
+                    new_iframe.target = '_blank';
+                    new_iframe.src = {select_id[:5]}_array['opt_val'].path;
+                    new_iframe.id = '{select_id[:5]}_iframe';
+
+                    var old_iframe = document.getElementById('{select_id[:5]}_iframe')
+                    old_iframe.replaceWith(new_iframe);
                 }}
             }}
-            window.onload = {js_func};
         '''
         self.__javascript.append(js)
 
@@ -281,10 +273,9 @@ class Report(object):
                 path = prob_dist_dir / f'{idx:08d}.html'
                 with open(path, mode='wt', encoding='utf-8') as wf:
                     wf.write(fig.to_html())
-                content = self.builder.new_iframe(f'htmls/topic_model_prob_dist/{idx:08d}.html', width=fig.layout.width+50, height=fig.layout.height+50)
-                options.append(OptionObject(f'htmls/topic_model_prob_dist{idx:08d}.html', text.title, content))
+                options.append(IframeOptionObject(text.title, f'htmls/topic_model_prob_dist{idx:08d}.html', fig.layout.width+50, fig.layout.height+50))
 
-            self.builder.add_select_section(
+            self.builder.add_iframe_select_section(
                 title='Topic Probability Distribution',
                 description='',
                 options=options,
