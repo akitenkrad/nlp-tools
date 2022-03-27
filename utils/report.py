@@ -114,6 +114,8 @@ class HtmlBuilder(object):
 
     def add_select_section(self, title:str, options:List[OptionObject], description:str=''):
         idx = len(list(self.body.children))
+        h2 = self.new_tag('h2')
+        h2.string = title
         select_id = hashlib.md5((title+description).encode('utf-8')).hexdigest()
         div = self.new_tag('div', attrs={'id': f'{select_id[:5]}_div', 'class': 'select_div'})
         js_func = f'{select_id[:5]}_onChange'
@@ -121,21 +123,21 @@ class HtmlBuilder(object):
         # select
         select = self.new_tag('select', attrs={'id': select_id, 'class':self.__classes['select'], 'onchange':f'"{js_func}();"'})
         div.insert(0, select)
-        options = []
+        option_tags = []
         for idx, option in enumerate(options):
             opt_id = f'{hash[:5]}_option_{idx}_id'
             opt_val = f'{hash[:5]}_option_{idx}_val'
             opt_tag = self.new_tag('option', attrs={'id': opt_id, 'value': opt_val})
             opt_tag.text = option.option
             select.insert(idx, opt_tag)
-            options.append({'id': opt_id, 'tag': opt_tag, 'switch_case':
+            option_tags.append({'id': opt_id, 'tag': opt_tag, 'switch_case':
             f'''
                         case {opt_val}:
                             document.getElementById('{opt_id}').style.display = "";
             '''})
 
         display_all_none = []
-        for option in options:
+        for option in option_tags:
             display_all_none.append(f'''
                     document.getElementById('{option["id"]}').style.display = "none";
             ''')
@@ -151,12 +153,13 @@ class HtmlBuilder(object):
                     switch(opt_val) {{
                     {switch_case}
                 }}
-            window.onload = viewChange;
+            window.onload = {js_func};
             }}
         '''
         self.__javascript.append(js)
 
-        self.body.insert(idx, select)
+        self.body.insert(idx, h2)
+        self.body.insert(idx+1, div)
 
     def save(self, out_dir:PathLike):
         # save index.html
