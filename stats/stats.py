@@ -1,48 +1,70 @@
 from typing import List
-from collections import OrderedDict
+
 import numpy as np
 from bertopic import BERTopic
-
-from utils.utils import Lang, is_notebook
 from utils.tokenizers import WordTokenizer
+from utils.utils import Lang, is_notebook
 
 if is_notebook():
     from tqdm.notebook import tqdm
 else:
     import tqdm
 
+
 class Text(object):
-    def __init__(self, title:str, summary:str, keywords:List[str], pdf_url:str, authors:List[str], **kwargs):
-        self.title:str = title
-        self.summary:str = summary
-        self.keywords:List[str] = keywords
-        self.pdf_url:str = pdf_url
-        self.authors:List[str] = authors
+    def __init__(
+        self,
+        title: str,
+        summary: str,
+        keywords: List[str],
+        pdf_url: str,
+        authors: List[str],
+        **kwargs,
+    ):
+        self.title: str = title
+        self.summary: str = summary
+        self.keywords: List[str] = keywords
+        self.pdf_url: str = pdf_url
+        self.authors: List[str] = authors
         self.topic = -99
         self.prob = np.array([])
         for name, value in kwargs.items():
-            if hasattr(self, name) == False:
+            if not hasattr(self, name):
                 setattr(self, name, value)
+
     def __str__(self):
         return f'<Text {self.title[:10]}...>'
+
     def __repr__(self):
         return self.__str__()
 
-class DocStat(object):
-    def __init__(self):
-        self.topic_model = BERTopic(calculate_probabilities=True)
-        self.topic_model_attrs:dict = {}
-        self.tokenizer = WordTokenizer(language=Lang.ENGLISH, remove_stopwords=True, remove_punctuations=True, stemming=True, add_tag=True)
 
-    def __topic_model_preprocess(self, texts:List[str]) -> List[str]:
+class DocStat(object):
+    def __init__(self, dataset_name: str):
+        self.dataset_name = dataset_name
+        self.topic_model = BERTopic(calculate_probabilities=True)
+        self.topic_model_attrs: dict = {}
+        self.tokenizer = WordTokenizer(
+            language=Lang.ENGLISH,
+            remove_stopwords=True,
+            remove_punctuations=True,
+            stemming=True,
+            add_tag=True,
+        )
+
+    def __topic_model_preprocess(self, texts: List[str]) -> List[str]:
         '''extract only Noun words'''
         words = [self.tokenizer.tokenize(text) for text in tqdm(texts)]
-        texts = [' '.join([word[0] for word in word_list if word[1].startswith('N')]) for word_list in words]
+        texts = [
+            ' '.join([word[0] for word in word_list if word[1].startswith('N')])
+            for word_list in words
+        ]
         return texts
 
-    def analyze(self, texts:List[Text]):
+    def analyze(self, texts: List[Text]):
         with tqdm(total=2, desc='analyzing...', leave=False) as progress:
-            def update_progress(desc_text:str):
+
+            def update_progress(desc_text: str):
                 progress.update(1)
                 progress.set_description(desc_text)
 
@@ -59,7 +81,9 @@ class DocStat(object):
 
             # Topics per Class
             keywords = [text.keywords[0] for text in texts]
-            topics_per_class = self.topic_model.topics_per_class(texts_for_tp, topics, classes=keywords)
+            topics_per_class = self.topic_model.topics_per_class(
+                texts_for_tp, topics, classes=keywords
+            )
             self.topic_model_attrs['topics_per_class'] = topics_per_class
 
             for topic, text, prob in zip(topics, texts, probs):
