@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List
 
 from stats.stats import DocStat, Text
+
 from utils.utils import is_notebook
 
 if is_notebook():
@@ -30,10 +31,11 @@ class Report(object):
             out_dir.mkdir(parents=True, exist_ok=True)
 
             # Topic Model
+            topic_model_out_dir = out_dir / 'topic_model'
             # 2. intertopic Distance Map
             update_progress('Reporting: Topic Model - Intertopic Distance Map')
             fig = self.stats.topic_model.visualize_topics()
-            html_dir = out_dir / 'intertopic_distance_map'
+            html_dir = topic_model_out_dir / 'intertopic_distance_map'
             html_dir.mkdir(parents=True, exist_ok=True)
             with open(html_dir / 'report.html', mode='wt', encoding='utf-8') as wf:
                 wf.write(fig.to_html())
@@ -41,7 +43,7 @@ class Report(object):
             # 3. Hierarchical Clustering
             update_progress('Reporting: Topic Model - Hierarchical Clustering')
             fig = self.stats.topic_model.visualize_hierarchy()
-            html_dir = out_dir / 'hierarchical_clustering'
+            html_dir = topic_model_out_dir / 'hierarchical_clustering'
             html_dir.mkdir(parents=True, exist_ok=True)
             with open(html_dir / 'report.html', mode='wt', encoding='utf-8') as wf:
                 wf.write(fig.to_html())
@@ -51,7 +53,7 @@ class Report(object):
             fig = self.stats.topic_model.visualize_barchart(
                 top_n_topics=len(self.stats.topic_model.topics), n_words=8, width=300
             )
-            html_dir = out_dir / 'barchart'
+            html_dir = topic_model_out_dir / 'barchart'
             html_dir.mkdir(parents=True, exist_ok=True)
             with open(html_dir / 'report.html', mode='wt', encoding='utf-8') as wf:
                 wf.write(fig.to_html())
@@ -59,7 +61,7 @@ class Report(object):
             # 5. Similarity Matrix
             update_progress('Reporting: Topic Model - Similarity Matrix')
             fig = self.stats.topic_model.visualize_heatmap()
-            html_dir = out_dir / 'similarity_matrix'
+            html_dir = topic_model_out_dir / 'similarity_matrix'
             html_dir.mkdir(parents=True, exist_ok=True)
             with open(html_dir / 'report.html', mode='wt', encoding='utf-8') as wf:
                 wf.write(fig.to_html())
@@ -69,14 +71,14 @@ class Report(object):
             fig = self.stats.topic_model.visualize_topics_per_class(
                 self.stats.topic_model_attrs['topics_per_class'], top_n_topics=50
             )
-            html_dir = out_dir / 'topics_per_class'
+            html_dir = topic_model_out_dir / 'topics_per_class'
             html_dir.mkdir(parents=True, exist_ok=True)
             with open(html_dir / 'report.html', mode='wt', encoding='utf-8') as wf:
                 wf.write(fig.to_html())
 
             # 7. Topic Probability Distribution
             update_progress('Reporting: Topic Model - Topic Probability Distribution')
-            prob_dist_dir = out_dir / 'topic_model_prob_dist'
+            prob_dist_dir = topic_model_out_dir / 'topic_model_prob_dist'
             prob_dist_dir.mkdir(parents=True, exist_ok=True)
             for idx, text in enumerate(
                 tqdm(
