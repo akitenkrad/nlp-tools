@@ -12,8 +12,6 @@ from os import PathLike
 from pathlib import Path
 from subprocess import CalledProcessError
 from typing import Any
-from wordcloud import WordCloud, STOPWORDS
-from PIL import Image
 
 import cpuinfo
 import nltk
@@ -22,7 +20,9 @@ import torch
 import yaml
 from attrdict import AttrDict
 from colorama import Fore, Style
+from PIL import Image
 from torchinfo import summary
+from wordcloud import STOPWORDS, WordCloud
 
 from utils.logger import get_logger, kill_logger
 
@@ -100,12 +100,10 @@ class Config(object):
             "cuda" if torch.cuda.is_available() else "cpu"
         )
         self.__config__["log"]["log_dir"] = (
-            Path(self.__config__["log"]["log_dir"])
-            / f"{self.__config__['train']['exp_name']}_{self.__config__['timestamp'].strftime('%Y%m%d%H%M%S')}"
+            Path(self.__config__["log"]["log_dir"]) / f"{self.__config__['train']['exp_name']}_{self.__config__['timestamp'].strftime('%Y%m%d%H%M%S')}"
         )
         self.__config__["log"]["log_file"] = (
-            Path(self.__config__["log"]["log_dir"])
-            / self.__config__["log"]["log_filename"]
+            Path(self.__config__["log"]["log_dir"]) / self.__config__["log"]["log_filename"]
         )
         self.__config__["weights"]["log_weights_dir"] = str(
             Path(self.__config__["log"]["log_dir"]) / "weights"
@@ -117,8 +115,7 @@ class Config(object):
             self.__config__["data"]["cache_path"]
         )
         self.__config__["backup"]["backup_dir"] = (
-            Path(self.__config__["backup"]["backup_dir"])
-            / Path(self.__config__["log"]["log_dir"]).name
+            Path(self.__config__["backup"]["backup_dir"]) / Path(self.__config__["log"]["log_dir"]).name
         )
         self.__config__["log"]["loggers"] = {}
 
@@ -271,7 +268,7 @@ def download(url: str, filepath: PathLike):
     print(Style.RESET_ALL, end="")
 
 
-def word_cloud(input_text: str, out_path: PathLike, mask_path: PathLike = ""):
+def word_cloud(input_text: str, out_path: PathLike, mask_path: PathLike = None):
     mask = get_mask(mask_path)
 
     wc = WordCloud(
@@ -287,8 +284,8 @@ def word_cloud(input_text: str, out_path: PathLike, mask_path: PathLike = ""):
     wc.to_file(str(out_path))
 
 
-def get_mask(mask_path: PathLike = "") -> np.ndarray:
-    if mask_path == "":
+def get_mask(mask_path: PathLike = None) -> np.ndarray:
+    if mask_path is None:
         mask_dir = Path(__file__).parent / "resources/mask_images"
         mask_files = [Path(f) for f in glob(str(mask_dir / "*.png"))]
         mask_path = random.choice(mask_files)
