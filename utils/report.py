@@ -1,4 +1,5 @@
 from os import PathLike
+import json
 from pathlib import Path
 from typing import List
 
@@ -24,6 +25,11 @@ class Report(object):
             def update_progress(text: str):
                 progress.update(1)
                 progress.set_description(text)
+
+            meta_json = {
+                'dataset_name': self.stats.dataset_name,
+                'topic_prob_dist': []
+            }
 
             # 1. prepare directory
             update_progress('Reporting: Prepare Directory...')
@@ -93,3 +99,7 @@ class Report(object):
                 path = prob_dist_dir / f'report_{idx:08d}.html'
                 with open(path, mode='wt', encoding='utf-8') as wf:
                     wf.write(fig.to_html())
+                meta_json['topic_prob_dist'].append({'text': text.title, 'value': path.name})
+
+            # save meta data
+            json.dump(meta_json, open(topic_model_out_dir / 'meta.json', mode='wt', encoding='utf-8'), ensure_ascii=False, indent=2)

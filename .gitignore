@@ -134,3 +134,4 @@ __cache__
 weights
 outputs
 .empty
+reports/apps/dataset_report/static/reports/
