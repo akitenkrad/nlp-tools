@@ -104,7 +104,7 @@ class Report(object):
                 path = prob_dist_dir / f'report_{idx:08d}.html'
                 with open(path, mode='wt', encoding='utf-8') as wf:
                     wf.write(fig.to_html())
-                meta_json['topic_prob_dist'].append({'text': text.title, 'value': path.name, 'width': fig.leyout.width, 'height': fig.layout.height})
+                meta_json['topic_prob_dist'].append({'text': text.title, 'value': path.name, 'width': fig.layout.width, 'height': fig.layout.height})
 
             # save meta data
             json.dump(meta_json, open(out_dir / 'meta.json', mode='wt', encoding='utf-8'), ensure_ascii=False, indent=2)
