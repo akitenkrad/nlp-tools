@@ -3,7 +3,6 @@
 h2.report-h2 {
     position: relative;
     overflow: hidden;
-    margin-top: 3rem;
     padding: 1.5rem 2rem 1.5rem 130px;
     border-bottom: 3px solid rgb(40, 40, 40);
   }
