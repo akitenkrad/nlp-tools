@@ -28,7 +28,9 @@ class Report(object):
 
             meta_json = {
                 'dataset_name': self.stats.dataset_name,
-                'topic_prob_dist': []
+                'topic_model': {
+                    'topic_prob_dist': [],
+                }
             }
 
             # 1. prepare directory
@@ -45,7 +47,7 @@ class Report(object):
             html_dir.mkdir(parents=True, exist_ok=True)
             with open(html_dir / 'report.html', mode='wt', encoding='utf-8') as wf:
                 wf.write(fig.to_html())
-            meta_json['intertopic_distance_map'] = {'width': fig.layout.width, 'height': fig.layout.height}
+            meta_json['topic_model']['intertopic_distance_map'] = {'width': fig.layout.width, 'height': fig.layout.height}
 
             # 3. Hierarchical Clustering
             update_progress('Reporting: Topic Model - Hierarchical Clustering')
@@ -54,7 +56,7 @@ class Report(object):
             html_dir.mkdir(parents=True, exist_ok=True)
             with open(html_dir / 'report.html', mode='wt', encoding='utf-8') as wf:
                 wf.write(fig.to_html())
-            meta_json['hierarchical_clustering'] = {'width': fig.layout.width, 'height': fig.layout.height}
+            meta_json['topic_model']['hierarchical_clustering'] = {'width': fig.layout.width, 'height': fig.layout.height}
 
             # 4. BarChart
             update_progress('Reporting: Topic Model - BarChart')
@@ -65,7 +67,7 @@ class Report(object):
             html_dir.mkdir(parents=True, exist_ok=True)
             with open(html_dir / 'report.html', mode='wt', encoding='utf-8') as wf:
                 wf.write(fig.to_html())
-            meta_json['barchart'] = {'width': fig.layout.width, 'height': fig.layout.height}
+            meta_json['topic_model']['barchart'] = {'width': fig.layout.width, 'height': fig.layout.height}
 
             # 5. Similarity Matrix
             update_progress('Reporting: Topic Model - Similarity Matrix')
@@ -74,7 +76,7 @@ class Report(object):
             html_dir.mkdir(parents=True, exist_ok=True)
             with open(html_dir / 'report.html', mode='wt', encoding='utf-8') as wf:
                 wf.write(fig.to_html())
-            meta_json['similarity_matrix'] = {'width': fig.layout.width, 'height': fig.layout.height}
+            meta_json['topic_model']['similarity_matrix'] = {'width': fig.layout.width, 'height': fig.layout.height}
 
             # 6. Topics Per Cpass
             update_progress('Reporting: Topic Model - Topics per Class')
@@ -85,7 +87,7 @@ class Report(object):
             html_dir.mkdir(parents=True, exist_ok=True)
             with open(html_dir / 'report.html', mode='wt', encoding='utf-8') as wf:
                 wf.write(fig.to_html())
-            meta_json['topics_per_class'] = {'width': fig.layout.width, 'height': fig.layout.height}
+            meta_json['topic_model']['topics_per_class'] = {'width': fig.layout.width, 'height': fig.layout.height}
 
             # 7. Topic Probability Distribution
             update_progress('Reporting: Topic Model - Topic Probability Distribution')
@@ -104,7 +106,7 @@ class Report(object):
                 path = prob_dist_dir / f'report_{idx:08d}.html'
                 with open(path, mode='wt', encoding='utf-8') as wf:
                     wf.write(fig.to_html())
-                meta_json['topic_prob_dist'].append({'text': text.title, 'value': path.name, 'width': fig.layout.width, 'height': fig.layout.height})
+                meta_json['topic_model']['topic_prob_dist'].append({'text': text.title, 'value': path.name, 'width': fig.layout.width, 'height': fig.layout.height})
 
             # save meta data
             json.dump(meta_json, open(out_dir / 'meta.json', mode='wt', encoding='utf-8'), ensure_ascii=False, indent=2)
