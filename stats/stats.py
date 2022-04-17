@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 import numpy as np
 from bertopic import BERTopic
@@ -42,7 +42,7 @@ class Text(object):
 class DocStat(object):
     def __init__(self, dataset_name: str):
         self.dataset_name = dataset_name
-        self.topic_model = BERTopic(calculate_probabilities=True)
+        self.topic_model: BERTopic = BERTopic(calculate_probabilities=True)
         self.topic_model_attrs: dict = {}
         self.tokenizer = WordTokenizer(
             language=Lang.ENGLISH,
@@ -60,6 +60,13 @@ class DocStat(object):
             for word_list in words
         ]
         return texts
+
+    @property
+    def topics(self) -> dict:
+        names = self.topic_model.topic_names
+        sizes = self.topic_model.topic_sizes
+        res = {index: {'name': name, 'size': size} for (index, name), size in zip(names.items(), sizes.values())}
+        return res
 
     def analyze(self, texts: List[Text]):
         with tqdm(total=2, desc='analyzing...', leave=False) as progress:
@@ -90,3 +97,9 @@ class DocStat(object):
                 text.topic = topic
                 text.prob = prob
             self.topic_model_attrs['texts'] = texts
+
+    def get_topic(self, text: Text) -> Dict[int, float]:
+        topics = {idx: 0.0 for idx in self.topics.keys()}
+        for topic, prob in self.topic_model.get_topics(text.title + '\n' + text.summary):
+            topics[topic] = prob
+        return topics
