@@ -101,6 +101,7 @@ class DocStat(object):
 
     def get_topic(self, text: Text) -> Dict[int, float]:
         topics = {idx: 0.0 for idx in self.topics.keys()}
-        for topic, prob in self.topic_model.find_topics(text.title + '\n' + text.summary):
+        _topics, _probs = self.topic_model.find_topics(text.title + '\n' + text.summary)
+        for topic, prob in zip(_topics, _probs):
             topics[topic] = prob
         return topics
