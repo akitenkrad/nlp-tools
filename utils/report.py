@@ -93,20 +93,19 @@ class Report(object):
             update_progress('Reporting: Topic Model - Topic Probability Distribution')
             prob_dist_dir = topic_model_out_dir / 'topic_model_prob_dist'
             prob_dist_dir.mkdir(parents=True, exist_ok=True)
-            for idx, text in enumerate(
-                tqdm(
-                    self.stats.topic_model_attrs['texts'],
-                    desc='Reporting Topic Prob Dist...',
-                    leave=False,
-                )
-            ):
-                fig = self.stats.topic_model.visualize_distribution(
-                    text.prob, min_probability=0.001
-                )
+            for idx, text in enumerate(tqdm(self.stats.topic_model_attrs['texts'], desc='Reporting Topic Prob Dist...', leave=False)):
+                fig = self.stats.topic_model.visualize_distribution(text.prob, min_probability=0.001)
                 path = prob_dist_dir / f'report_{idx:08d}.html'
                 with open(path, mode='wt', encoding='utf-8') as wf:
                     wf.write(fig.to_html())
-                meta_json['topic_model']['topic_prob_dist'].append({'text': text.title, 'value': path.name, 'width': fig.layout.width, 'height': fig.layout.height})
+                topics = self.stats.get_topic(text)
+                meta_json['topic_model']['topic_prob_dist'].append({
+                    'title': text.title,
+                    'htmlfile': path.name,
+                    'topics': topics,
+                    'width': fig.layout.width,
+                    'height': fig.layout.height
+                })
 
             # save meta data
             json.dump(meta_json, open(out_dir / 'meta.json', mode='wt', encoding='utf-8'), ensure_ascii=False, indent=2)

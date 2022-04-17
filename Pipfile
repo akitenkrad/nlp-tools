@@ -1,0 +1,47 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+attrdict = "*"
+click = "*"
+colorama = "*"
+ipython = "*"
+nltk = "*"
+numpy = "*"
+pandas = "*"
+progressbar = "*"
+py-cpuinfo = "*"
+python-dateutil = "*"
+requests = "*"
+scikit-learn = "*"
+scipy = "*"
+sentence-transformers = "*"
+tensorboard = "*"
+torch = "*"
+torchinfo = "*"
+torchtext = "*"
+tqdm = "*"
+transformers = "*"
+typing-extensions = "*"
+bertopic = "*"
+beautifulsoup4 = "*"
+wordcloud = "*"
+flake8 = "*"
+black = "*"
+isort = "*"
+mypy = "*"
+python-dotenv = "*"
+daal = "*"
+PyYAML = "*"
+types-PyYAML = "*"
+PyQt5 = "<5.13"
+PyQtWebEngine = "*"
+"ruamel.yaml" = "*"
+flask = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
