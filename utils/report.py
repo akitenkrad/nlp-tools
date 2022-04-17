@@ -29,6 +29,7 @@ class Report(object):
             meta_json = {
                 'dataset_name': self.stats.dataset_name,
                 'topic_model': {
+                    'topics': self.stats.topics,
                     'topic_prob_dist': [],
                 }
             }

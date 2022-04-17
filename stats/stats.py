@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 import numpy as np
 from bertopic import BERTopic
@@ -63,9 +63,10 @@ class DocStat(object):
 
     @property
     def topics(self) -> dict:
-        names = self.topic_model.topic_names
-        sizes = self.topic_model.topic_sizes
-        res = {index: {'name': name, 'size': size} for (index, name), size in zip(names.items(), sizes.values())}
+        names: Dict[int, str] = self.topic_model.topic_names
+        sizes: Dict[int, int] = self.topic_model.topic_sizes
+        all_topics: Dict[int, List[Tuple[str, float]]] = self.topic_model.get_topics()
+        res = {index: {'name': name, 'size': size, 'top_n_words': n_words} for (index, name), size, n_words in zip(names.items(), sizes.values(), all_topics.values())}
         return res
 
     def analyze(self, texts: List[Text]):
@@ -100,6 +101,6 @@ class DocStat(object):
 
     def get_topic(self, text: Text) -> Dict[int, float]:
         topics = {idx: 0.0 for idx in self.topics.keys()}
-        for topic, prob in self.topic_model.get_topics(text.title + '\n' + text.summary):
+        for topic, prob in self.topic_model.find_topics(text.title + '\n' + text.summary):
             topics[topic] = prob
         return topics
