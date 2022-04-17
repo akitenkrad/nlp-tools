@@ -1,0 +1,80 @@
+{% extends "dataset_report/base.j2" %}
+{% block title %}Dataset Report{% endblock %}
+{% block content %}
+<h2 class="report-h2">Intertopic Distance Map</h2>
+<iframe src="{{ url_for('dataset_report.static', filename=intertopic_distance_map['name'])}}"
+    style="width:{{intertopic_distance_map['width']}}px; height:{{intertopic_distance_map['height']}}px;"
+    target="_blank">
+</iframe>
+
+<h2 class="report-h2">Hierarchical Clustering</h2>
+<iframe src="{{ url_for('dataset_report.static', filename=hierarchical_clustering['name'])}}"
+    style="width:{{hierarchical_clustering['width']}}px; height:{{hierarchical_clustering['height']}}px;"
+    target="_blank">
+</iframe>
+
+<h2 class="report-h2">Topic Word Score</h2>
+<iframe src="{{ url_for('dataset_report.static', filename=topic_word_score['name'])}}"
+    style="width:{{topic_word_score['width']}}px; height:{{topic_word_score['height']}}px;"
+    target="_blank">
+</iframe>
+
+<h2 class="report-h2">Similarity Matrix</h2>
+<iframe src="{{ url_for('dataset_report.static', filename=similarity_matrix['name'])}}"
+    style="width:{{similarity_matrix['width']}}px; height:{{similarity_matrix['height']}}px;"
+    target="_blank">
+</iframe>
+
+<h2 class="report-h2">Topics per Class</h2>
+<iframe src="{{ url_for('dataset_report.static', filename=topics_per_class['name'])}}"
+    style="width:1300px; height:950px;"
+    target="_blank">
+</iframe>
+
+<h2 class="report-h2">Topic Probability Distribution</h2>
+<div class="topic-prob-dist-div">
+    <div class="container">
+        <div class="row">
+            <div class="col-3">
+                <div class="dropdown" id="report-topicmodel-topicprobdist-tp-div">
+                    <button class="btn btn-default dropdown-toggle" type="button" id="report-topicmodel-topicprobdist-tp-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        Topics
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="report-topicmodel-topicprobdist-tp-btn">
+
+                    </ul>
+                </div>
+            </div>
+            <div class="col-9">
+                <input id="report-topicmodel-topicprobdist-kw" placeholder="Keywords..." type="search" class="form-control"/>
+            </div>
+        </div>
+    </div>
+    <ul id="selected-report-topicmodel-topicprobdist"></ul>
+</div>
+
+
+<script type='text/javascript'>
+// Topic Probability Distribution
+let topic_prob_dist = {{topic_prob_dist | tojson}}
+$(function() {
+    $(document).on('input', '#report-topicmodel-topicprobdist-kw', function() {
+        let input_box = $('#report-topicmodel-topicprobdist-kw')
+        let text = input_box.val();
+        console.log(text);
+        let selected_topics = topic_prob_dist.filter(topic => topic.title.includes(text));
+        if (selected_topics.length > 0) {
+            let ul = $('#selected-report-topicmodel-topicprobdist');
+            ul.empty();
+            selected_topics.slice(0, 10).forEach(function(topic) {
+                let li = $('<li></li>');
+                li.text(topic.title);
+                ul.append(li)
+            });
+        };
+    });
+});
+</script>
+
+{% endblock %}
