@@ -16,20 +16,20 @@ lr_finder:
     beta: 0.98
 
 data:
-    data_path: /workplace/pynlp-classifier/data
-    cache_path: /workplace/pynlp-classifier/__cache__
+    data_path: /workplace/data
+    cache_path: /workplace/__cache__
 
 weights:
-    global_weights_dir: /workplace/pynlp-classifier/weights
-    log_weights_dir: /workplace/pynlp-classifier/logs # to be set in utils/utils.py
+    global_weights_dir: /workplace/weights
+    log_weights_dir: /workplace/logs # to be set in utils/utils.py
 
 log:
-    log_dir: /workplace/pynlp-classifier/logs
+    log_dir: /workplace/logs
     log_filename: system.log
 
 output:
-    out_dir: /workplace/pynlp-classifier/outputs
+    out_dir: /workplace/outputs
 
 backup:
     backup: False
-    backup_dir: /workplace/pynlp-classifier/backup
+    backup_dir: /workplace/backup

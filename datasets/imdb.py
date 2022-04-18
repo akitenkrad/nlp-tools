@@ -1,29 +1,30 @@
-from typing import Tuple, Dict
-from os import PathLike
-from pathlib import Path
+import tarfile
 from collections import namedtuple
 from glob import glob
-import tarfile
-from sklearn.model_selection import train_test_split
+from os import PathLike
+from pathlib import Path
+from typing import Dict, List, Tuple
 
-from utils.utils import Phase, Config, download
 from embeddings.base import Embedding
+from sklearn.model_selection import train_test_split
+from utils.utils import Config, Phase, download
+
 from datasets.base import BaseDataset
 
 ImdbItem = namedtuple('ImdbItem', ('filepath', 'label'))
 ImdbDs = Dict[int, ImdbItem]
 
+
 class ImdbDataset(BaseDataset):
-    def __init__(self, config:Config, embedding:Embedding):
+    def __init__(self, config: Config, embedding: Embedding):
         super().__init__(config, Phase.TRAIN)
         self.embedding = embedding
         self.n_class = 2
 
-        self.train_data, self.test_data = self.__load_data__(self.dataset_path)
-        self.valid_data = self.train_data
+        self.train_data, self.valid_data, self.test_data = self.__load_data__(self.dataset_path)
         self.dev_data = {idx: self.train_data[idx] for idx in range(1000)}
 
-    def __load_data__(self, dataset_path:Path) -> Tuple[ImdbDs, ImdbDs, ImdbDs]:
+    def __load_data__(self, dataset_path: Path) -> Tuple[ImdbDs, ImdbDs, ImdbDs]:
         '''load imdb corpus dataset
         download tar.gz file if dataset does not exist
 
@@ -42,28 +43,31 @@ class ImdbDataset(BaseDataset):
 
             with tarfile.open(dataset_path / 'aclImdb_v1.tar.gz', 'r:gz') as tar:
                 tar.extractall(path=str(dataset_path / 'imdb'))
-        
+
         train_pos_files = [Path(f) for f in glob(str(dataset_path / 'imdb' / 'aclImdb' / 'train' / 'pos' / '*.txt'))]
         train_neg_files = [Path(f) for f in glob(str(dataset_path / 'imdb' / 'aclImdb' / 'train' / 'neg' / '*.txt'))]
         test_pos_files = [Path(f) for f in glob(str(dataset_path / 'imdb' / 'aclImdb' / 'test' / 'pos' / '*.txt'))]
         test_neg_files = [Path(f) for f in glob(str(dataset_path / 'imdb' / 'aclImdb' / 'test' / 'neg' / '*.txt'))]
 
-        train_data = []
-        train_data += [ImdbItem(p, 1) for p in train_pos_files]
-        train_data += [ImdbItem(p, 0) for p in train_neg_files]
+        train_data_pos = [ImdbItem(p, 1) for p in train_pos_files]
+        train_data_neg = [ImdbItem(p, 0) for p in train_neg_files]
+        train_data_pos, valid_data_pos = train_test_split(train_data_pos, test_size=self.config.train.valid_size)
+        train_data_neg, valid_data_neg = train_test_split(train_data_neg, test_size=self.config.train.valid_size)
+        train_data: List[ImdbItem] = train_data_pos + train_data_neg
+        valid_data: List[ImdbItem] = valid_data_pos + valid_data_neg
 
-        test_data = []
-        test_data += [ImdbItem(p, 1) for p in test_pos_files]
-        test_data += [ImdbItem(p, 0) for p in test_neg_files]
+        test_data_pos = [ImdbItem(p, 1) for p in test_pos_files]
+        test_data_neg = [ImdbItem(p, 0) for p in test_neg_files]
+        test_data: List[ImdbItem] = test_data_pos + test_data_neg
 
         # list -> dict
-        train_data = {idx: item for idx, item in enumerate(train_data)}
-        test_data = {idx: item for idx, item in enumerate(test_data)}
+        train_dict = {idx: item for idx, item in enumerate(train_data)}
+        valid_dict = {idx: item for idx, item in enumerate(valid_data)}
+        test_dict = {idx: item for idx, item in enumerate(test_data)}
 
-        return train_data, test_data
+        return train_dict, valid_dict, test_dict
 
-    def __load_text__(self, path:PathLike) -> str:
-        path: Path = Path(path)
+    def __load_text__(self, path: PathLike) -> str:
         text = open(path, 'rt').read().strip()
         return text
 

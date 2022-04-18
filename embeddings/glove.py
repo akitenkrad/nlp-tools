@@ -1,17 +1,19 @@
-from typing import List
-from pathlib import Path
 import pickle
-from tqdm import tqdm
-from enum import Enum
-from collections import namedtuple
-import numpy as np
 import zipfile
+from collections import namedtuple
+from enum import Enum
+from pathlib import Path
+from typing import List, Union
 
-from utils.utils import download, Config
-from utils.tokenizers import WordTokenizer
+import numpy as np
+from tqdm import tqdm
+from utils.tokenizers import CharTokenizer, WordTokenizer
+from utils.utils import Config, download
+
 from embeddings.base import Embedding
 
-GloVeInfo = namedtuple('GloveInfo', ('filename', 'zipname', 'embedding_dim'))
+GloVeInfo = namedtuple('GloVeInfo', ('filename', 'zipname', 'embedding_dim'))
+
 
 class GloVeType(Enum):
     B6_D50 = GloVeInfo('glove.6B.50d.txt', 'glove.6B.zip', 50)
@@ -25,17 +27,19 @@ class GloVeType(Enum):
     B27_Twitter_D100 = GloVeInfo('glove.twitter.27B.100d.txt', 'glove.twitter.27B.zip', 100)
     B27_Twitter_D200 = GloVeInfo('glove.twitter.27B.200d.txt', 'glove.twitter.27B.zip', 200)
 
+
 class GloVe(Embedding):
 
-    def __init__(self, config:Config, glove_type:GloVeType, max_sent_len=-1, no_cache:bool=False):
+    def __init__(self, config: Config, glove_type: GloVeType, max_sent_len=-1, max_word_len=-1, no_cache=False):
         self.config = config
         self.config.add_logger('glove_log')
         self.glove_type: GloVeType = glove_type
-        self.weights_path = Path(config.weights.global_weights_dir) / 'glove'
-        self.tokenizer = WordTokenizer(pad='padding', max_sent_len=max_sent_len)
+        self.weights_path: Path = Path(config.weights.global_weights_dir) / 'glove'
+        self.word_tokenizer: WordTokenizer = WordTokenizer(pad='padding', max_sent_len=max_sent_len)
+        self.char_tokenizer: CharTokenizer = CharTokenizer(pad='padding', max_sent_len=max_sent_len, max_word_len=max_word_len)
 
         self.__vectors, self.__words, self.__word2idx = self.__load_glove__(no_cache)
-        self.__idx2word = {i:w for w, i in self.__word2idx.items()}
+        self.__idx2word = {i: w for w, i in self.__word2idx.items()}
 
     @property
     def embedding_dim(self) -> int:
@@ -45,8 +49,11 @@ class GloVe(Embedding):
     def tokens(self) -> List[str]:
         return self.__words
 
-    def tokenize(self, text:str) -> List[str]:
-        return self.tokenizer.tokenize(text, ex_punc=True)
+    def word_tokenize(self, text: str) -> List[str]:
+        return self.word_tokenizer.tokenize(text)
+
+    def char_tokenize(self, text: str) -> List[List[str]]:
+        return self.char_tokenizer.tokenize(text)
 
     def index2token(self, index: int) -> str:
         if index not in self.__idx2word:
@@ -60,13 +67,19 @@ class GloVe(Embedding):
         else:
             return self.__word2idx[token]
 
-    def embed(self, input_text:str) -> np.ndarray:
-        tokens = self.tokenize(input_text)
-        indices = [self.token2index(token) for token in tokens]
-        embed_vector = np.array([self.__vectors[idx] for idx in indices])
+    def word_embed(self, input_text: str) -> np.ndarray:
+        tokens: List[str] = self.word_tokenize(input_text)
+        indices: List[int] = [self.token2index(token) for token in tokens]
+        embed_vector: np.ndarray = np.array([self.__vectors[idx] for idx in indices])
         return embed_vector
 
-    def __load_glove__(self, no_cache:bool=False):
+    def char_embed(self, input_text: str) -> List[np.ndarray]:
+        words: List[List[str]] = self.char_tokenize(input_text)
+        indices: List[List[int]] = [[self.token2index(token) for token in word] for word in words]
+        embed_vector: List[np.ndarray] = [np.array([self.__vectors[idx] for idx in index]) for index in indices]
+        return embed_vector
+
+    def __load_glove__(self, no_cache=False):
         '''load pretrained glove from http://nlp.stanford.edu
 
         Args:
@@ -92,7 +105,7 @@ class GloVe(Embedding):
         word2idx_cache = cache_dir / f'glove.{tokens}.{dim}_word2idx.pickle'
         cache_dir.mkdir(parents=True, exist_ok=True)
 
-        if no_cache == False and vector_cache.exists() and words_cache.exists() and word2idx_cache.exists():
+        if not no_cache and vector_cache.exists() and words_cache.exists() and word2idx_cache.exists():
             self.config.log.glove_log.info('restore weights from cache.')
             vectors = pickle.load(open(str(vector_cache), 'rb'))
             words = pickle.load(open(str(words_cache), 'rb'))
@@ -111,15 +124,15 @@ class GloVe(Embedding):
                     f.seek(0)
 
                     # load weights
-                    for l in tqdm(f, desc='loading glove weights', total=f_len, leave=False):
-                        line = [i.strip() for i in l.strip().split()]
+                    for _line in tqdm(f, desc='loading glove weights', total=f_len, leave=False):
+                        line = [i.strip() for i in _line.strip().split()]
                         word = line[0].decode('utf-8')
                         words.append(word)
                         word2idx[word] = idx
-                        idx += 1         
+                        idx += 1
                         vect = np.array(line[1:]).astype(np.float)
                         vectors.append(vect)
-                
+
                 # for unknown token
                 vectors.append(np.mean(vectors, axis=0))
                 words.append('unknonw')
@@ -137,7 +150,7 @@ class GloVe(Embedding):
 
     def get_weights_matrix(self) -> np.ndarray:
         '''load pretrained glove weights matrix from
-    
+
         Returns:
             weights matrix: np.ndarray (vocab_size, embedding_dim)
         '''

@@ -35,6 +35,7 @@ PyQt5 = "*"
 PyQtWebEngine = "*"
 "ruamel.yaml" = "*"
 flask = "*"
+types-requests = "*"
 
 [dev-packages]
 daal = "*"
