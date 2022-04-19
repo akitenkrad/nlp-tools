@@ -112,7 +112,7 @@ class EvidenceExtractorLayer(nn.Module):
 
             gs = torch.vstack(_gs).unsqueeze(0)  # (1, m, 2 * h)
             v_p, _ = self.gru1(gs)
-            v_ps.append(v_p)
+            v_ps.append(v_p.squeeze())
 
         # Pointer Network
         # 1. predict start point
@@ -123,8 +123,12 @@ class EvidenceExtractorLayer(nn.Module):
         a = torch.softmax(torch.vstack(_s), dim=-1)
         r_q = torch.einsum('m, mh -> h', a.squeeze(), u_q)
 
-        s = self.v.T.mm(torch.tanh(self.w_h_p.mm(torch.cat(v_ps, dim=0)) + self.w_h_a.mm(r_q)))
-        a_1 = torch.softmax(s, dim=-1)
+        _s = []
+        for v_p in v_ps:
+            for v_p_t in v_p:
+                s_t = self.v.T.mm(torch.tanh(self.w_h_p.mm(v_p_t.unsqueeze(-1)) + self.w_h_a.mm(r_q)))
+                _s.append(s_t)
+        a_1 = torch.softmax(torch.vstack(_s), dim=-1)
         p_1 = torch.argmax(a_1.squeeze())
 
         # 2. predict end point
@@ -132,17 +136,24 @@ class EvidenceExtractorLayer(nn.Module):
         _, h_t_a = self.gru2(c.reshape(1, 1, -1), r_q.reshape(2, 1, -1))
         h_t_a = h_t_a.reshape(1, 1, -1).squeeze()
 
-        s = self.v.T.mm(torch.tanh(self.w_h_p.mm(torch.cat(v_ps, dim=0)) + self.w_h_a.mm(h_t_a)))
-        a_2 = F.softmax(s.squeeze(), dim=0)
+        _s = []
+        for v_p in v_ps:
+            for v_p_t in v_p:
+                s_t = self.v.T.mm(torch.tanh(self.w_h_p.mm(v_p_t.unsqueeze(-1)) + self.w_h_a.mm(h_t_a)))
+                _s.append(s_t)
+        a_2 = F.softmax(torch.vstack(_s), dim=0)
         p_2 = torch.argmax(a_2)
 
         # 3. Passage Ranking
         _gs = []
         for v_p in v_ps:
-            s = self.v.T.mm(torch.tanh(self.w_v_p.mm(v_p) + self.w_v_q.mm(r_q)))
-            a = torch.softmax(s.squeeze(), dim=0)
-            r_p = torch.einsum('m, mh -> h', a, v_p.squeeze())
-            g = self.v_g.T.mm(torch.tanh(self.w_g.mm(torch.cat([r_q, r_p]))))
+            _s = []
+            for v_p_t in v_p:
+                s_t = self.v.T.mm(torch.tanh(self.w_v_p.mm(v_p_t.unsqueeze(-1)) + self.w_v_q.mm(r_q)))
+                _s.append(s_t)
+            a = torch.softmax(torch.vstack(_s), dim=0)
+            r_p = torch.einsum('m, mh -> h', a, v_p)
+            g = self.v_g.T.mm(torch.tanh(self.w_g.mm(torch.cat([r_q, r_p]).unsqueeze(-1))))
             _gs.append(g)
         psg_ranks = torch.softmax(torch.stack(_gs).squeeze(), dim=0)
 
