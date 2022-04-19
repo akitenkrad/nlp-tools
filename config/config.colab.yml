@@ -16,20 +16,20 @@ lr_finder:
     beta: 0.98
 
 data:
-    data_path: /content/pynlp-classifier/data
-    cache_path: /content/drive/MyDrive/Cloud/Outputs/pynlp-classifier/__cache__
+    data_path: /content/nlp-tools/data
+    cache_path: /content/drive/MyDrive/Cloud/Outputs/nlp-tools/__cache__
 
 weights:
-    global_weights_dir: /content/drive/MyDrive/Cloud/Outputs/pynlp-classifier/weights
-    log_weights_dir: /content/drive/MyDrive/Cloud/Outputs/pynlp-classifier/logs # to be set in utils/utils.py
+    global_weights_dir: /content/drive/MyDrive/Cloud/Outputs/nlp-tools/weights
+    log_weights_dir: /content/drive/MyDrive/Cloud/Outputs/nlp-tools/logs # to be set in utils/utils.py
 
 log:
-    log_dir: /content/pynlp-classifier/logs
+    log_dir: /content/nlp-tools/logs
     log_filename: system.log
 
 output:
-    out_dir: /content/pynlp-classifier/outputs
+    out_dir: /content/nlp-tools/outputs
 
 backup:
     backup: True
-    backup_dir: /content/drive/MyDrive/Cloud/Outputs/pynlp-classifier/backup
+    backup_dir: /content/drive/MyDrive/Cloud/Outputs/nlp-tools/backup
