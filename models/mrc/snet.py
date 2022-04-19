@@ -74,8 +74,8 @@ class EvidenceExtractorLayer(nn.Module):
         self.v_r_q = nn.Parameter(torch.rand((self.embedding_dim, 1), dtype=torch.float32))
 
         self.w_g = nn.Parameter(torch.rand((self.embedding_dim * 2, self.embedding_dim * 2), dtype=torch.float32))
-        self.gru1 = nn.GRU(self.embedding_dim * 2, self.hidden_dim, 1, batch_first=True, bidirectional=True)
-        self.gru2 = nn.GRU(self.embedding_dim, self.hidden_dim, 1, batch_first=True, bidirectional=True)
+        self.gru1 = nn.GRU(self.embedding_dim * 2, self.hidden_dim, 1, batch_first=True, bidirectional=False)
+        self.gru2 = nn.GRU(self.embedding_dim, self.hidden_dim, 1, batch_first=True, bidirectional=False)
 
     def forward(self, u_q: Tensor, u_ps: List[Tensor]):
         '''
