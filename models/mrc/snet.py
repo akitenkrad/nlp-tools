@@ -126,7 +126,7 @@ class EvidenceExtractorLayer(nn.Module):
         _s = []
         for v_p in v_ps:
             for v_p_t in v_p:
-                s_t = self.v.T.mm(torch.tanh(self.w_h_p.mm(v_p_t.unsqueeze(-1)) + self.w_h_a.mm(r_q)))
+                s_t = self.v.T.mm(torch.tanh(self.w_h_p.mm(v_p_t.unsqueeze(-1)) + self.w_h_a.mm(r_q.unsqueeze(-1))))
                 _s.append(s_t)
         a_1 = torch.softmax(torch.vstack(_s), dim=-1)
         p_1 = torch.argmax(a_1.squeeze())
@@ -139,7 +139,7 @@ class EvidenceExtractorLayer(nn.Module):
         _s = []
         for v_p in v_ps:
             for v_p_t in v_p:
-                s_t = self.v.T.mm(torch.tanh(self.w_h_p.mm(v_p_t.unsqueeze(-1)) + self.w_h_a.mm(h_t_a)))
+                s_t = self.v.T.mm(torch.tanh(self.w_h_p.mm(v_p_t.unsqueeze(-1)) + self.w_h_a.mm(h_t_a.unsqueeze(-1))))
                 _s.append(s_t)
         a_2 = F.softmax(torch.vstack(_s), dim=0)
         p_2 = torch.argmax(a_2)
@@ -149,7 +149,7 @@ class EvidenceExtractorLayer(nn.Module):
         for v_p in v_ps:
             _s = []
             for v_p_t in v_p:
-                s_t = self.v.T.mm(torch.tanh(self.w_v_p.mm(v_p_t.unsqueeze(-1)) + self.w_v_q.mm(r_q)))
+                s_t = self.v.T.mm(torch.tanh(self.w_v_p.mm(v_p_t.unsqueeze(-1)) + self.w_v_q.mm(r_q.unsqueeze(-1))))
                 _s.append(s_t)
             a = torch.softmax(torch.vstack(_s), dim=0)
             r_p = torch.einsum('m, mh -> h', a, v_p)
