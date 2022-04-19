@@ -133,9 +133,9 @@ class EvidenceExtractorLayer(nn.Module):
 
         # 2. predict end point
         _c = []
-        for _a, v_p in zip(v_ps, a_1.squeeze()):
+        for v_p, _a in zip(v_ps, a_1.squeeze()):
             for v_p_t in v_p:
-                _c.append(a * v_p_t)
+                _c.append(_a * v_p_t)
         c = torch.vstack(_c)
         _, h_t_a = self.gru2(c.reshape(1, 1, -1), r_q.reshape(2, 1, -1))
         h_t_a = h_t_a.reshape(1, 1, -1).squeeze()
