@@ -98,11 +98,11 @@ class EvidenceExtractorLayer(nn.Module):
             for u_p_t in u_p:   # (h, )
 
                 # Attention Pooling (Rocktaschel et al., 2015)
-                s_t = []
+                _s_t = []
                 for u_q_j in u_q:   # (h, )
                     s_j = self.v.T.mm(torch.tanh(self.w_u_q * u_q_j + self.w_u_p * u_p_t))     # (h, )
-                    s_t.append(s_j)
-                a_i = torch.softmax(torch.vstack(s_t), dim=-1)    # (m, h)
+                    _s_t.append(s_j)
+                a_i = torch.softmax(torch.vstack(_s_t), dim=-1)    # (m, h)
                 c_q_t = torch.einsum('mh, mh -> h', a_i, u_q)   # (h, )
 
                 # Gated Self-Matching Networks (Wang et al., 2017)
@@ -116,8 +116,11 @@ class EvidenceExtractorLayer(nn.Module):
 
         # Pointer Network
         # 1. predict start point
-        s = self.v.T.mm(torch.tanh(self.w_u_q.mm(u_q) + self.w_v_q.mm(self.v_r_q)))
-        a = torch.softmax(s, dim=-1)
+        _s = []
+        for u_q_t in u_q:
+            s_t = self.v.T.mm(torch.tanh(self.w_u_q.mm(u_q_t.unsqueeze(-1)) + self.w_v_q.mm(self.v_r_q)))
+            _s.append(s_t.squeeze())
+        a = torch.softmax(torch.vstack(_s), dim=-1)
         r_q = torch.einsum('m, mh -> h', a.squeeze(), u_q)
 
         s = self.v.T.mm(torch.tanh(self.w_h_p.mm(torch.cat(v_ps, dim=0)) + self.w_h_a.mm(r_q)))
