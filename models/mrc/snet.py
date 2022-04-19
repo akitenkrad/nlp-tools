@@ -58,7 +58,7 @@ class SentenceEmbeddingLayer(nn.Module):
 
 
 class EvidenceExtractorLayer(nn.Module):
-    def __init__(self, embedding_dim, hidden_dim):
+    def __init__(self):
         super().__init__()
         self.embedding_dim = 300
         self.hidden_dim = 150
