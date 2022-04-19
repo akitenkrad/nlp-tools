@@ -63,7 +63,7 @@ class EvidenceExtractorLayer(nn.Module):
         self.embedding_dim = 300
         self.hidden_dim = 300
 
-        self.v = nn.Parameter(torch.rand((self.embedding_dim, ), dtype=torch.float32))
+        self.v = nn.Parameter(torch.rand((self.embedding_dim, 1), dtype=torch.float32))
         self.v_g = nn.Parameter(torch.rand((self.embedding_dim * 2, ), dtype=torch.float32))
         self.w_u_q = nn.Parameter(torch.rand((self.embedding_dim, self.embedding_dim), dtype=torch.float32))
         self.w_u_p = nn.Parameter(torch.rand((self.embedding_dim, self.embedding_dim), dtype=torch.float32))
@@ -71,7 +71,7 @@ class EvidenceExtractorLayer(nn.Module):
         self.w_v_p = nn.Parameter(torch.rand((self.embedding_dim, self.embedding_dim), dtype=torch.float32))
         self.w_h_p = nn.Parameter(torch.rand((self.embedding_dim, self.embedding_dim), dtype=torch.float32))
         self.w_h_a = nn.Parameter(torch.rand((self.embedding_dim, self.embedding_dim), dtype=torch.float32))
-        self.v_r_q = nn.Parameter(torch.rand((self.embedding_dim, ), dtype=torch.float32))
+        self.v_r_q = nn.Parameter(torch.rand((self.embedding_dim, 1), dtype=torch.float32))
 
         self.w_g = nn.Parameter(torch.rand((self.embedding_dim * 2, self.embedding_dim * 2), dtype=torch.float32))
         self.gru1 = nn.GRU(self.embedding_dim * 2, self.hidden_dim, 1, batch_first=True, bidirectional=True)
@@ -99,13 +99,13 @@ class EvidenceExtractorLayer(nn.Module):
                 # Attention Pooling (Rocktaschel et al., 2015)
                 s_t = []
                 for u_q_j in u_q:   # (h, )
-                    s_j = self.v.dot(torch.tanh(self.w_u_q * u_q_j + self.w_u_p * u_p_t))     # (h, )
+                    s_j = self.v.mm(torch.tanh(self.w_u_q * u_q_j + self.w_u_p * u_p_t))     # (h, )
                     s_t.append(s_j)
                 a_i = torch.softmax(torch.vstack(s_t), dim=-1)    # (m, h)
                 c_q_t = torch.einsum('mh, mh -> h', a_i, u_q)   # (h, )
 
                 # Gated Self-Matching Networks (Wang et al., 2017)
-                g = torch.sigmoid(self.w_g.dot(torch.cat([u_p_t, c_q_t], dim=-1)))  # (2 * h, )
+                g = torch.sigmoid(self.w_g.mm(torch.cat([u_p_t, c_q_t], dim=-1)))  # (2 * h, )
                 g = g * torch.cat([u_p, c_q_t], dim=-1)
                 v_p, _ = self.gru1(g.unsqueeze(0))
 
@@ -113,11 +113,11 @@ class EvidenceExtractorLayer(nn.Module):
 
         # Pointer Network
         # 1. predict start point
-        s = self.v.dot(torch.tanh(self.w_u_q.dot(u_q) + self.w_v_q.dot(self.v_r_q)))
+        s = self.v.mm(torch.tanh(self.w_u_q.mm(u_q) + self.w_v_q.mm(self.v_r_q)))
         a = torch.softmax(s, dim=-1)
         r_q = torch.einsum('m, mh -> h', a.squeeze(), u_q)
 
-        s = self.v.dot(torch.tanh(self.w_h_p.dot(torch.cat(v_ps, dim=0)) + self.w_h_a.dot(r_q)))
+        s = self.v.mm(torch.tanh(self.w_h_p.mm(torch.cat(v_ps, dim=0)) + self.w_h_a.mm(r_q)))
         a_1 = torch.softmax(s, dim=-1)
         p_1 = torch.argmax(a_1.squeeze())
 
@@ -126,17 +126,17 @@ class EvidenceExtractorLayer(nn.Module):
         _, h_t_a = self.gru2(c.reshape(1, 1, -1), r_q.reshape(2, 1, -1))
         h_t_a = h_t_a.reshape(1, 1, -1).squeeze()
 
-        s = self.v.dot(torch.tanh(self.w_h_p.dot(torch.cat(v_ps, dim=0)) + self.w_h_a.dot(h_t_a)))
+        s = self.v.mm(torch.tanh(self.w_h_p.mm(torch.cat(v_ps, dim=0)) + self.w_h_a.mm(h_t_a)))
         a_2 = F.softmax(s.squeeze(), dim=0)
         p_2 = torch.argmax(a_2)
 
         # 3. Passage Ranking
         gs = []
         for v_p in v_ps:
-            s = self.v.dot(torch.tanh(self.w_v_p.dot(v_p) + self.w_v_q.dot(r_q)))
+            s = self.v.mm(torch.tanh(self.w_v_p.mm(v_p) + self.w_v_q.mm(r_q)))
             a = torch.softmax(s.squeeze(), dim=0)
             r_p = torch.einsum('m, mh -> h', a, v_p.squeeze())
-            g = self.v_g.dot(torch.tanh(self.w_g.dot(torch.cat([r_q, r_p]))))
+            g = self.v_g.mm(torch.tanh(self.w_g.mm(torch.cat([r_q, r_p]))))
             gs.append(g)
         psg_ranks = torch.softmax(torch.stack(gs).squeeze(), dim=0)
 
