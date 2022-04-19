@@ -137,7 +137,7 @@ class EvidenceExtractorLayer(nn.Module):
             for v_p_t in v_p:
                 _c.append(_a * v_p_t)
         c = torch.vstack(_c)
-        _, h_t_a = self.gru2(c.reshape(1, 1, -1), r_q.reshape(2, 1, -1))
+        _, h_t_a = self.gru2(c.unsqueeze(0), r_q.reshape(1, 1, -1))
         h_t_a = h_t_a.reshape(1, 1, -1).squeeze()
 
         _s = []
