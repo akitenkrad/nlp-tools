@@ -156,7 +156,7 @@ class EvidenceExtractorLayer(nn.Module):
                 s_t = self.v.T.mm(torch.tanh(self.w_v_p.mm(v_p_t.unsqueeze(-1)) + self.w_v_q.mm(r_q.unsqueeze(-1))))
                 _s.append(s_t)
             a = torch.softmax(torch.vstack(_s), dim=0)
-            r_p = torch.einsum('m, mh -> h', a, v_p)
+            r_p = torch.einsum('m, mh -> h', a.squeeze(), v_p)
             g = self.v_g.T.mm(torch.tanh(self.w_g.mm(torch.cat([r_q, r_p]).unsqueeze(-1))))
             _gs.append(g)
         psg_ranks = torch.softmax(torch.stack(_gs).squeeze(), dim=0)
