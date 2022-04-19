@@ -53,10 +53,10 @@ class SentenceEmbedding(nn.Module):
             h_char.append(_h_char.reshape(1, -1))                                               # (2, 1, hidden_dim) -> (1, embedding_dim)
         h_char = torch.vstack(h_char)                                                           # (1, embedding_dim) x seq_len -> (seq_len, embedding_dim)
 
-        u, _ = self.sent_gru(torch.cat([e_words.unsqueeze(0), h_char.unsqueeze(0)], dim=-1))    # (seq_len, embedding_dim) x 2 -> (1, seq_len, hidden_dim)
+        u, _ = self.sent_gru(torch.cat([x_words.unsqueeze(0), h_char.unsqueeze(0)], dim=-1))    # (seq_len, embedding_dim) x 2 -> (1, seq_len, hidden_dim)
         u = u.squeeze()                                                                         # (1, seq_len, hidden_dim) -> (seq_len, hidden_dim)
 
-        return u, e_words                                                                       # (seq_len, hidden_dim, seq_len, embedding_dim)
+        return u, x_words                                                                       # (seq_len, hidden_dim, seq_len, embedding_dim)
 
 
 class EvidenceExtractor(nn.Module):
