@@ -64,7 +64,7 @@ class EvidenceExtractorLayer(nn.Module):
         self.hidden_dim = 300
 
         self.v = nn.Parameter(torch.rand((self.embedding_dim, 1), dtype=torch.float32))
-        self.v_g = nn.Parameter(torch.rand((self.embedding_dim * 2, ), dtype=torch.float32))
+        self.v_g = nn.Parameter(torch.rand((self.embedding_dim * 2, 1), dtype=torch.float32))
         self.w_u_q = nn.Parameter(torch.rand((self.embedding_dim, self.embedding_dim), dtype=torch.float32))
         self.w_u_p = nn.Parameter(torch.rand((self.embedding_dim, self.embedding_dim), dtype=torch.float32))
         self.w_v_q = nn.Parameter(torch.rand((self.embedding_dim, self.embedding_dim), dtype=torch.float32))
