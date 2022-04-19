@@ -4,9 +4,7 @@ from typing import List
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from datasets import Vocabulary
 from torch import Tensor
-from utils.glove import load_glove_weights_matrix
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
