@@ -105,8 +105,8 @@ class EvidenceExtractorLayer(nn.Module):
                 c_q_t = torch.einsum('mh, mh -> h', a_i, u_q)   # (h, )
 
                 # Gated Self-Matching Networks (Wang et al., 2017)
-                g = torch.sigmoid(self.w_g.mm(torch.cat([u_p_t, c_q_t], dim=-1)))  # (2 * h, )
-                g = g * torch.cat([u_p, c_q_t], dim=-1)
+                g = torch.sigmoid(self.w_g.mm(torch.cat([u_p_t, c_q_t], dim=-1).unsqueeze(-1)))  # (2 * h, )
+                g = g.squeeze() * torch.cat([u_p, c_q_t], dim=-1)
                 v_p, _ = self.gru1(g.unsqueeze(0))
 
             v_ps.append(v_p)
