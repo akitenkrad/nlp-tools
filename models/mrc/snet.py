@@ -94,6 +94,7 @@ class EvidenceExtractorLayer(nn.Module):
         '''
         v_ps = []
         for u_p in u_ps:        # (n, h)
+            _gs = []
             for u_p_t in u_p:   # (h, )
 
                 # Attention Pooling (Rocktaschel et al., 2015)
@@ -106,9 +107,11 @@ class EvidenceExtractorLayer(nn.Module):
 
                 # Gated Self-Matching Networks (Wang et al., 2017)
                 g = torch.sigmoid(self.w_g.mm(torch.cat([u_p_t, c_q_t], dim=-1).unsqueeze(-1)))  # (2 * h, )
-                g = g.squeeze() * torch.cat([u_p, c_q_t], dim=-1)
-                v_p, _ = self.gru1(g.unsqueeze(0))
+                g = g.squeeze() * torch.cat([u_p_t, c_q_t], dim=-1)
+                _gs.append(g)
 
+            gs = torch.vstack(_gs).unsqueeze(0)  # (1, m, 2 * h)
+            v_p, _ = self.gru1(gs)
             v_ps.append(v_p)
 
         # Pointer Network
@@ -131,14 +134,14 @@ class EvidenceExtractorLayer(nn.Module):
         p_2 = torch.argmax(a_2)
 
         # 3. Passage Ranking
-        gs = []
+        _gs = []
         for v_p in v_ps:
             s = self.v.T.mm(torch.tanh(self.w_v_p.mm(v_p) + self.w_v_q.mm(r_q)))
             a = torch.softmax(s.squeeze(), dim=0)
             r_p = torch.einsum('m, mh -> h', a, v_p.squeeze())
             g = self.v_g.T.mm(torch.tanh(self.w_g.mm(torch.cat([r_q, r_p]))))
-            gs.append(g)
-        psg_ranks = torch.softmax(torch.stack(gs).squeeze(), dim=0)
+            _gs.append(g)
+        psg_ranks = torch.softmax(torch.stack(_gs).squeeze(), dim=0)
 
         return (p_1, a_1), (p_2, a_2), psg_ranks
 
