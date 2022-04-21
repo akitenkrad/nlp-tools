@@ -387,8 +387,8 @@ class SNetEvidenceExtractor(BaseModel):
                     # prepare dataloader
                     train_subsampler = torch.utils.data.SubsetRandomSampler(train_indices)
                     valid_subsampler = torch.utils.data.SubsetRandomSampler(valid_indices)
-                    train_dl = DataLoader(ds, batch_size=self.config.train.batch_size, sampler=train_subsampler, collate_fn=ds.collate_fn)
-                    valid_dl = DataLoader(ds, batch_size=self.config.train.batch_size, sampler=valid_subsampler, collate_fn=ds.collate_fn)
+                    train_dl = DataLoader(ds, batch_size=self.config.train.batch_size, sampler=train_subsampler)
+                    valid_dl = DataLoader(ds, batch_size=self.config.train.batch_size, sampler=valid_subsampler)
 
                     # initialize learning rate
                     optimizer.param_groups[0]['lr'] = self.config.train.lr
