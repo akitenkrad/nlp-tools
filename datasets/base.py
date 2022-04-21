@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from os import PathLike
 from pathlib import Path
-from typing import Any
+from typing import Any, Dict
 
 import numpy as np
 from torch.utils.data import Dataset
@@ -25,8 +25,12 @@ class BaseDataset(ABC, Dataset):
         self.test_size = self.config.train.test_size
         self.phase: Phase = phase
 
-        self.train_data, self.valid_data, self.test_data = self.__load_data__(self.dataset_path, config.train.test_size, config.train.valid_size)
-        self.dev_data = {idx: self.train_data[idx] for idx in range(1000)}
+        self.train_data: Dict = {}
+        self.valid_data: Dict = {}
+        self.test_data: Dict = {}
+        self.dev_data: Dict = {}
+        # self.train_data, self.valid_data, self.test_data = self.__load_data__(self.dataset_path, config.train.test_size, config.train.valid_size)
+        # self.dev_data = {idx: self.train_data[idx] for idx in range(1000)}
 
     def __load_data__(self, dataset_path: PathLike, test_size: float, valid_size: float):
         '''load train and test data
