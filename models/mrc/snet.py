@@ -42,7 +42,7 @@ def bcs_loss(p, y, eps=1e-10):
     return loss
 
 
-def evidence_extractor_loss(config: Config, start_prob: torch.Tensor, start_y: torch.Tensor,
+def evidence_extractor_loss(config: Config, r: float, start_prob: torch.Tensor, start_y: torch.Tensor,
                             end_prob: torch.Tensor, end_y: torch.Tensor, psg_ranks: torch.Tensor, psg_ranks_y: torch.Tensor):
 
     # calculate start loss
@@ -61,7 +61,6 @@ def evidence_extractor_loss(config: Config, start_prob: torch.Tensor, start_y: t
     loss_pr = bcs_loss(psg_ranks, psg_ranks_y)
 
     # calculate final loss
-    r = config.evidence_extractor.r
     loss = r * loss_ap + (1 - r) * loss_pr
 
     return loss
@@ -337,8 +336,9 @@ class AnswerSynthesisDecoder(nn.Module):
 
 
 class SNetEvidenceExtractor(BaseModel):
-    def __init__(self, config: Config, name='snet-evidence-extractor'):
+    def __init__(self, config: Config, name='snet-evidence-extractor', loss_r=0.5):
         super().__init__(config, name)
+        self.loss_r = loss_r
 
         self.build()
 
@@ -364,7 +364,7 @@ class SNetEvidenceExtractor(BaseModel):
         # evidence_extractor
         (p_1, a_1), (p_2, a_2), psg_ranks = self.evidence_extractor(u_q, u_ps)
 
-        loss = loss_func(self.config, a_1, y.start_pos.to(self.config.train.device), a_2, y.end_pos.to(self.config.train.device), psg_ranks, x.passage_is_selected.to(self.config.train.device))
+        loss = loss_func(self.config, self.loss_r, a_1, y.start_pos.to(self.config.train.device), a_2, y.end_pos.to(self.config.train.device), psg_ranks, x.passage_is_selected.to(self.config.train.device))
 
         return loss, ((p_1, a_1), (p_2, a_2), psg_ranks)
 
