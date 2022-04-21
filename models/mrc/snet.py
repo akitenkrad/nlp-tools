@@ -349,7 +349,7 @@ class SNetEvidenceExtractor(BaseModel):
     def step(self, x: MsmarcoItemX, y: MsmarcoItemPos, loss_func: Callable) -> Tuple[Any, Any]:
 
         # sentence embedding
-        query_word_tokens = x.query_word_tokens.to(self.config.train_device)
+        query_word_tokens = x.query_word_tokens.to(self.config.train.device)
         query_char_tokens = [char.to(self.config.train.device) for char in x.query_char_tokens]
 
         u_q, uq_wdembd = self.sentence_embedding(query_word_tokens, query_char_tokens)
