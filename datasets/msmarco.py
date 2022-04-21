@@ -24,6 +24,10 @@ else:
 Passage = namedtuple('Passage', ('is_selected', 'passage_text'))
 RougeL = namedtuple('RougeL', ('start_pos', 'end_pos', 'passage_span', 'answer', 'rouge_l'))
 
+MsmarcoItemX = namedtuple('MsmarcoItemX', ('query_id', 'query_type', 'query_word_tokens', 'query_char_tokens',
+                                           'passage_word_tokens', 'passage_char_tokens', 'passage_is_selected', 'answer_word_tokens', 'answer_char_tokens'))
+MsmarcoItemPos = namedtuple('MsmarcoItemPos', ('start_pos', 'end_pos'))
+
 
 class MsmarcoDatasetType(Enum):
     TRAIN = 'train'
@@ -105,25 +109,21 @@ class MsmarcoRecord(object):
 
         return word_tokens, char_tokens, is_selected
 
-    def to_data(self, embedding: Embedding) -> Tuple[Dict, Dict]:
+    def to_data(self, embedding: Embedding) -> Tuple[MsmarcoItemX, MsmarcoItemPos]:
         qwt, qct = self.query2tokens(embedding)
         pwt, pct, psl = self.passages2tokens(embedding)
         awt, act = self.answers2tokens(embedding)
-        x = {
-            'query_id': torch.LongTensor(self.query_id),
-            'query_type': self.query_type,
-            'query_word_tokens': torch.tensor(qwt, dtype=torch.float32),
-            'query_char_tokens': [torch.tensor(chars, dtype=torch.float32) for chars in qct],
-            'psg_word_tokens': [torch.tensor(passage, dtype=torch.float32) for passage in pwt],
-            'psg_char_tokens': [[torch.tensor(chars, dtype=torch.float32) for chars in passage] for passage in pct],
-            'psg_is_selected': torch.tensor(psl, dtype=torch.float32),
-            'ans_word_tokens': [torch.tensor(answer, dtype=torch.float32) for answer in awt],
-            'ans_char_tokens': [[torch.tensor(chars, dtype=torch.float32) for chars in answer] for answer in act],
-        }
-        y = {
-            'start_pos': torch.LongTensor([self.rouge_l.start_pos])[0],
-            'end_pos': torch.LongTensor([self.rouge_l.end_pos])[0],
-        }
+        x = MsmarcoItemX(torch.LongTensor(self.query_id),                                                       # query_id
+                         self.query_type,                                                                       # query_type
+                         torch.tensor(qwt, dtype=torch.float32),                                                # query_word_tokens
+                         [torch.tensor(chars, dtype=torch.float32) for chars in qct],                           # query_char_tokens
+                         [torch.tensor(passage, dtype=torch.float32) for passage in pwt],                       # passage_word_tokens
+                         [[torch.tensor(chars, dtype=torch.float32) for chars in passage] for passage in pct],  # passage_char_tokens
+                         torch.tensor(psl, dtype=torch.float32),                                                # passage_is_selected
+                         [torch.tensor(answer, dtype=torch.float32) for answer in awt],                         # answer_word_tokens
+                         [[torch.tensor(chars, dtype=torch.float32) for chars in answer] for answer in act])    # answer_char_tokens
+        y = MsmarcoItemPos(torch.LongTensor([self.rouge_l.start_pos])[0],                                       # start_pos
+                           torch.LongTensor([self.rouge_l.end_pos])[0])                                         # end_pos
         return x, y
 
 
@@ -225,7 +225,3 @@ class MsmarcoDataset(BaseDataset):
             raise RuntimeError('Unknown Phase')
 
         return record.to_data(self.embedding)
-
-    @staticmethod
-    def collate_fn(batch):
-        return batch
