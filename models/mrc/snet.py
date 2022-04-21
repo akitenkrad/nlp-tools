@@ -354,7 +354,7 @@ class SNetEvidenceExtractor(BaseModel):
 
         u_q, uq_wdembd = self.sentence_embedding(query_word_tokens, query_char_tokens)
         u_ps, up_wdembds = [], []
-        for pw_tokens, pc_tokens in zip(x.psg_word_tokens, x.psg_char_tokens):
+        for pw_tokens, pc_tokens in zip(x.passage_word_tokens, x.passage_char_tokens):
             pw_tokens = pw_tokens.to(self.config.train.device)
             pc_tokens = [char.to(self.config.train.device) for char in pc_tokens]
             u_p, up_wdembd = self.sentence_embedding(pw_tokens, pc_tokens)
