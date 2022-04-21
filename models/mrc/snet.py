@@ -8,6 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from datasets.base import BaseDataset
+from datasets.msmarco import MsmarcoItemPos, MsmarcoItemX
 from matplotlib.colors import cnames
 from models.base import BaseModel
 from sklearn.metrics import (accuracy_score, f1_score, precision_score,
@@ -345,11 +346,35 @@ class SNetEvidenceExtractor(BaseModel):
         self.sentence_embedding = SentenceEmbeddingLayer()
         self.evidence_extractor = EvidenceExtractorLayer()
 
-    def step(self, x: torch.Tensor, y: torch.Tensor, loss_func: Callable) -> Tuple[torch.Tensor, torch.Tensor]:
-        pass
+    def step(self, x: MsmarcoItemX, y: MsmarcoItemPos, loss_func: Callable) -> Tuple[Any, Any]:
+        # sentence embedding
+        u_q, uq_wdembd = self.sentence_embedding(x.query_word_tokens, x.query_char_tokens)
+        u_ps, up_wdembds = [], []
+        for pw_tokens, pc_tokens in zip(x.psg_word_tokens, x.psg_char_tokens):
+            u_p, up_wdembd = self.sentence_embedding(pw_tokens, pc_tokens)
+            u_ps.append(u_p)
+            up_wdembds.append(up_wdembd)
 
-    def step_wo_loss(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        pass
+        # evidence_extractor
+        (p_1, a_1), (p_2, a_2), psg_ranks = self.evidence_extractor(u_q, u_ps)
+
+        loss = loss_func(p_1, y.start_pos, p_2, y.end_pos, psg_ranks, x.passage_is_selected)
+
+        return loss, ((p_1, a_1), (p_2, a_2), psg_ranks)
+
+    def step_wo_loss(self, x: MsmarcoItemX, y: MsmarcoItemPos) -> Any:
+        # sentence embedding
+        u_q, uq_wdembd = self.sentence_embedding(x.query_word_tokens, x.query_char_tokens)
+        u_ps, up_wdembds = [], []
+        for pw_tokens, pc_tokens in zip(x.psg_word_tokens, x.psg_char_tokens):
+            u_p, up_wdembd = self.sentence_embedding(pw_tokens, pc_tokens)
+            u_ps.append(u_p)
+            up_wdembds.append(up_wdembd)
+
+        # evidence_extractor
+        (p_1, a_1), (p_2, a_2), psg_ranks = self.evidence_extractor(u_q, u_ps)
+
+        return ((p_1, a_1), (p_2, a_2), psg_ranks)
 
     def validate(self, epoch: int, valid_dl: DataLoader, loss_func: Callable):
         loss_watcher = LossWatcher('loss')
@@ -403,11 +428,12 @@ class SNetEvidenceExtractor(BaseModel):
                             with tqdm(enumerate(train_dl), total=len(train_dl), desc=f'[Epoch {epoch:3d} | Batch {0:3d}]', leave=False) as batch_it:
                                 for batch, (x, y) in batch_it:
 
-                                    import pdb
-                                    pdb.set_trace()
-
                                     # process model and calculate loss
-                                    loss, out = self.step(x, y, loss_func)
+                                    loss_at_batch = []
+                                    for _x, _y in zip(x, y):
+                                        _loss, out = self.step(_x, _y, loss_func)
+                                        loss_at_batch.append(_loss)
+                                    loss = torch.stack(loss_at_batch).mean()
 
                                     # update parameters
                                     optimizer.zero_grad()
