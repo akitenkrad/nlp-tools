@@ -339,6 +339,8 @@ class SNetEvidenceExtractor(BaseModel):
     def __init__(self, config: Config, name='snet-evidence-extractor'):
         super().__init__(config, name)
 
+        self.build()
+
     def build(self):
         self.sentence_embedding = SentenceEmbeddingLayer()
         self.evidence_extractor = EvidenceExtractorLayer()
