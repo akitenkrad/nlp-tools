@@ -228,5 +228,8 @@ class MsmarcoDataset(BaseDataset):
 
     @staticmethod
     def collate_fn(batch):
-        import pdb
-        pdb.set_trace()
+        x, y = [], []
+        for item in batch:
+            x.append(item[0])
+            y.append(item[1])
+        return x, y
