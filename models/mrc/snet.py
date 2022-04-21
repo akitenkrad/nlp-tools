@@ -347,11 +347,17 @@ class SNetEvidenceExtractor(BaseModel):
         self.evidence_extractor = EvidenceExtractorLayer()
 
     def step(self, x: MsmarcoItemX, y: MsmarcoItemPos, loss_func: Callable) -> Tuple[Any, Any]:
+
         # sentence embedding
-        u_q, uq_wdembd = self.sentence_embedding(x.query_word_tokens.to(self.config.train.device), x.query_char_tokens.to(self.config.train.device))
+        query_word_tokens = x.query_word_tokens.to(self.config.train_device)
+        query_char_tokens = [char.to(self.config.train.device) for char in x.query_char_tokens]
+
+        u_q, uq_wdembd = self.sentence_embedding(query_word_tokens, query_char_tokens)
         u_ps, up_wdembds = [], []
         for pw_tokens, pc_tokens in zip(x.psg_word_tokens, x.psg_char_tokens):
-            u_p, up_wdembd = self.sentence_embedding(pw_tokens.to(self.config.train.device), pc_tokens.to(self.config.train.device))
+            pw_tokens = pw_tokens.to(self.config.train.device)
+            pc_tokens = [char.to(self.config.train.device) for char in pc_tokens]
+            u_p, up_wdembd = self.sentence_embedding(pw_tokens, pc_tokens)
             u_ps.append(u_p)
             up_wdembds.append(up_wdembd)
 
