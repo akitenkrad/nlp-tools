@@ -36,6 +36,7 @@ PyQtWebEngine = "*"
 "ruamel.yaml" = "*"
 flask = "*"
 types-requests = "*"
+seaborn = "*"
 
 [dev-packages]
 daal = "*"

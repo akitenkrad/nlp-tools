@@ -105,11 +105,11 @@ class MsmarcoRecord(object):
 
         return word_tokens, char_tokens, is_selected
 
-    def to_data(self, embedding: Embedding) -> dict:
+    def to_data(self, embedding: Embedding) -> Tuple[Dict, Dict]:
         qwt, qct = self.query2tokens(embedding)
         pwt, pct, psl = self.passages2tokens(embedding)
         awt, act = self.answers2tokens(embedding)
-        data = {
+        x = {
             'query_id': torch.LongTensor(self.query_id),
             'query_type': self.query_type,
             'query_word_tokens': torch.tensor(qwt, dtype=torch.float32),
@@ -119,10 +119,12 @@ class MsmarcoRecord(object):
             'psg_is_selected': torch.tensor(psl, dtype=torch.float32),
             'ans_word_tokens': [torch.tensor(answer, dtype=torch.float32) for answer in awt],
             'ans_char_tokens': [[torch.tensor(chars, dtype=torch.float32) for chars in answer] for answer in act],
+        }
+        y = {
             'start_pos': torch.LongTensor([self.rouge_l.start_pos])[0],
             'end_pos': torch.LongTensor([self.rouge_l.end_pos])[0],
         }
-        return data
+        return x, y
 
 
 MsmarcoDs = Dict[int, MsmarcoRecord]

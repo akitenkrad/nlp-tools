@@ -1,23 +1,24 @@
-from typing import Callable, Tuple, Any
 from abc import ABC, abstractmethod
 from pathlib import Path
-import numpy as np
-from sklearn.model_selection import KFold
-from sklearn.metrics import roc_auc_score, roc_curve, accuracy_score, precision_score, recall_score, f1_score
-import matplotlib.pyplot as plt
-from matplotlib.colors import cnames
-import seaborn as sns
-sns.set()
+from typing import Any, Callable, Tuple
 
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from datasets.base import BaseDataset
+from matplotlib.colors import cnames
+from sklearn.metrics import (accuracy_score, f1_score, precision_score,
+                             recall_score, roc_auc_score, roc_curve)
+from sklearn.model_selection import KFold
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
-
-from utils.utils import Config, is_notebook, Phase
+from utils.utils import Config, Phase, is_notebook
 from utils.watchers import LossWatcher
-from datasets.base import BaseDataset
+
+sns.set()
 
 if is_notebook():
     from tqdm.notebook import tqdm
@@ -25,9 +26,10 @@ if is_notebook():
 else:
     from tqdm import tqdm
 
+
 class BaseModel(ABC, nn.Module):
 
-    def __init__(self, config:Config, name:str):
+    def __init__(self, config: Config, name: str):
         super().__init__()
         self.config = config
         self.config.add_logger('train', silent=True)
@@ -37,11 +39,11 @@ class BaseModel(ABC, nn.Module):
     def build(self):
         '''build a model'''
         raise NotImplementedError()
-    
+
     @abstractmethod
-    def step(self, x:torch.Tensor, y:torch.Tensor, loss_func:Callable) -> Tuple[float, torch.Tensor]:
+    def step(self, x: torch.Tensor, y: torch.Tensor, loss_func: Callable) -> Tuple[torch.Tensor, torch.Tensor]:
         '''calculate output and loss
-        
+
         Args:
             x (torch.Tensor): input
             y (torch.Tensor): label
@@ -53,9 +55,9 @@ class BaseModel(ABC, nn.Module):
         raise NotImplementedError()
 
     @abstractmethod
-    def step_wo_loss(self, x:torch.Tensor, y:torch.Tensor) -> torch.Tensor:
+    def step_wo_loss(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         '''calculate output without loss
-        
+
         Args:
             x (torch.Tensor): input
             y (torch.Tensor): label
@@ -65,7 +67,7 @@ class BaseModel(ABC, nn.Module):
         '''
         raise NotImplementedError()
 
-    def validate(self, epoch:int, valid_dl:DataLoader, loss_func:Callable):
+    def validate(self, epoch: int, valid_dl: DataLoader, loss_func: Callable):
         loss_watcher = LossWatcher('loss')
         with tqdm(valid_dl, total=len(valid_dl), desc=f'[Epoch {epoch:4d} - Validate]', leave=False) as valid_it:
             for x, y in valid_it:
@@ -74,9 +76,9 @@ class BaseModel(ABC, nn.Module):
                     loss_watcher.put(loss.item())
         return loss_watcher.mean
 
-    def save_model(self, name:str):
+    def save_model(self, name: str):
         '''save model to config.weights.log_weights_dir
-        
+
         Args:
             name (str): name of the model to save
         '''
@@ -88,9 +90,9 @@ class BaseModel(ABC, nn.Module):
         '''execute forward process in the PyTorch module'''
         pass
 
-    def fit(self, ds:BaseDataset, optimizer:optim.Optimizer, lr_scheduler:Any, loss_func:Callable):
+    def fit(self, ds: BaseDataset, optimizer: optim.Optimizer, lr_scheduler: Any, loss_func: Callable):
         '''train the model
-        
+
         Args:
             ds (BaseDataset): dataset.
             optimizer (optim.Optimizer): optimizer.
@@ -190,7 +192,7 @@ class BaseModel(ABC, nn.Module):
             # end of k-fold
             self.config.backup_logs()
 
-    def find_lr(self, ds:BaseDataset, optimizer:optim.Optimizer, loss_func:Callable, batch_size:int=8, init_value:float=1e-8, final_value:float=10.0, beta:float=0.98):
+    def find_lr(self, ds: BaseDataset, optimizer: optim.Optimizer, loss_func: Callable, batch_size=8, init_value=1e-8, final_value=10.0, beta=0.98):
         self.train().to(self.config.train.device)
         self.config.add_logger('lr_finder', silent=True)
         ds.to_train()
@@ -212,8 +214,8 @@ class BaseModel(ABC, nn.Module):
                 loss, out = self.step(x, y, loss_func)
 
                 # compute the smoothed loss
-                avg_loss = beta * avg_loss + (1-beta) * loss.item()
-                smoothed_loss = avg_loss / (1 - beta**(idx+1))
+                avg_loss = beta * avg_loss + (1 - beta) * loss.item()
+                smoothed_loss = avg_loss / (1 - beta**(idx + 1))
 
                 # stop if the loss is exploding
                 if idx > 0 and smoothed_loss > 1e+3 * (best_loss + 1e-10):
@@ -235,7 +237,7 @@ class BaseModel(ABC, nn.Module):
                 optimizer.step()
 
                 # update progress bar
-                desc = '[B:{:05d}] lr:{:.10f} best_loss:{:.6f} loss:{:.6f}'.format(idx+1, lr, best_loss, loss.item())
+                desc = '[B:{:05d}] lr:{:.10f} best_loss:{:.6f} loss:{:.6f}'.format(idx + 1, lr, best_loss, loss.item())
                 it.set_description(desc)
                 self.config.log.lr_finder.info(desc)
 
@@ -255,7 +257,7 @@ class BaseModel(ABC, nn.Module):
             plt.close()
             self.config.log.lr_finder.info(f'saved -> {str(save_path.resolve().absolute())}')
 
-    def predict(self, ds:BaseDataset, phase:Phase) -> Tuple[torch.Tensor, torch.Tensor]:
+    def predict(self, ds: BaseDataset, phase: Phase) -> Tuple[np.ndarray, np.ndarray]:
         '''predict
 
         Args:
@@ -276,18 +278,18 @@ class BaseModel(ABC, nn.Module):
                 out = self.step_wo_loss(x, y)
             results.append(out.cpu().numpy().copy())
             labels.append(y.cpu().numpy().copy())
-        
-        results = np.concatenate(results, axis=0)
-        labels = np.concatenate(labels, axis=0)
-        return results, labels
 
-    def describe(self, ds:BaseDataset):
+        results_res = np.concatenate(results, axis=0)
+        labels_res = np.concatenate(labels, axis=0)
+        return results_res, labels_res
+
+    def describe(self, ds: BaseDataset):
         x, y = next(iter(DataLoader(ds, batch_size=1)))
         self.config.describe_model(self, input_size=x.shape)
 
     def evaluate_binary_problem(self, ds: BaseDataset):
         '''evaluate binary problem
-        
+
         Args:
             ds (BaseDataset): dataset
 
