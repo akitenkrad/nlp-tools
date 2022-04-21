@@ -364,7 +364,7 @@ class SNetEvidenceExtractor(BaseModel):
         # evidence_extractor
         (p_1, a_1), (p_2, a_2), psg_ranks = self.evidence_extractor(u_q, u_ps)
 
-        loss = loss_func(p_1, y.start_pos.to(self.config.train.device), p_2, y.end_pos.to(self.config.train.device), psg_ranks, x.passage_is_selected.to(self.config.train.device))
+        loss = loss_func(self.config, p_1, y.start_pos.to(self.config.train.device), p_2, y.end_pos.to(self.config.train.device), psg_ranks, x.passage_is_selected.to(self.config.train.device))
 
         return loss, ((p_1, a_1), (p_2, a_2), psg_ranks)
 
