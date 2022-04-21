@@ -27,6 +27,45 @@ else:
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
+def bcs_loss(p, y, eps=1e-10):
+    '''
+    Binary Cross Entropy Loss
+    '''
+    p = p.type(torch.float64)
+    p = torch.clamp(p, min=0.0 + eps, max=1.0 - eps)
+
+    loss = y * torch.log(p) + (1 - y) * torch.log(1 - p)
+    loss = torch.sum(loss)
+    loss = -loss
+
+    return loss
+
+
+def evidence_extractor_loss(config: Config, start_prob: torch.Tensor, start_y: torch.Tensor,
+                            end_prob: torch.Tensor, end_y: torch.Tensor, psg_ranks: torch.Tensor, psg_ranks_y: torch.Tensor):
+
+    # calculate start loss
+    y = torch.zeros_like(start_prob).to(config.train.device)
+    y[start_y] = 1.0
+    start_loss = bcs_loss(start_prob, y)
+
+    # calculate end_loss
+    y = torch.zeros_like(end_prob).to(config.train.device)
+    y[end_y] = 1.0
+    end_loss = bcs_loss(end_prob, y)
+
+    loss_ap = start_loss.sum() + end_loss.sum()
+
+    # calculate passage ranking loss
+    loss_pr = bcs_loss(psg_ranks, psg_ranks_y)
+
+    # calculate final loss
+    r = config.evidence_extractor.r
+    loss = r * loss_ap + (1 - r) * loss_pr
+
+    return loss
+
+
 def attention_pooling(v, w1, x1, w2, x2):
     '''
     Args:
