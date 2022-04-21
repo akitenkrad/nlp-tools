@@ -436,7 +436,7 @@ class SNetEvidenceExtractor(BaseModel):
 
                                     # process model and calculate loss
                                     loss_at_batch = []
-                                    for _x, _y in zip(x, y):
+                                    for _x, _y in tqdm(zip(x, y), total=len(x), desc='processing batch...', leave=False):
                                         _loss, out = self.step(_x, _y, loss_func)
                                         loss_at_batch.append(_loss)
                                     loss = torch.stack(loss_at_batch).mean()
