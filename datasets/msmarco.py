@@ -225,3 +225,8 @@ class MsmarcoDataset(BaseDataset):
             raise RuntimeError('Unknown Phase')
 
         return record.to_data(self.embedding)
+
+    @staticmethod
+    def collate_fn(batch):
+        import pdb
+        pdb.set_trace()
