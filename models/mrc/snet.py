@@ -336,8 +336,8 @@ class AnswerSynthesisDecoder(nn.Module):
 
 
 class SNetEvidenceExtractor(BaseModel):
-    def __init__(self):
-        pass
+    def __init__(self, config: Config, name='snet-evidence-extractor'):
+        super().__init__(config, name)
 
     def build(self):
         self.sentence_embedding = SentenceEmbeddingLayer()
