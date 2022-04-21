@@ -348,17 +348,17 @@ class SNetEvidenceExtractor(BaseModel):
 
     def step(self, x: MsmarcoItemX, y: MsmarcoItemPos, loss_func: Callable) -> Tuple[Any, Any]:
         # sentence embedding
-        u_q, uq_wdembd = self.sentence_embedding(x.query_word_tokens, x.query_char_tokens)
+        u_q, uq_wdembd = self.sentence_embedding(x.query_word_tokens.to(self.config.train.device), x.query_char_tokens.to(self.config.train.device))
         u_ps, up_wdembds = [], []
         for pw_tokens, pc_tokens in zip(x.psg_word_tokens, x.psg_char_tokens):
-            u_p, up_wdembd = self.sentence_embedding(pw_tokens, pc_tokens)
+            u_p, up_wdembd = self.sentence_embedding(pw_tokens.to(self.config.train.device), pc_tokens.to(self.config.train.device))
             u_ps.append(u_p)
             up_wdembds.append(up_wdembd)
 
         # evidence_extractor
         (p_1, a_1), (p_2, a_2), psg_ranks = self.evidence_extractor(u_q, u_ps)
 
-        loss = loss_func(p_1, y.start_pos, p_2, y.end_pos, psg_ranks, x.passage_is_selected)
+        loss = loss_func(p_1, y.start_pos.to(self.config.train.device), p_2, y.end_pos.to(self.config.train.device), psg_ranks, x.passage_is_selected.to(self.config.train.device))
 
         return loss, ((p_1, a_1), (p_2, a_2), psg_ranks)
 
