@@ -237,6 +237,17 @@ class MsmarcoDataset(BaseDataset):
             raise RuntimeError('Unknown Phase')
         return record
 
+    def save_reference(self, records: List[MsmarcoRecord], out_path: PathLike):
+        ref_data = []
+        for record in tqdm(records, desck='Saving reference data...'):
+            _data = {
+                'query_id': record.query_id,
+                'answers': [record.answers[0]]
+            }
+            ref_data.append(json.dumps(_data, ensure_ascii=False))
+        with open(out_path, mode='w', encoding='utf-8') as wf:
+            wf.write('\n'.join(ref_data))
+
     @staticmethod
     def collate_fn(batch):
         x, y = [], []
