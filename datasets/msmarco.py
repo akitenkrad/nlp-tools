@@ -216,15 +216,26 @@ class MsmarcoDataset(BaseDataset):
 
     def __getitem__(self, index):
         if self.phase == Phase.TRAIN or self.phase == Phase.DEV:
-            record: MsmarcoRecord = self.train_data[index]
+            record = self.train_data[index]
         elif self.phase == Phase.VALID:
-            record: MsmarcoRecord = self.valid_data[index]
+            record = self.valid_data[index]
         elif self.phase == Phase.TEST or self.phase == Phase.SUBMISSION:
-            record: MsmarcoRecord = self.test_data[index]
+            record = self.test_data[index]
         else:
             raise RuntimeError('Unknown Phase')
 
         return record.to_data(self.embedding)
+
+    def get_record(self, index) -> MsmarcoRecord:
+        if self.phase == Phase.TRAIN or self.phase == Phase.DEV:
+            record = self.train_data[index]
+        elif self.phase == Phase.VALID:
+            record = self.valid_data[index]
+        elif self.phase == Phase.TEST or self.phase == Phase.SUBMISSION:
+            record = self.test_data[index]
+        else:
+            raise RuntimeError('Unknown Phase')
+        return record
 
     @staticmethod
     def collate_fn(batch):
