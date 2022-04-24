@@ -35,46 +35,95 @@
 <div class="topic-prob-dist-div">
     <div class="container">
         <div class="row">
-            <div class="col-3">
-                <div class="dropdown" id="report-topicmodel-topicprobdist-tp-div">
-                    <button class="btn btn-default dropdown-toggle" type="button" id="report-topicmodel-topicprobdist-tp-btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                        Topics
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="report-topicmodel-topicprobdist-tp-btn">
-
-                    </ul>
-                </div>
+            <div class="col-5">
+                <select class="form-select" aria-label="Topics" id="report-topicmodel-topicprobdist-select">
+                    {% for topic in topics %}
+                        <option value="{{topic['index']}}">{{topic['topic']}}</option>
+                    {% endfor %}
+                </select>
             </div>
-            <div class="col-9">
+            <div class="col-7">
                 <input id="report-topicmodel-topicprobdist-kw" placeholder="Keywords..." type="search" class="form-control"/>
             </div>
         </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="list-group" id="selected-report-topicmodel-topicprobdist"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div id="report-topicmodel-topicprobdist-paper-info"></div>
+            </div>
+        </div>
     </div>
-    <ul id="selected-report-topicmodel-topicprobdist"></ul>
 </div>
-
 
 <script type='text/javascript'>
 // Topic Probability Distribution
 let topic_prob_dist = {{topic_prob_dist | tojson}}
 $(function() {
-    $(document).on('input', '#report-topicmodel-topicprobdist-kw', function() {
-        let input_box = $('#report-topicmodel-topicprobdist-kw')
-        let text = input_box.val();
-        console.log(text);
-        let selected_topics = topic_prob_dist.filter(topic => topic.title.includes(text));
+    // Keyword input
+    $('#report-topicmodel-topicprobdist-kw').on('input', function() {
+        let input_box = $('#report-topicmodel-topicprobdist-kw');
+        let texts = input_box.val().split(' ').filter(text => text.length > 0);
+        let selected_topic_idx = $('#report-topicmodel-topicprobdist-select').val();
+        let selected_topics = topic_prob_dist.filter(topic => {
+            let has_text = texts.every(text => topic.title.toLowerCase().includes(text.toLowerCase()));
+            let this_topics = Object.keys(topic.topics).filter(key => topic.topics[key] > 0.0).map(idx => Number(idx));
+            let has_topic = this_topics.includes(Number(selected_topic_idx));
+            return has_text && has_topic;
+        });
         if (selected_topics.length > 0) {
-            let ul = $('#selected-report-topicmodel-topicprobdist');
-            ul.empty();
+            let div = $('#selected-report-topicmodel-topicprobdist');
+            div.empty();
             selected_topics.slice(0, 10).forEach(function(topic) {
-                let li = $('<li></li>');
-                li.text(topic.title);
-                ul.append(li)
+                let a = $('<a class="list-group-item list-group-item-action report-topicmodel-topicprobdist-a"></a>');
+                a.text(topic.title);
+                a.attr('url', topic['url'])
+                a.attr('iframe-width', topic['width'])
+                a.attr('iframe-height', topic['height'])
+                div.append(a)
             });
         };
     });
+    // Topic select
+    $('#report-topicmodel-topicprobdist-select').on('change', function() {
+        let input_box = $('#report-topicmodel-topicprobdist-kw');
+        let texts = input_box.val().split(' ').filter(text => text.length > 0);
+        let selected_topic_idx = $('#report-topicmodel-topicprobdist-select').val();
+        let selected_topics = topic_prob_dist.filter(topic => {
+            let has_text = texts.every(text => topic.title.toLowerCase().includes(text.toLowerCase()));
+            let this_topics = Object.keys(topic.topics).filter(key => topic.topics[key] > 0.0).map(idx => Number(idx));
+            let has_topic = this_topics.includes(Number(selected_topic_idx));
+            return has_text && has_topic;
+        });
+        if (selected_topics.length > 0) {
+            let div = $('#selected-report-topicmodel-topicprobdist');
+            div.empty();
+            selected_topics.slice(0, 10).forEach(function(topic) {
+                let a = $('<a class="list-group-item list-group-item-action report-topicmodel-topicprobdist-a"></a>');
+                a.text(topic.title);
+                a.attr('url', topic['url'])
+                a.attr('iframe-width', topic['width'])
+                a.attr('iframe-height', topic['height'])
+                div.append(a)
+            });
+        };
+    });
+    $(document).on('click', 'a.report-topicmodel-topicprobdist-a', function() {
+        let div = $('#report-topicmodel-topicprobdist-paper-info');
+        let url = $(this).attr('url');
+        let w = $(this).attr('iframe-width');
+        let h = $(this).attr('iframe-height');
+        console.log(url)
+        let iframe = $(`<iframe src="${url}" target="_blank" style="width:100%; height:${Number(h)+50}px"></iframe>`);
+        div.empty();
+        div.append(iframe);
+    });
 });
+
+// Topic 
 </script>
 
 {% endblock %}

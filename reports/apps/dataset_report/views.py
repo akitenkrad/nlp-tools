@@ -14,8 +14,10 @@ dataset_report = Blueprint(
 
 @dataset_report.route('/')
 def index():
-    report_list = [Path(f).name for f in glob(str(Path(__file__).parent / 'static/reports'))]
-    return render_template('dataset_report/index.html', report_list=report_list)
+    args = {
+        'report_list': [Path(f).name for f in glob(str(Path(__file__).parent / 'static/reports/*')) if Path(f).is_dir()]
+    }
+    return render_template('dataset_report/index.j2', **args)
 
 
 @dataset_report.route('/report/<string:report_name>', methods=['GET'])
@@ -47,7 +49,7 @@ def report(report_name):
             'width': meta_json['topic_model']['topics_per_class']['width'] + 50,
             'height': meta_json['topic_model']['topics_per_class']['height'] + 50,
         },
-        'topics': meta_json[''],
-        'topic_prob_dist': [{'title': m['title'], 'htmlfile': m['htmlfile']} for m in meta_json['topic_model']['topic_prob_dist']]
+        'topics': [{'index': idx, 'topic': topic['name']} for idx, topic in meta_json['topic_model']['topics'].items()],
+        'topic_prob_dist': [{'title': m['title'], 'url': f"/dataset_report/static/reports/{report_name}/topic_model/topic_model_prob_dist/{m['htmlfile']}", 'topics': m['topics'], 'width': m['width'], 'height': m['height']} for m in meta_json['topic_model']['topic_prob_dist']]
     }
     return render_template('dataset_report/report.j2', **args)

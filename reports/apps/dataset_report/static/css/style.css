@@ -1,5 +1,10 @@
 @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro);
 
+body {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
 /* Report H2 */
 h2.report-h2 {
   position: relative;
