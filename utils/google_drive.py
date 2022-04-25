@@ -41,6 +41,7 @@ def __save_google_drive_content(response, dst_filename):
 
 class GDriveObjects(Enum):
     NeurIPS_2021 = '1JmYpSatyr2OTCPpovUDQa3PzJmz39USV'
+    NLP_Processings_2022 = '1A3Kk_tpaPPAd543j5xApco89gHAnKMCF'
 
     MSMARCO_TRAIN_DATA = '1Ul_5hZ1znlkmjciAVkL-R6mTvN2ZPUcF'
     MSMARCO_TRAIN_ROUGE = '10JXIrBqvWenEdVkI3b0MPeddx0VHr_w-'
