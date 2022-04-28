@@ -1,4 +1,5 @@
 from enum import Enum
+from os import PathLike
 from pathlib import Path
 
 import requests
@@ -11,7 +12,7 @@ else:
     from tqdm import tqdm
 
 
-def download_from_google_drive(id, dst_filename):
+def download_from_google_drive(id: str, dst_filename: PathLike):
     URL = "https://docs.google.com/uc?export=download"
     session = requests.Session()
     response = session.get(URL, params={'id': id}, stream=True, timeout=None)

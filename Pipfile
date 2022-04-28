@@ -37,6 +37,7 @@ PyQtWebEngine = "*"
 flask = "*"
 types-requests = "*"
 seaborn = "*"
+arxiv = "*"
 
 [dev-packages]
 daal = "*"

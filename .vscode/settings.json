@@ -1,12 +1,22 @@
 {
     "python.linting.enabled": true,
+    "python.linting.lintOnSave": true,
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
     "python.linting.flake8Args": [
         "--max-line-length=500",
         "--ignore=F401"
     ],
+    "python.linting.flake8Path": "flake8",
+    "python.linting.flake8CategorySeverity.W": "Warning",
+    "python.linting.flake8CategorySeverity.F": "Error",
+    "python.linting.flake8CategorySeverity.E": "Error",
+    "[python]": {
+        "editor.defaultFormatter": null,
+        "editor.formatOnSave": true,
+    },
     "python.formatting.provider": "black",
+    "python.formatting.blackPath": "/usr/local/bin/black",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
         "source.organizeImports": true
@@ -14,5 +24,6 @@
     "python.linting.mypyEnabled": true,
     "python.formatting.blackArgs": [
         "--skip-numeric-underscore-normalization"
-    ]
+    ],
+    "python.linting.maxNumberOfProblems": 10000,
 }
