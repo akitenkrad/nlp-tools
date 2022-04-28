@@ -278,13 +278,13 @@ def un7zip(src_path: PathLike, dst_path: PathLike):
             print(os.path.join(dirname, filename))
 
 
-def word_cloud(input_text: str, out_path: PathLike, mask_path: PathLike = None):
-    mask = get_mask(mask_path)
+def word_cloud(input_text: str, out_path: PathLike):
+    mask = get_mask()
 
     font_path = Path(__file__).parent.parent / 'resources/fonts/Utatane_v1.1.0/Utatane-Regular.ttf'
     if not font_path.exists():
         font_dir = Path(__file__).parent.parent / 'resources/fonts'
-        download('https://github.com/nv-h/Utatane/releases/download/Utatane_v1.1.0/Utatane_v1.1.0.7z', font_dir)
+        download('https://github.com/nv-h/Utatane/releases/download/Utatane_v1.1.0/Utatane_v1.1.0.7z', font_dir / 'Utatane_v1.1.0.7z')
         un7zip(font_dir / 'Utatane_V1.0.0.7z', font_dir)
 
     wc = WordCloud(
@@ -302,7 +302,7 @@ def word_cloud(input_text: str, out_path: PathLike, mask_path: PathLike = None):
 
 def get_mask(mask_path: PathLike = None) -> np.ndarray:
     if mask_path is None:
-        mask_dir = Path(__file__).parent / "resources/mask_images"
+        mask_dir = Path(__file__).parent.parent / "resources/mask_images"
         mask_files = [Path(f) for f in glob(str(mask_dir / "*.png"))]
         mask_path = random.choice(mask_files)
 
