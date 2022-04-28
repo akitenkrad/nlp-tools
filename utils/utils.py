@@ -44,6 +44,7 @@ else:
 
 class Lang(Enum):
     ENGLISH = "english"
+    JAPANESE = "japanese"
 
 
 class Phase(Enum):
@@ -102,10 +103,12 @@ class Config(object):
             "cuda" if torch.cuda.is_available() else "cpu"
         )
         self.__config__["log"]["log_dir"] = (
-            Path(self.__config__["log"]["log_dir"]) / f"{self.__config__['train']['exp_name']}_{self.__config__['timestamp'].strftime('%Y%m%d%H%M%S')}"
+            Path(self.__config__["log"]["log_dir"])
+            / f"{self.__config__['train']['exp_name']}_{self.__config__['timestamp'].strftime('%Y%m%d%H%M%S')}"
         )
         self.__config__["log"]["log_file"] = (
-            Path(self.__config__["log"]["log_dir"]) / self.__config__["log"]["log_filename"]
+            Path(self.__config__["log"]["log_dir"])
+            / self.__config__["log"]["log_filename"]
         )
         self.__config__["weights"]["log_weights_dir"] = str(
             Path(self.__config__["log"]["log_dir"]) / "weights"
@@ -117,7 +120,8 @@ class Config(object):
             self.__config__["data"]["cache_path"]
         )
         self.__config__["backup"]["backup_dir"] = (
-            Path(self.__config__["backup"]["backup_dir"]) / Path(self.__config__["log"]["log_dir"]).name
+            Path(self.__config__["backup"]["backup_dir"])
+            / Path(self.__config__["log"]["log_dir"]).name
         )
         self.__config__["log"]["loggers"] = {}
 
@@ -281,11 +285,17 @@ def un7zip(src_path: PathLike, dst_path: PathLike):
 def word_cloud(input_text: str, out_path: PathLike):
     mask = get_mask()
 
-    font_path = Path(__file__).parent.parent / 'resources/fonts/Utatane_v1.1.0/Utatane-Regular.ttf'
+    font_path = (
+        Path(__file__).parent.parent
+        / "resources/fonts/Utatane_v1.1.0/Utatane-Regular.ttf"
+    )
     if not font_path.exists():
-        font_dir = Path(__file__).parent.parent / 'resources/fonts'
-        download('https://github.com/nv-h/Utatane/releases/download/Utatane_v1.1.0/Utatane_v1.1.0.7z', font_dir / 'Utatane_v1.1.0.7z')
-        un7zip(font_dir / 'Utatane_v1.1.0.7z', font_dir)
+        font_dir = Path(__file__).parent.parent / "resources/fonts"
+        download(
+            "https://github.com/nv-h/Utatane/releases/download/Utatane_v1.1.0/Utatane_v1.1.0.7z",
+            font_dir / "Utatane_v1.1.0.7z",
+        )
+        un7zip(font_dir / "Utatane_v1.1.0.7z", font_dir)
 
     wc = WordCloud(
         font_path=str(font_path),

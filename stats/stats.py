@@ -1,6 +1,8 @@
-from typing import List, Dict, Tuple
+from typing import Dict, List, Tuple
 
+import MeCab
 import numpy as np
+import unidic
 from bertopic import BERTopic
 from utils.tokenizers import WordTokenizer
 from utils.utils import Lang, is_notebook
@@ -19,6 +21,7 @@ class Text(object):
         keywords: List[str],
         pdf_url: str,
         authors: List[str],
+        language: Lang,
         **kwargs,
     ):
         self.title: str = title
@@ -26,6 +29,7 @@ class Text(object):
         self.keywords: List[str] = keywords
         self.pdf_url: str = pdf_url
         self.authors: List[str] = authors
+        self.language = language
         self.topic = -99
         self.prob = np.array([])
         for name, value in kwargs.items():
@@ -37,6 +41,27 @@ class Text(object):
 
     def __repr__(self):
         return self.__str__()
+
+    def preprocess(self):
+        if self.lang == Lang.ENGLISH:
+            tokenizer = WordTokenizer(language=Lang.ENGLISH, remove_stopwords=True, remove_punctuations=True, stemming=True, add_tag=True)
+            text = self.title + ' ' + self.summary
+            words = tokenizer.tokenize(text)
+            text = ' '.join([word[0] for word in words if word[1].startswith('N')])
+            return text
+
+        elif self.lang == Lang.JAPANESE:
+            tagger = MeCab.Tagger(f'-d {unidic.DICDIR}')
+            result = tagger.parse(self.title + ' ' + self.summary)
+            words = []
+            for line in result.split('\n'):
+                if '\t' not in line:
+                    continue
+                word, _attrs = line.split('\t')
+                attrs = _attrs.split(',')
+                if attrs[0] == '名詞':
+                    words.append(word)
+            return ' '.join(words)
 
 
 class DocStat(object):
@@ -51,15 +76,6 @@ class DocStat(object):
             stemming=True,
             add_tag=True,
         )
-
-    def __topic_model_preprocess(self, texts: List[str]) -> List[str]:
-        '''extract only Noun words'''
-        words = [self.tokenizer.tokenize(text) for text in tqdm(texts)]
-        texts = [
-            ' '.join([word[0] for word in word_list if word[1].startswith('N')])
-            for word_list in words
-        ]
-        return texts
 
     @property
     def topics(self) -> dict:
@@ -81,8 +97,7 @@ class DocStat(object):
 
             # Topic Modeling
             update_progress('Topic Modeling...')
-            texts_for_tp = [text.title + '\n' + text.summary for text in texts]
-            texts_for_tp = self.__topic_model_preprocess(texts_for_tp)
+            texts_for_tp = [text.preprocess() for text in texts]
             topics, probs = self.topic_model.fit_transform(texts_for_tp)
             self.topic_model_attrs['topics'] = topics
             self.topic_model_attrs['probs'] = probs

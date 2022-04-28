@@ -16,14 +16,11 @@
         "editor.formatOnSave": true,
     },
     "python.formatting.provider": "black",
-    "python.formatting.blackPath": "/usr/local/bin/black",
+    "python.formatting.blackPath": "black",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
         "source.organizeImports": true
     },
     "python.linting.mypyEnabled": true,
-    "python.formatting.blackArgs": [
-        "--skip-numeric-underscore-normalization"
-    ],
     "python.linting.maxNumberOfProblems": 10000,
 }

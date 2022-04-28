@@ -5,6 +5,7 @@ from typing import List
 
 from stats.stats import Text
 from utils.google_drive import GDriveObjects, download_from_google_drive
+from utils.utils import Lang
 
 
 class Conference(ABC):
@@ -28,11 +29,12 @@ class NeurIPS_2021(Conference):
         for item in data:
             texts.append(
                 Text(
-                    item["title"],
-                    item["abstract"],
-                    item["keywords"],
-                    item["pdf_url"],
-                    item["authors"],
+                    title=item["title"],
+                    summary=item["abstract"],
+                    keywords=item["keywords"],
+                    pdf_url=item["pdf_url"],
+                    authors=item["authors"],
+                    language=Lang.ENGLISH,
                 )
             )
         return texts
@@ -55,5 +57,15 @@ class ANLP_2022(Conference):
             keyword = keywords[paper["id"].split("-")[0]]
             title = paper["title"]
             summary = paper["abstract"]
-            texts.append(Text(title, summary, [keyword], "", []))
+            lang = Lang.JAPANESE if paper["language"] == "japanese" else Lang.ENGLISH
+            texts.append(
+                Text(
+                    title=title,
+                    summary=summary,
+                    keywords=[keyword],
+                    pdf_url="",
+                    authors=[],
+                    language=lang,
+                )
+            )
         return texts

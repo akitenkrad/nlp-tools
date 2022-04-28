@@ -40,6 +40,8 @@ seaborn = "*"
 arxiv = "*"
 pyunpack = "*"
 patool = "*"
+mecab-python3 = "*"
+unidic = "*"
 
 [dev-packages]
 daal = "*"
