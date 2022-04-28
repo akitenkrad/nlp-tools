@@ -18,6 +18,7 @@ import cpuinfo
 import nltk
 import numpy as np
 import torch
+import unidic
 import yaml
 from attrdict import AttrDict
 from colorama import Fore, Style
@@ -30,6 +31,14 @@ from utils.logger import get_logger, kill_logger
 
 nltk.download("punkt", quiet=True)
 nltk.download("averaged_perceptron_tagger", quiet=True)
+
+if not Path(unidic.DICDIR).exists():
+    subprocess.run(
+        "python -m unidic download",
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
 
 def is_notebook():
