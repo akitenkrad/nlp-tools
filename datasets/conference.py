@@ -45,7 +45,7 @@ class ANLP_2022(Conference):
 
         if not data_path.exists():
             data_path.parent.mkdir(parents=True, exist_ok=True)
-            download_from_google_drive(GDriveObjects.NeurIPS_2021.value, str(data_path))
+            download_from_google_drive(GDriveObjects.ANLP_2022.value, str(data_path))
 
         data = json.load(open(data_path))
         keywords = data["categories"]
