@@ -1,3 +1,4 @@
+import os
 import random
 import shutil
 import string
@@ -21,6 +22,7 @@ import yaml
 from attrdict import AttrDict
 from colorama import Fore, Style
 from PIL import Image
+from pyunpack import Archive
 from torchinfo import summary
 from wordcloud import STOPWORDS, WordCloud
 
@@ -268,8 +270,22 @@ def download(url: str, filepath: PathLike):
     print(Style.RESET_ALL, end="")
 
 
+def un7zip(src_path: PathLike, dst_path: PathLike):
+    Path(dst_path).mkdir(parents=True, exist_ok=True)
+    Archive(src_path).extractall(dst_path)
+    for dirname, _, filenames in os.walk(str(dst_path)):
+        for filename in filenames:
+            print(os.path.join(dirname, filename))
+
+
 def word_cloud(input_text: str, out_path: PathLike, mask_path: PathLike = None):
     mask = get_mask(mask_path)
+
+    font_path = Path(__file__).parent.parent / 'resources/fonts/Utatane_v1.1.0/Utatane-Regular.ttf'
+    if not font_path.exists():
+        font_dir = Path(__file__).parent.parent / 'resources/fonts'
+        download('https://github.com/nv-h/Utatane/releases/download/Utatane_v1.1.0/Utatane_v1.1.0.7z', font_dir)
+        un7zip(font_dir / 'Utatane_V1.0.0.7z', font_dir)
 
     wc = WordCloud(
         font_path=str(Path(__file__).parent / "../fonts/Utatane-Regular.ttf"),

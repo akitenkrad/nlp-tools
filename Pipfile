@@ -38,6 +38,7 @@ flask = "*"
 types-requests = "*"
 seaborn = "*"
 arxiv = "*"
+pyunpack = "*"
 
 [dev-packages]
 daal = "*"
