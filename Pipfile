@@ -39,6 +39,7 @@ types-requests = "*"
 seaborn = "*"
 arxiv = "*"
 pyunpack = "*"
+patool = "*"
 
 [dev-packages]
 daal = "*"
