@@ -288,7 +288,7 @@ def word_cloud(input_text: str, out_path: PathLike):
         un7zip(font_dir / 'Utatane_v1.1.0.7z', font_dir)
 
     wc = WordCloud(
-        font_path=str(Path(__file__).parent / "../fonts/Utatane-Regular.ttf"),
+        font_path=str(font_path),
         background_color="white",
         max_words=200,
         stopwords=set(STOPWORDS),
