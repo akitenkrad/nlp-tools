@@ -5,7 +5,7 @@
     "python.linting.flake8Enabled": true,
     "python.linting.flake8Args": [
         "--max-line-length=500",
-        "--ignore=F401"
+        "--ignore=F401,W503"
     ],
     "python.linting.flake8Path": "flake8",
     "python.linting.flake8CategorySeverity.W": "Warning",
