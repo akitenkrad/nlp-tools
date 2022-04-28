@@ -285,7 +285,7 @@ def word_cloud(input_text: str, out_path: PathLike):
     if not font_path.exists():
         font_dir = Path(__file__).parent.parent / 'resources/fonts'
         download('https://github.com/nv-h/Utatane/releases/download/Utatane_v1.1.0/Utatane_v1.1.0.7z', font_dir / 'Utatane_v1.1.0.7z')
-        un7zip(font_dir / 'Utatane_V1.1.0.7z', font_dir)
+        un7zip(font_dir / 'Utatane_v1.1.0.7z', font_dir)
 
     wc = WordCloud(
         font_path=str(Path(__file__).parent / "../fonts/Utatane-Regular.ttf"),
