@@ -23,11 +23,11 @@ class Report(object):
 
     def report(self, output_dir: PathLike):
         total = 1
-        if DocStatTarget.BASIC_STATISTICS:
+        if DocStatTarget.BASIC_STATISTICS in self.targets:
             total += 0
-        if DocStatTarget.TOPIC_MODEL:
+        if DocStatTarget.TOPIC_MODEL in self.targets:
             total += 6
-        if DocStatTarget.KEYWORD_STATISTICS:
+        if DocStatTarget.KEYWORD_STATISTICS in self.targets:
             total += 1
 
         with tqdm(total=total, desc="Reporting...", leave=True) as progress:
@@ -105,7 +105,7 @@ class Report(object):
                 # 8. Save Word Cloud
                 update_progress("Reporting: Keyword Statistics - Word Cloud")
                 self.stats.keyword_stats.save_keyword_wordcloud(
-                    keyword_out_dir / "word_cloud", top_n_keywords=25
+                    keyword_out_dir / "word_cloud", top_n_keywords=50
                 )
 
             # save meta data
