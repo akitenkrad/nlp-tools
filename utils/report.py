@@ -3,7 +3,7 @@ from os import PathLike
 from pathlib import Path
 from typing import List
 
-from stats.stats import DocStat, Text
+from stats.stats import DocStat, DocStatTarget, Text
 
 from utils.utils import is_notebook
 
@@ -14,9 +14,11 @@ else:
 
 
 class Report(object):
-    def __init__(self, dataset_name: str, texts: List[Text]):
+    def __init__(
+        self, dataset_name: str, texts: List[Text], targets: List[DocStatTarget]
+    ):
         self.stats: DocStat = DocStat(dataset_name)
-        self.stats.analyze(texts)
+        self.stats.analyze(texts, targets)
 
     def report(self, output_dir: PathLike):
         total = 7
