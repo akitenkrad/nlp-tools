@@ -28,12 +28,8 @@ class Report(object):
                 progress.update(1)
                 progress.set_description(text)
 
-            meta_json = {
+            meta_data = {
                 "dataset_name": self.stats.dataset_name,
-                "topic_model": {
-                    "topics": self.stats.topics,
-                    "topic_prob_dist": [],
-                },
             }
 
             # 1. prepare directory
@@ -102,10 +98,10 @@ class Report(object):
 
             # save meta data
             # ----------------------------------------------------------
-            meta_json["topic_model"] = self.stats.topic_model_stats.meta_data
-            meta_json["keyword_stats"] = self.stats.keyword_stats.meta_data
+            meta_data["topic_model"] = self.stats.topic_model_stats.meta_data
+            meta_data["keyword_stats"] = self.stats.keyword_stats.meta_data
             json.dump(
-                meta_json,
+                meta_data,
                 open(out_dir / "meta.json", mode="wt", encoding="utf-8"),
                 ensure_ascii=False,
                 indent=2,
