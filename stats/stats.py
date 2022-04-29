@@ -103,13 +103,12 @@ class TopicModelStats(object):
         self.texts: List[Text] = []
         self.__meta_data = {"topics": self.topics}
 
+    @property
     def meta_data(self) -> dict:
         return self.__meta_data
 
     def __assert_out_path(self, out_path: PathLike):
-        assert (
-            Path(out_path).suffix == ".html"
-        ), f"out_path should be html format: {out_path}"
+        assert Path(out_path).suffix == ".html", f"out_path should be html format: {out_path}"
 
     def __save_fig(self, fig: Figure, out_path: PathLike):
         Path(out_path).parent.mkdir(parents=True, exist_ok=True)
@@ -155,9 +154,7 @@ class TopicModelStats(object):
             "height": fig.layout.height,
         }
 
-    def save_bar_chart(
-        self, topic_model: BERTopic, out_path: PathLike, n_words=8, width=300
-    ):
+    def save_bar_chart(self, topic_model: BERTopic, out_path: PathLike, n_words=8, width=300):
         """save bar chart as html
 
         Args:
@@ -168,9 +165,7 @@ class TopicModelStats(object):
         """
         self.__assert_out_path(out_path)
 
-        fig = topic_model.visualize_barchart(
-            top_n_topics=len(topic_model.topics), n_words=n_words, width=width
-        )
+        fig = topic_model.visualize_barchart(top_n_topics=len(topic_model.topics), n_words=n_words, width=width)
         self.__save_fig(fig, out_path)
         self.__meta_data["barchart"] = {
             "width": fig.layout.width,
@@ -193,9 +188,7 @@ class TopicModelStats(object):
             "height": fig.layout.height,
         }
 
-    def save_topics_per_class(
-        self, topic_model: BERTopic, out_path: PathLike, top_n_topics=50
-    ):
+    def save_topics_per_class(self, topic_model: BERTopic, out_path: PathLike, top_n_topics=50):
         """save topics per class as html
 
         Args:
@@ -204,18 +197,14 @@ class TopicModelStats(object):
             top_n_topics (int): the argument for BERTopic.visualize_topics_per_class()
         """
         self.__assert_out_path(out_path)
-        fig = topic_model.visualize_topics_per_class(
-            self.topics_per_class, top_n_topics=top_n_topics
-        )
+        fig = topic_model.visualize_topics_per_class(self.topics_per_class, top_n_topics=top_n_topics)
         self.__save_fig(fig, out_path)
         self.__meta_data["topics_per_class"] = {
             "width": fig.layout.width,
             "height": fig.layout.height,
         }
 
-    def save_topic_prob_dist(
-        self, topic_model: BERTopic, out_path: PathLike, min_probability=0.001
-    ):
+    def save_topic_prob_dist(self, topic_model: BERTopic, out_path: PathLike, min_probability=0.001):
         """save topic probability distribution per Text as html format
 
         Args:
@@ -225,12 +214,8 @@ class TopicModelStats(object):
         """
         Path(out_path).mkdir(parents=True, exist_ok=True)
         self.__meta_data["topic_prob_dist"] = []
-        for idx, text in enumerate(
-            tqdm(self.texts, desc="Reporting Topic Prob Dist...", leave=False)
-        ):
-            fig = topic_model.visualize_distribution(
-                text.prob, min_probability=min_probability
-            )
+        for idx, text in enumerate(tqdm(self.texts, desc="Reporting Topic Prob Dist...", leave=False)):
+            fig = topic_model.visualize_distribution(text.prob, min_probability=min_probability)
             path = Path(out_path) / f"report_{idx:08d}.html"
             with open(path, mode="wt", encoding="utf-8") as wf:
                 wf.write(fig.to_html())
@@ -257,9 +242,7 @@ class KeywordStats(object):
         return self.__meta_data
 
     def __assert_out_path(self, out_path: PathLike):
-        assert (
-            Path(out_path).suffix == ".html"
-        ), f"out_path should be html format: {out_path}"
+        assert Path(out_path).suffix == ".html", f"out_path should be html format: {out_path}"
 
     def save_keywords(self):
         """save keywords data into meta data"""
@@ -282,9 +265,7 @@ class KeywordStats(object):
                 leave=False,
             )
         ):
-            self.__meta_data["top_n_keywords"].append(
-                {"keyword": keyword, "count": cnt, "word_cloud_file": f"{idx:03d}.png"}
-            )
+            self.__meta_data["top_n_keywords"].append({"keyword": keyword, "count": cnt, "word_cloud_file": f"{idx:03d}.png"})
             texts = self.keywords[keyword]
             input_text = " ".join([text.preprocess() for text in texts])
             word_cloud(input_text, Path(out_path) / f"{idx:03d}.png")
@@ -328,9 +309,7 @@ class DocStat(object):
 
                 # Topics per Class
                 classes = [text.keywords[0] for text in texts]
-                topics_per_class = self.topic_model.topics_per_class(
-                    texts_for_tp, topics, classes=classes
-                )
+                topics_per_class = self.topic_model.topics_per_class(texts_for_tp, topics, classes=classes)
                 self.topic_model_stats.topics_per_class = topics_per_class
 
                 for topic, text, prob in zip(topics, texts, probs):

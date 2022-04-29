@@ -4,7 +4,7 @@
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
     "python.linting.flake8Args": [
-        "--max-line-length=500",
+        "--max-line-length=160",
         "--ignore=F401,W503"
     ],
     "python.linting.flake8Path": "flake8",
@@ -23,4 +23,7 @@
     },
     "python.linting.mypyEnabled": true,
     "python.linting.maxNumberOfProblems": 10000,
+    "python.formatting.blackArgs": [
+        "--line-length=160"
+    ],
 }
