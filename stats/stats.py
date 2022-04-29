@@ -246,7 +246,9 @@ class KeywordStats(object):
 
     def save_keywords(self):
         """save keywords data into meta data"""
-        self.__meta_data["keywords"] = dict(self.keyword_cnt)
+        self.__meta_data["keywords"] = []
+        for keyword, texts in self.keywords.items():
+            self.__meta_data["keywords"].append({"keyword": keyword, "texts": [{"title": text.title, "summary": text.summary} for text in texts]})
 
     def save_keyword_wordcloud(self, out_path: PathLike, top_n_keywords=25):
         """save WordCloud image for top-n keywords
