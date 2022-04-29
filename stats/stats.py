@@ -224,7 +224,7 @@ class TopicModelStats(object):
             nim_probability (float): the argument for BERTopic.visualize_distribution()
         """
         Path(out_path).mkdir(parents=True, exist_ok=True)
-        self.__meta_data["topic_prob_dict"] = []
+        self.__meta_data["topic_prob_dist"] = []
         for idx, text in enumerate(
             tqdm(self.texts, desc="Reporting Topic Prob Dist...", leave=False)
         ):
