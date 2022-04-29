@@ -248,7 +248,7 @@ class TopicModelStats(object):
 
 class KeywordStats(object):
     def __init__(self):
-        self.keywords: Dict[str, List[Text]] = defaultdict(list())
+        self.keywords: Dict[str, List[Text]] = defaultdict(lambda: list())
         self.keyword_cnt = FreqDist()
         self.__meta_data = {}
 
