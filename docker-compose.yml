@@ -11,6 +11,4 @@ services:
     environment:
       TZ: Asia/Tokyo
     working_dir: /workplace
-    ports:
-      - 5050:5000
   

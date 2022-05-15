@@ -1,3 +1,4 @@
+import json
 import os
 import random
 import shutil
@@ -108,37 +109,21 @@ class Config(object):
             self.__config__ = self.__config__ + ex_args
         self.__config__["config_path"] = Path(config_path)
         self.__config__["timestamp"] = self.now()
-        self.__config__["train"]["device"] = torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu"
-        )
+        self.__config__["train"]["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.__config__["log"]["log_dir"] = (
             Path(self.__config__["log"]["log_dir"])
             / f"{self.__config__['train']['exp_name']}_{self.__config__['timestamp'].strftime('%Y%m%d%H%M%S')}"
         )
-        self.__config__["log"]["log_file"] = (
-            Path(self.__config__["log"]["log_dir"])
-            / self.__config__["log"]["log_filename"]
-        )
-        self.__config__["weights"]["log_weights_dir"] = str(
-            Path(self.__config__["log"]["log_dir"]) / "weights"
-        )
-        self.__config__["data"]["data_path"] = Path(
-            self.__config__["data"]["data_path"]
-        )
-        self.__config__["data"]["cache_path"] = Path(
-            self.__config__["data"]["cache_path"]
-        )
-        self.__config__["backup"]["backup_dir"] = (
-            Path(self.__config__["backup"]["backup_dir"])
-            / Path(self.__config__["log"]["log_dir"]).name
-        )
+        self.__config__["log"]["log_file"] = Path(self.__config__["log"]["log_dir"]) / self.__config__["log"]["log_filename"]
+        self.__config__["weights"]["log_weights_dir"] = str(Path(self.__config__["log"]["log_dir"]) / "weights")
+        self.__config__["data"]["data_path"] = Path(self.__config__["data"]["data_path"])
+        self.__config__["data"]["cache_path"] = Path(self.__config__["data"]["cache_path"])
+        self.__config__["backup"]["backup_dir"] = Path(self.__config__["backup"]["backup_dir"]) / Path(self.__config__["log"]["log_dir"]).name
         self.__config__["log"]["loggers"] = {}
 
         if hasattr(self, "__logger") and isinstance(self.__logger, Logger):
             kill_logger(self.__logger)
-        self.__config__["log"]["loggers"]["logger"] = get_logger(
-            name="config", logfile=self.__config__["log"]["log_file"]
-        )
+        self.__config__["log"]["loggers"]["logger"] = get_logger(name="config", logfile=self.__config__["log"]["log_file"])
         self.__config__["log"]["logger"] = self.__config__["log"]["loggers"]["logger"]
 
         self.log.logger.info("====== show config =========")
@@ -148,9 +133,7 @@ class Config(object):
                 if isinstance(value, dict):
                     for key_2, value_2 in value.items():
                         if key_2 not in attrdict_attrs:
-                            self.log.logger.info(
-                                f"config: {key:15s}-{key_2:20s}: {value_2}"
-                            )
+                            self.log.logger.info(f"config: {key:15s}-{key_2:20s}: {value_2}")
                 else:
                     self.log.logger.info(f"config: {key:35s}: {value}")
         self.log.logger.info("============================")
@@ -192,9 +175,7 @@ class Config(object):
             self.log.logger.info("  No GPU was found.")
             self.log.logger.info("=====================================")
 
-    def describe_model(
-        self, model: torch.nn.Module, input_size: tuple = None, input_data=None
-    ):
+    def describe_model(self, model: torch.nn.Module, input_size: tuple = None, input_data=None):
         if input_data is None:
             summary_str = summary(
                 model,
@@ -238,9 +219,7 @@ class Config(object):
         shutil.copytree(self.log.log_dir, self.backup.backup_dir)
 
     def add_logger(self, name: str, silent: bool = False):
-        self.__config__["log"]["loggers"][name] = get_logger(
-            name=name, logfile=self.__config__["log"]["log_file"], silent=silent
-        )
+        self.__config__["log"]["loggers"][name] = get_logger(name=name, logfile=self.__config__["log"]["log_file"], silent=silent)
         self.__config__["log"][name] = self.__config__["log"]["loggers"][name]
 
     def fix_seed(self, seed=42):
@@ -294,10 +273,7 @@ def un7zip(src_path: PathLike, dst_path: PathLike):
 def word_cloud(input_text: str, out_path: PathLike):
     mask = get_mask()
 
-    font_path = (
-        Path(__file__).parent.parent
-        / "resources/fonts/Utatane_v1.1.0/Utatane-Regular.ttf"
-    )
+    font_path = Path(__file__).parent.parent / "resources/fonts/Utatane_v1.1.0/Utatane-Regular.ttf"
     if not font_path.exists():
         font_dir = Path(__file__).parent.parent / "resources/fonts"
         download(

@@ -42,6 +42,7 @@ pyunpack = "*"
 patool = "*"
 mecab-python3 = "*"
 unidic = "*"
+kaggle = "*"
 
 [dev-packages]
 daal = "*"
@@ -50,6 +51,7 @@ mypy = "*"
 flake8 = "*"
 black = "*"
 frozen-flask = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.9"

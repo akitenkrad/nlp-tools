@@ -11,6 +11,7 @@ import unidic
 from bertopic import BERTopic
 from matplotlib.figure import Figure
 from nltk import FreqDist
+from utils.data import Text
 from utils.tokenizers import WordTokenizer
 from utils.utils import Lang, is_notebook, word_cloud
 
@@ -18,75 +19,6 @@ if is_notebook():
     from tqdm.notebook import tqdm
 else:
     import tqdm
-
-
-class Text(object):
-    def __init__(
-        self,
-        title: str,
-        summary: str,
-        keywords: List[str],
-        pdf_url: str,
-        authors: List[str],
-        language: Lang,
-        **kwargs,
-    ):
-        self.title: str = title
-        self.summary: str = summary
-        self.keywords: List[str] = keywords
-        self.pdf_url: str = pdf_url
-        self.authors: List[str] = authors
-        self.language = language
-        self.topic = -99
-        self.prob = np.array([])
-        for name, value in kwargs.items():
-            if not hasattr(self, name):
-                setattr(self, name, value)
-
-    def __str__(self):
-        return f"<Text {self.title[:15]}... {self.language}>"
-
-    def __repr__(self):
-        return self.__str__()
-
-    def preprocess(self) -> str:
-        """preprocess text
-
-        text <- text.title + ' ' + text.summary
-        words <- remove stopwords (text)
-        words <- remove punctuations (words)
-        words <- stemming (for English) (words)
-        words <- extract Nouns (words)
-        return ' '.join(words)
-        """
-        if self.language == Lang.ENGLISH:
-            tokenizer = WordTokenizer(
-                language=Lang.ENGLISH,
-                remove_stopwords=True,
-                remove_punctuations=True,
-                stemming=True,
-                add_tag=True,
-            )
-            text = self.title + " " + self.summary
-            words = tokenizer.tokenize(text)
-            text = " ".join([word[0] for word in words if word[1].startswith("N")])
-            return text
-
-        elif self.language == Lang.JAPANESE:
-            tagger = MeCab.Tagger(f"-d {unidic.DICDIR}")
-            result = tagger.parse(self.title + " " + self.summary)
-            words = []
-            for line in result.split("\n"):
-                if "\t" not in line:
-                    continue
-                word, _attrs = line.split("\t")
-                attrs = _attrs.split(",")
-                if attrs[0] == "名詞":
-                    words.append(word)
-            return " ".join(words)
-
-        else:
-            raise RuntimeError(f"Unknown language: {self.language}")
 
 
 class DocStatTarget(Enum):
