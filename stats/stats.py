@@ -123,7 +123,7 @@ class TopicModelStats(object):
         Path(out_path).mkdir(parents=True, exist_ok=True)
         self.__meta_data["topic_prob_dist"] = []
         for idx, text in enumerate(tqdm(self.texts, desc="Reporting Topic Prob Dist...", leave=False)):
-            fig = topic_model.visualize_distribution(text.prob, min_probability=min_probability)
+            fig = topic_model.visualize_distribution(text.topic_prob, min_probability=min_probability)
             path = Path(out_path) / f"report_{idx:08d}.html"
             with open(path, mode="wt", encoding="utf-8") as wf:
                 wf.write(fig.to_html())
@@ -209,9 +209,11 @@ class ConferenceStats(object):
             self.topic_model_stats.probs = probs
 
             # Topics per Class
-            classes = [text.keywords[0] for text in texts]
-            topics_per_class = self.topic_model.topics_per_class(texts_for_tp, topics, classes=classes)
-            self.topic_model_stats.topics_per_class = topics_per_class
+            classes = [text.keywords[0] for text in texts if len(text.keywords) > 0]
+            if len(classes) > 0:
+                self.topic_model_stats.topics_per_class = self.topic_model.topics_per_class(texts_for_tp, topics, classes=classes)
+            else:
+                self.topic_model_stats.topics_per_class = None
 
             for topic, text, prob in tqdm(zip(topics, texts, probs), total=len(texts), desc="analyzing topics...", leave=False):
                 text.topic = topic
@@ -282,11 +284,12 @@ class ConferenceStats(object):
 
             # 6. Topics Per Cpass
             update_progress("Reporting: Topic Model - Topics per Class")
-            self.topic_model_stats.save_topics_per_class(
-                self.topic_model,
-                topic_model_out_dir / "topics_per_class.html",
-                top_n_topics=50,
-            )
+            if self.topic_model_stats.topics_per_class is not None:
+                self.topic_model_stats.save_topics_per_class(
+                    self.topic_model,
+                    topic_model_out_dir / "topics_per_class.html",
+                    top_n_topics=50,
+                )
 
             # 7. Topic Probability Distribution
             update_progress("Reporting: Topic Model - Topic Probability Distribution")
