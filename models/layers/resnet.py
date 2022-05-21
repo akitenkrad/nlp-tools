@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 class LinearNet(nn.Module):
     def __init__(self, input_dim, hidden_dim, n_layers, dropout=0.3):
         super().__init__()
@@ -26,6 +27,7 @@ class LinearNet(nn.Module):
             x = self.dropout(x)
             x = self.linear_2[layer](x)
         return x
+
 
 class ResidualNet(nn.Module):
     def __init__(self, input_dim, hidden_dim, n_layers, dropout=0.3):
@@ -55,8 +57,9 @@ class ResidualNet(nn.Module):
             x = x + x_org
         return x
 
+
 class Highway(nn.Module):
-    def __init__(self, input_dim:int, n_layers:int, activation=nn.LeakyReLU()):
+    def __init__(self, input_dim: int, n_layers: int, activation=nn.LeakyReLU()):
         super().__init__()
         self.n_layers = n_layers
         self.non_linear = nn.ModuleList([nn.Linear(input_dim, input_dim) for _ in range(n_layers)])

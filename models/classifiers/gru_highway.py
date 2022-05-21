@@ -1,17 +1,18 @@
-from typing import Tuple, Callable
+from typing import Callable, Tuple
+
 import torch
 import torch.nn as nn
-
-from utils.utils import Config
 from models.base import BaseModel
-from models.layers import Highway
+from models.layers.resnet import Highway
+from utils.utils import Config
+
 
 class GRU_Highway(BaseModel):
-    '''GRU with n Highway layer
-    
+    """GRU with n Highway layer
+
     Input:
         (batch_size, sentence_length, embedding_dim)
-    
+
     Output:
         (batch_size, n_class)
 
@@ -22,13 +23,14 @@ class GRU_Highway(BaseModel):
         n (int): number of Highway layers following GRU layer
         n_class (int): number of output class
         name (str): name of the model
-    '''
-    def __init__(self, config:Config, embedding_dim:int, hidden_dim:int, n_highway_layers:int=1, n_class:int=1, name:str='dnn-l1'):
+    """
+
+    def __init__(self, config: Config, embedding_dim: int, hidden_dim: int, n_highway_layers: int = 1, n_class: int = 1, name: str = "dnn-l1"):
         super().__init__(config, name)
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
         self.n_highway_layers = n_highway_layers
-        self.n_class = n_class 
+        self.n_class = n_class
         self.build()
 
     def build(self):

@@ -3,12 +3,12 @@ from typing import Callable, Tuple
 import torch
 import torch.nn as nn
 from models.base import BaseModel
-from models.layers import LinearNet
+from models.layers.resnet import LinearNet
 from utils.utils import Config
 
 
 class GRU_Linear(BaseModel):
-    '''GRU with n Linear layer
+    """GRU with n Linear layer
 
     Input:
         (batch_size, sentence_length, embedding_dim)
@@ -23,8 +23,9 @@ class GRU_Linear(BaseModel):
         n_layers (int): number of Linear layers following GRU layer
         n_class (int): number of output class
         name (str): name of the model
-    '''
-    def __init__(self, config: Config, embedding_dim: int, hidden_dim: int, n_layers=1, n_class=1, name='dnn-l1'):
+    """
+
+    def __init__(self, config: Config, embedding_dim: int, hidden_dim: int, n_layers=1, n_class=1, name="dnn-l1"):
         super().__init__(config, name)
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim

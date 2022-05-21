@@ -10,20 +10,20 @@ from utils.utils import Lang
 
 
 class Token(object):
-    def __init__(self, surface: str, base: str, pos: str):
+    def __init__(self, surface: str, base: str, pos_tag: str):
         self.surface = surface
         self.base = base
-        self.pos = pos
+        self.pos_tag = pos_tag
 
     def __str__(self) -> str:
-        return f"<Token {self.surface} {self.base} {self.pos}>"
+        return f"<Token {self.surface} {self.base} {self.pos_tag}>"
 
     def __repr__(self) -> str:
         return self.__str__()
 
     def __eq__(self, __o: object) -> bool:
         if isinstance(__o, Token):
-            return (self.surface == __o.surface) and (self.base == __o.base) and (self.pos == __o.pos)
+            return (self.surface == __o.surface) and (self.base == __o.base) and (self.pos_tag == __o.pos_tag)
         else:
             return False
 
@@ -62,7 +62,7 @@ class ConferenceText(Text):
         self.authors: List[str] = authors
         self.language = language
         self.topic = -99
-        self.prob = np.array([])
+        self.topic_prob = np.array([])
         for name, value in kwargs.items():
             if not hasattr(self, name):
                 setattr(self, name, value)

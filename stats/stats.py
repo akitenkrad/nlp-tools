@@ -1,19 +1,18 @@
+import json
 from collections import defaultdict
 from enum import Enum
 from os import PathLike
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
-import MeCab
 import numpy as np
 import pandas as pd
-import unidic
 from bertopic import BERTopic
 from matplotlib.figure import Figure
 from nltk import FreqDist
-from utils.data import Text
-from utils.tokenizers import WordTokenizer
-from utils.utils import Lang, is_notebook, word_cloud
+from utils.data import ConferenceText, Text
+from utils.tokenizers import Tokenizer
+from utils.utils import is_notebook, word_cloud
 
 if is_notebook():
     from tqdm.notebook import tqdm
@@ -62,13 +61,8 @@ class TopicModelStats(object):
             out_path (PathLike): output file path (html)
         """
         self.__assert_out_path(out_path)
-
         fig = topic_model.visualize_topics()
         self.__save_fig(fig, out_path)
-        self.__meta_data["intertopic_distance_map"] = {
-            "width": fig.layout.width,
-            "height": fig.layout.height,
-        }
 
     def save_hierarchical_clustering(self, topic_model: BERTopic, out_path: PathLike):
         """save hierarchical clustering as hitml
@@ -78,13 +72,8 @@ class TopicModelStats(object):
             out_path (PathLike): output file path (html)
         """
         self.__assert_out_path(out_path)
-
         fig = topic_model.visualize_hierarchy()
         self.__save_fig(fig, out_path)
-        self.__meta_data["hierarchical_clustering"] = {
-            "width": fig.layout.width,
-            "height": fig.layout.height,
-        }
 
     def save_bar_chart(self, topic_model: BERTopic, out_path: PathLike, n_words=8, width=300):
         """save bar chart as html
@@ -96,13 +85,8 @@ class TopicModelStats(object):
             width (int): the argument for BERTopic.visualize_barchart()
         """
         self.__assert_out_path(out_path)
-
         fig = topic_model.visualize_barchart(top_n_topics=len(topic_model.topics), n_words=n_words, width=width)
         self.__save_fig(fig, out_path)
-        self.__meta_data["barchart"] = {
-            "width": fig.layout.width,
-            "height": fig.layout.height,
-        }
 
     def save_similarity_matrix(self, topic_model: BERTopic, out_path: PathLike):
         """save similarity matrix as html
@@ -115,10 +99,6 @@ class TopicModelStats(object):
 
         fig = topic_model.visualize_heatmap()
         self.__save_fig(fig, out_path)
-        self.__meta_data["similarity_matrix"] = {
-            "width": fig.layout.width,
-            "height": fig.layout.height,
-        }
 
     def save_topics_per_class(self, topic_model: BERTopic, out_path: PathLike, top_n_topics=50):
         """save topics per class as html
@@ -131,10 +111,6 @@ class TopicModelStats(object):
         self.__assert_out_path(out_path)
         fig = topic_model.visualize_topics_per_class(self.topics_per_class, top_n_topics=top_n_topics)
         self.__save_fig(fig, out_path)
-        self.__meta_data["topics_per_class"] = {
-            "width": fig.layout.width,
-            "height": fig.layout.height,
-        }
 
     def save_topic_prob_dist(self, topic_model: BERTopic, out_path: PathLike, min_probability=0.001):
         """save topic probability distribution per Text as html format
@@ -157,8 +133,6 @@ class TopicModelStats(object):
                     "title": text.title,
                     "htmlfile": path.name,
                     "topics": topics,
-                    "width": fig.layout.width,
-                    "height": fig.layout.height,
                 }
             )
 
@@ -205,22 +179,17 @@ class KeywordStats(object):
             word_cloud(input_text, Path(out_path) / f"{idx:03d}.png")
 
 
-class DocStat(object):
-    def __init__(self, dataset_name: str):
-        self.dataset_name = dataset_name
+class ConferenceStats(object):
+    def __init__(self, conference_name: str, tokenizer: Tokenizer):
+        self.conference_name: str = conference_name
         self.topic_model: BERTopic = BERTopic(calculate_probabilities=True)
-        self.tokenizer = WordTokenizer(
-            language=Lang.ENGLISH,
-            remove_stopwords=True,
-            remove_punctuations=True,
-            stemming=True,
-            add_tag=True,
-        )
+        self.tokenizer: Tokenizer = tokenizer
+
         self.topic_model_stats = TopicModelStats()
         self.keyword_stats = KeywordStats()
 
-    def analyze(self, texts: List[Text], targets: List[DocStatTarget]):
-        total = len(targets)
+    def analyze(self, texts: List[ConferenceText]):
+        total = 3
         with tqdm(total=total, desc="analyzing...", leave=False) as progress:
 
             def update_progress(desc_text: str):
@@ -229,33 +198,119 @@ class DocStat(object):
 
             # Basic analysis
             # ----------------------------------------------------------
-            if DocStatTarget.BASIC_STATISTICS in targets:
-                update_progress("Basic Analysis...")
+            update_progress("Basic Analysis...")
 
             # Topic Modeling
             # ----------------------------------------------------------
-            if DocStatTarget.TOPIC_MODEL in targets:
-                update_progress("Topic Modeling...")
-                texts_for_tp = [text.preprocess() for text in texts]
-                topics, probs = self.topic_model.fit_transform(texts_for_tp)
-                self.topic_model_stats.topics = topics
-                self.topic_model_stats.probs = probs
+            update_progress("Topic Modeling...")
+            texts_for_tp = [text.text for text in tqdm(texts, desc="preprocessing...", leave=False)]
+            topics, probs = self.topic_model.fit_transform(texts_for_tp)
+            self.topic_model_stats.topics = topics
+            self.topic_model_stats.probs = probs
 
-                # Topics per Class
-                classes = [text.keywords[0] for text in texts]
-                topics_per_class = self.topic_model.topics_per_class(texts_for_tp, topics, classes=classes)
-                self.topic_model_stats.topics_per_class = topics_per_class
+            # Topics per Class
+            classes = [text.keywords[0] for text in texts]
+            topics_per_class = self.topic_model.topics_per_class(texts_for_tp, topics, classes=classes)
+            self.topic_model_stats.topics_per_class = topics_per_class
 
-                for topic, text, prob in zip(topics, texts, probs):
-                    text.topic = topic
-                    text.prob = prob
-                self.topic_model_stats.texts = texts
+            for topic, text, prob in tqdm(zip(topics, texts, probs), total=len(texts), desc="analyzing topics...", leave=False):
+                text.topic = topic
+                text.topic_prob = prob
+            self.topic_model_stats.texts = texts
 
             # Keyword Statistics
             # ----------------------------------------------------------
-            if DocStatTarget.KEYWORD_STATISTICS in targets:
-                update_progress("Keyword Statistics...")
-                for text in texts:
-                    for keyword in text.keywords:
-                        self.keyword_stats.keywords[keyword].append(text)
-                        self.keyword_stats.keyword_cnt[keyword] += 1
+            update_progress("Keyword Statistics...")
+            for text in tqdm(texts, desc="analyzing keywords...", leave=False):
+                for keyword in text.keywords:
+                    self.keyword_stats.keywords[keyword].append(text)
+                    self.keyword_stats.keyword_cnt[keyword] += 1
+
+    def report(self, outdir: PathLike):
+        total = 1
+        total += 0  # DocStatTarget.BASIC_STATISTICS
+        total += 6  # DocStatTarget.TOPIC_MODEL
+        total += 1  # DocStatTarget.KEYWORD_STATISTICS
+
+        with tqdm(total=total, desc="Reporting...", leave=True) as progress:
+
+            def update_progress(text: str):
+                progress.update(1)
+                progress.set_description(text)
+
+            meta_data: Dict[str, Any] = {
+                "conference_name": self.conference_name,
+            }
+
+            # 1. prepare directory
+            # ----------------------------------------------------------
+            update_progress("Reporting: Prepare Directory...")
+            out_dir: Path = Path(outdir) / self.conference_name
+            out_dir.mkdir(parents=True, exist_ok=True)
+
+            # Topic Model
+            # ----------------------------------------------------------
+            topic_model_out_dir = out_dir / "topic_model"
+            # 2. intertopic Distance Map
+            update_progress("Reporting: Topic Model - Intertopic Distance Map")
+            self.topic_model_stats.save_intertopic_distance_map(
+                self.topic_model,
+                topic_model_out_dir / "intertopic_distance_map.html",
+            )
+
+            # 3. Hierarchical Clustering
+            update_progress("Reporting: Topic Model - Hierarchical Clustering")
+            self.topic_model_stats.save_hierarchical_clustering(
+                self.topic_model,
+                topic_model_out_dir / "hierarchical_clustering.html",
+            )
+
+            # 4. BarChart
+            update_progress("Reporting: Topic Model - BarChart")
+            self.topic_model_stats.save_bar_chart(
+                self.topic_model,
+                topic_model_out_dir / "barchart.html",
+                n_words=8,
+            )
+
+            # 5. Similarity Matrix
+            update_progress("Reporting: Topic Model - Similarity Matrix")
+            self.topic_model_stats.save_similarity_matrix(
+                self.topic_model,
+                topic_model_out_dir / "similarity_matrix.html",
+            )
+
+            # 6. Topics Per Cpass
+            update_progress("Reporting: Topic Model - Topics per Class")
+            self.topic_model_stats.save_topics_per_class(
+                self.topic_model,
+                topic_model_out_dir / "topics_per_class.html",
+                top_n_topics=50,
+            )
+
+            # 7. Topic Probability Distribution
+            update_progress("Reporting: Topic Model - Topic Probability Distribution")
+            self.topic_model_stats.save_topic_prob_dist(
+                self.topic_model,
+                topic_model_out_dir / "topic_model_prob_dist",
+                min_probability=0.001,
+            )
+
+            # Keyword Statistics
+            # ----------------------------------------------------------
+            keyword_out_dir = out_dir / "keyword_stats"
+            self.keyword_stats.save_keywords()
+            # 8. Save Word Cloud
+            update_progress("Reporting: Keyword Statistics - Word Cloud")
+            self.keyword_stats.save_keyword_wordcloud(keyword_out_dir / "word_cloud", top_n_keywords=50)
+
+            # save meta data
+            # ----------------------------------------------------------
+            meta_data["topic_model"] = self.topic_model_stats.meta_data
+            meta_data["keyword_stats"] = self.keyword_stats.meta_data
+            json.dump(
+                meta_data,
+                open(out_dir / "meta.json", mode="wt", encoding="utf-8"),
+                ensure_ascii=False,
+                indent=2,
+            )
