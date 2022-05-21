@@ -1,4 +1,28 @@
+![GitHub](https://img.shields.io/github/license/akitenkrad/nlp-tools?style=for-the-badge)
+![GitHub last commit](https://img.shields.io/github/last-commit/akitenkrad/nlp-tools?style=for-the-badge)
+
+![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/akitenkrad/nlp-tools/torch?style=for-the-badge)
+![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/akitenkrad/nlp-tools/transformers?style=for-the-badge)
+![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/akitenkrad/nlp-tools/bertopic?style=for-the-badge)
+![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/akitenkrad/nlp-tools/wordcloud?style=for-the-badge)
+![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/akitenkrad/nlp-tools/mecab-python3?style=for-the-badge)
+
+
 # NLP-Tools
+
+## Datasets
+
+### Conference Datasets
+
+```python
+from datasets.conference import NeurIPS_2021
+texts = NeurIPS_2021.load()
+```
+
+Available datasets.
+- NeurIPS 2021  
+- ANLP 2022
+- JSAI 2022
 
 ## Development
 
