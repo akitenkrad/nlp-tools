@@ -101,7 +101,7 @@ class JSAI_2022(Conference):
         papers = json.load(open(data_path))
         texts = []
         for paper in papers:
-            title = re.sub(r"^\[.+\]\s*", "", paper["title"])
+            title = paper["title"]
             summary = paper["summary"]
 
             if preprocess_tokenizer:

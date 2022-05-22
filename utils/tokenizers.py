@@ -77,7 +77,7 @@ class EnglishWordTokenizer(Tokenizer):
             words = [word for word in words if word not in stop_words]
 
         # add tag
-        if self.add_tag:
+        if self.add_tag or self.filter is not None:
             words = nltk.pos_tag(words)
         else:
             words = [(word, "") for word in words]
