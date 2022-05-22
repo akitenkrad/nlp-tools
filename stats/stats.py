@@ -112,7 +112,7 @@ class TopicModelStats(object):
         fig = topic_model.visualize_topics_per_class(self.topics_per_class, top_n_topics=top_n_topics)
         self.__save_fig(fig, out_path)
 
-    def save_topic_prob_dist(self, topic_model: BERTopic, out_path: PathLike, min_probability=0.001):
+    def save_topic_prob_dist(self, topic_model: BERTopic, out_path: PathLike, min_probability=1e-10):
         """save topic probability distribution per Text as html format
 
         Args:
@@ -301,7 +301,7 @@ class ConferenceStats(object):
             self.topic_model_stats.save_topic_prob_dist(
                 self.topic_model,
                 topic_model_out_dir / "topic_model_prob_dist",
-                min_probability=0.001,
+                min_probability=1e-10,
             )
 
             # Keyword Statistics

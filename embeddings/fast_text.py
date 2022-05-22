@@ -24,16 +24,37 @@ class FastTextType(Enum):
 
 
 class FastText(Embedding):
-    def __init__(self, config: Config, fast_text_type: FastTextType, max_sent_len=-1, max_word_len=-1, no_cache=False, filter=None):
+    def __init__(
+        self,
+        config: Config,
+        fast_text_type: FastTextType,
+        max_sent_len=-1,
+        max_word_len=-1,
+        remove_punctuations=True,
+        remove_stopwords=False,
+        no_cache=False,
+        filter=None,
+    ):
         self.config = config
         self.config.add_logger("fast_text_log")
         self.fast_text_type: FastTextType = fast_text_type
         self.weights_path: Path = Path(config.weights.global_weights_dir) / "fast_text"
         self.word_tokenizer: Tokenizer = WordTokenizerFactory.get_tokenizer(
-            language=fast_text_type.value.language, pad="PAD", max_sent_len=max_sent_len, filter=filter
+            language=fast_text_type.value.language,
+            pad="PAD",
+            max_sent_len=max_sent_len,
+            remove_punctuations=remove_punctuations,
+            remove_stopwords=remove_stopwords,
+            filter=filter,
         )
         self.char_tokenizer: Tokenizer = CharTokenizerFactory.get_tokenizer(
-            language=fast_text_type.value.language, pad="PAD", max_sent_len=max_sent_len, max_word_len=max_word_len, filter=filter
+            language=fast_text_type.value.language,
+            pad="PAD",
+            max_sent_len=max_sent_len,
+            max_word_len=max_word_len,
+            remove_punctuations=remove_punctuations,
+            remove_stopwords=remove_stopwords,
+            filter=filter,
         )
 
         self.__vectors, self.__words, self.__word2idx = self.__load_fast_text__(no_cache)

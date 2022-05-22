@@ -1,5 +1,6 @@
 import string
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Callable, List, Optional, Union
 
 import MeCab
@@ -22,6 +23,9 @@ JA_PUNCTUATIONS = [c for c in string.punctuation]
 JA_PUNCTUATIONS += ["．", "。", "，", "、"]
 JA_PUNCTUATIONS += ["（", "）", "「", "」", "【", "】", "『", "』", "［", "］", "｛", "｝", "〈", "〉", "〔", "〕", "《", "》", "＜", "＞"]
 JA_PUNCTUATIONS += ["！", "＠", "？", "：", "；", "”", "’", "ー", "〜", "-", "~", "−", "・", "＄", "％", "＾", "＆", "／", "＝", "＼"]
+
+JA_STOPWORDS = stopwords.words(Lang.ENGLISH.value)
+JA_STOPWORDS += [ss.strip() for ss in open(Path(__file__).parent / "resources/texts/JA_STOPWORDS_SLOTHLIB.txt") if ss.strip() != ""]
 
 
 class Tokenizer(ABC):
@@ -144,7 +148,8 @@ class JapaneseWordTokenizer(Tokenizer):
             words = [word for word in words if word[0] not in JA_PUNCTUATIONS]
 
         # remove stopwords
-        # TODO how to determin whether a word is a stopword or not
+        if self.remove_stopwords:
+            words = [word for word in words if word[0] not in JA_STOPWORDS]
 
         # pad sentence
         if self.max_sent_len > 0 and not disable_max_len:
@@ -269,7 +274,8 @@ class JapaneseCharTokenizer(Tokenizer):
             word_tokens = [word for word in word_tokens if word.surface not in JA_PUNCTUATIONS]
 
         # remove stopwords
-        # TODO how to determin whether a word is a stopword or not
+        if self.remove_stopwords:
+            word_tokens = [word for word in word_tokens if word.surface not in JA_STOPWORDS]
 
         # apply filter
         if self.filter is not None:
