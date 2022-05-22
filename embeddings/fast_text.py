@@ -7,6 +7,7 @@ from typing import Dict, List, Tuple
 
 import gensim
 import numpy as np
+from gensim.models.keyedvectors import KeyedVectors
 from tqdm import tqdm
 from utils.data import Text, Token
 from utils.tokenizers import CharTokenizerFactory, Tokenizer, WordTokenizerFactory
@@ -129,3 +130,8 @@ class FastText(Embedding):
 
         self.config.log.fast_text_log.info(f"Finished loading fast_text tokens: total={len(words)} words.")
         return np.array(vectors), words, word2idx
+
+    def get_gensim_keyedvectors(self) -> KeyedVectors:
+        weights_path = self.weights_path / self.fast_text_type.value.filename
+        weights = gensim.models.KeyedVectors.load_word2vec_format(weights_path, binary=False)
+        return weights
