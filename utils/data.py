@@ -1,10 +1,6 @@
-from abc import ABC, abstractmethod
-from collections import namedtuple
 from typing import List
 
-import MeCab
 import numpy as np
-import unidic
 
 from utils.utils import Lang
 
@@ -75,6 +71,10 @@ class ConferenceText(Text):
     def __repr__(self):
         return self.__str__()
 
+    @property
+    def text(self) -> str:
+        return self.__text
+
 
 class QAText(Text):
     def __init__(self, question: str, passages: List[str], answer: str, language=Lang.ENGLISH):
@@ -90,3 +90,7 @@ class QAText(Text):
 
     def __repr__(self):
         return self.__str__()
+
+    @property
+    def text(self) -> str:
+        return self.__text
