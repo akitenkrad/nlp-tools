@@ -6,6 +6,8 @@
         "**/.ipynb_checkpoints/**": true,
         "**/.mypy_cache/**": true,
         "**/.pytest_cache/**": true,
+        "**/__pycache__/**": true,
+        "**/logs/**": true
     },
     "diffEditor.ignoreTrimWhitespace": false,
     "editor.bracketPairColorization.enabled": true,

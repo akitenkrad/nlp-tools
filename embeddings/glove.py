@@ -7,6 +7,7 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 from tqdm import tqdm
+from utils.data import Text, Token
 from utils.tokenizers import CharTokenizerFactory, Tokenizer, WordTokenizerFactory
 from utils.utils import Config, Lang, download
 
@@ -54,10 +55,10 @@ class GloVe(Embedding):
     def weights(self) -> np.ndarray:
         return self.__vectors
 
-    def word_tokenize(self, text: str) -> List[str]:
+    def word_tokenize(self, text: Text) -> List[Token]:
         return self.word_tokenizer.tokenize(text)
 
-    def char_tokenize(self, text: str) -> List[List[str]]:
+    def char_tokenize(self, text: Text) -> List[List[Token]]:
         return self.char_tokenizer.tokenize(text)
 
     def index2token(self, index: int) -> str:
@@ -72,15 +73,15 @@ class GloVe(Embedding):
         else:
             return self.__word2idx[token]
 
-    def word_embed(self, input_text: str) -> np.ndarray:
-        tokens: List[str] = self.word_tokenize(input_text)
-        indices: List[int] = [self.token2index(token) for token in tokens]
+    def word_embed(self, input_text: Text) -> np.ndarray:
+        tokens: List[Token] = self.word_tokenize(input_text)
+        indices: List[int] = [self.token2index(token.surface) for token in tokens]
         embed_vector: np.ndarray = np.array([self.__vectors[idx] for idx in indices])
         return embed_vector
 
-    def char_embed(self, input_text: str) -> List[np.ndarray]:
-        words: List[List[str]] = self.char_tokenize(input_text)
-        indices: List[List[int]] = [[self.token2index(token) for token in word] for word in words]
+    def char_embed(self, input_text: Text) -> List[np.ndarray]:
+        words: List[List[Token]] = self.char_tokenize(input_text)
+        indices: List[List[int]] = [[self.token2index(token.surface) for token in word] for word in words]
         embed_vector: List[np.ndarray] = [np.array([self.__vectors[idx] for idx in index]) for index in indices]
         return embed_vector
 
