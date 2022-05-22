@@ -43,6 +43,7 @@ patool = "*"
 mecab-python3 = "*"
 unidic = "*"
 kaggle = "*"
+gensim = "*"
 
 [dev-packages]
 daal = "*"

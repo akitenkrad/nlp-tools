@@ -3,7 +3,7 @@ import zipfile
 from collections import namedtuple
 from enum import Enum
 from pathlib import Path
-from typing import List, Union
+from typing import Dict, List, Tuple
 
 import numpy as np
 from tqdm import tqdm
@@ -50,6 +50,10 @@ class GloVe(Embedding):
     def tokens(self) -> List[str]:
         return self.__words
 
+    @property
+    def weights(self) -> np.ndarray:
+        return self.__vectors
+
     def word_tokenize(self, text: str) -> List[str]:
         return self.word_tokenizer.tokenize(text)
 
@@ -80,7 +84,7 @@ class GloVe(Embedding):
         embed_vector: List[np.ndarray] = [np.array([self.__vectors[idx] for idx in index]) for index in indices]
         return embed_vector
 
-    def __load_glove__(self, no_cache=False):
+    def __load_glove__(self, no_cache=False) -> Tuple[np.ndarray, List[str], Dict[str, int]]:
         """load pretrained glove from http://nlp.stanford.edu
 
         Args:
@@ -131,7 +135,7 @@ class GloVe(Embedding):
                         words.append(word)
                         word2idx[word] = idx
                         idx += 1
-                        vect = np.array(line[1:]).astype(np.float)
+                        vect = np.array(line[1:]).astype(np.float32)
                         vectors.append(vect)
 
                 # for unknown token

@@ -1,5 +1,12 @@
 {
     // General Settings
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/.ipynb_checkpoints/**": true,
+        "**/.mypy_cache/**": true,
+        "**/.pytest_cache/**": true,
+    },
     "diffEditor.ignoreTrimWhitespace": false,
     "editor.bracketPairColorization.enabled": true,
     "editor.cursorBlinking": "smooth",
