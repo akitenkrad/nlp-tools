@@ -110,6 +110,13 @@ class JSAI_2022(Conference):
                 title = " ".join(token.surface for token in title_tokens)
                 summary = " ".join(token.surface for token in summary_tokens)
 
+            if paper["language"] == "japanese":
+                language = Lang.JAPANESE
+            elif paper["language"] == "english":
+                language = Lang.ENGLISH
+            else:
+                language = Lang.JAPANESE
+
             texts.append(
                 ConferenceText(
                     title=title,
@@ -117,7 +124,7 @@ class JSAI_2022(Conference):
                     keywords=[keyword.replace("Keywords:", "").strip().lower() for keyword in paper["keywords"]],
                     pdf_url="",
                     authors=paper["authors"],
-                    language=Lang.JAPANESE,
+                    language=language,
                 )
             )
         return texts
