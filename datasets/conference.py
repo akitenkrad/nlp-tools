@@ -84,7 +84,7 @@ class JSAI_2022(Conference):
                 ConferenceText(
                     title=re.sub(r"^\[.+\]\s*", "", paper["title"]),
                     summary=paper["summary"],
-                    keywords=paper["keywords"],
+                    keywords=[keyword.replace("Keywords:", "").strip() for keyword in paper["keywords"]],
                     pdf_url="",
                     authors=paper["authors"],
                     language=Lang.JAPANESE,

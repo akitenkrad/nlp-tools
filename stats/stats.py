@@ -180,9 +180,9 @@ class KeywordStats(object):
 
 
 class ConferenceStats(object):
-    def __init__(self, conference_name: str, tokenizer: Tokenizer):
+    def __init__(self, conference_name: str, tokenizer: Tokenizer, weights=None):
         self.conference_name: str = conference_name
-        self.topic_model: BERTopic = BERTopic(calculate_probabilities=True)
+        self.topic_model: BERTopic = BERTopic(calculate_probabilities=True, embedding_model=weights)
         self.tokenizer: Tokenizer = tokenizer
 
         self.topic_model_stats = TopicModelStats()
@@ -209,7 +209,12 @@ class ConferenceStats(object):
             self.topic_model_stats.probs = probs
 
             # Topics per Class
-            classes = [text.keywords[0] for text in texts if len(text.keywords) > 0]
+            classes = []
+            for text in texts:
+                if len(text.keywords) > 0:
+                    classes.append(text.keywords[0])
+                else:
+                    classes.append("No Keywords")
             if len(classes) > 0:
                 self.topic_model_stats.topics_per_class = self.topic_model.topics_per_class(texts_for_tp, topics, classes=classes)
             else:

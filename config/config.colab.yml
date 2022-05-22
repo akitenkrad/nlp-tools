@@ -16,7 +16,7 @@ lr_finder:
     beta: 0.98
 
 data:
-    data_path: /content/nlp-tools/data
+    data_path: /content/data
     cache_path: /content/drive/MyDrive/Cloud/Outputs/nlp-tools/__cache__
 
 weights:
@@ -24,11 +24,11 @@ weights:
     log_weights_dir: /content/drive/MyDrive/Cloud/Outputs/nlp-tools/logs # to be set in utils/utils.py
 
 log:
-    log_dir: /content/nlp-tools/logs
+    log_dir: /content/logs
     log_filename: system.log
 
 output:
-    out_dir: /content/nlp-tools/outputs
+    out_dir: /content/outputs
 
 backup:
     backup: True
