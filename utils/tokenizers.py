@@ -135,7 +135,7 @@ class JapaneseWordTokenizer(Tokenizer):
             surface, _attrs = line.split("\t")
             attrs = _attrs.split(",")
             pos = attrs[0]
-            base = attrs[7]
+            base = attrs[7] if len(attrs) > 7 else surface
 
             words.append((surface, base, pos))
 
@@ -256,7 +256,7 @@ class JapaneseCharTokenizer(Tokenizer):
             surface, _attrs = line.split("\t")
             attrs = _attrs.split(",")
             pos = attrs[0]
-            base = attrs[7]
+            base = attrs[7] if len(attrs) > 7 else surface
 
             if self.stemming:
                 word = _attrs[7]
