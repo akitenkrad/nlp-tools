@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Optional
 
-from stats.stats import ConferenceText
+from stats.stats import ConferenceText, Text
 from utils.google_drive import GDriveObjects, download_from_google_drive
 from utils.tokenizers import Tokenizer
 from utils.utils import Lang
@@ -34,8 +34,8 @@ class NeurIPS_2021(Conference):
             summary = paper["abstract"]
 
             if preprocess_tokenizer:
-                title_tokens = preprocess_tokenizer.tokenize(title)
-                summary_tokens = preprocess_tokenizer.tokenize(summary)
+                title_tokens = preprocess_tokenizer.tokenize(Text(title, language=preprocess_tokenizer.language))
+                summary_tokens = preprocess_tokenizer.tokenize(Text(summary, language=preprocess_tokenizer.language))
                 title = " ".join(token.surface for token in title_tokens)
                 summary = " ".join(token.surface for token in summary_tokens)
 
@@ -71,8 +71,8 @@ class ANLP_2022(Conference):
             summary = paper["abstract"]
 
             if preprocess_tokenizer:
-                title_tokens = preprocess_tokenizer.tokenize(title)
-                summary_tokens = preprocess_tokenizer.tokenize(summary)
+                title_tokens = preprocess_tokenizer.tokenize(Text(title, language=preprocess_tokenizer.languge))
+                summary_tokens = preprocess_tokenizer.tokenize(Text(summary, language=preprocess_tokenizer.language))
                 title = " ".join(token.surface for token in title_tokens)
                 summary = " ".join(token.surface for token in summary_tokens)
 
@@ -105,8 +105,8 @@ class JSAI_2022(Conference):
             summary = paper["summary"]
 
             if preprocess_tokenizer:
-                title_tokens = preprocess_tokenizer.tokenize(title)
-                summary_tokens = preprocess_tokenizer.tokenize(summary)
+                title_tokens = preprocess_tokenizer.tokenize(Text(title, language=preprocess_tokenizer.language))
+                summary_tokens = preprocess_tokenizer.tokenize(Text(summary, language=preprocess_tokenizer.language))
                 title = " ".join(token.surface for token in title_tokens)
                 summary = " ".join(token.surface for token in summary_tokens)
 
