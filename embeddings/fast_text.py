@@ -140,9 +140,9 @@ class FastText(Embedding):
             vectors = weights.vectors
             words = [""] * len(weights.key_to_index)
             word2idx = {}
-            for word, value in weights.key_to_index.items():
-                words[value.index] = word
-                word2idx[word] = value.index
+            for word, index in weights.key_to_index.items():
+                words[index] = word
+                word2idx[word] = index
 
             # cache weights
             pickle.dump(vectors, open(str(vector_cache), "wb"))
