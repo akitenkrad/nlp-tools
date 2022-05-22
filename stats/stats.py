@@ -180,9 +180,9 @@ class KeywordStats(object):
 
 
 class ConferenceStats(object):
-    def __init__(self, conference_name: str, tokenizer: Tokenizer, weights=None):
+    def __init__(self, conference_name: str, tokenizer: Tokenizer, gensim_model=None):
         self.conference_name: str = conference_name
-        self.topic_model: BERTopic = BERTopic(calculate_probabilities=True, embedding_model=weights)
+        self.topic_model: BERTopic = BERTopic(calculate_probabilities=True, embedding_model=gensim_model)
         self.tokenizer: Tokenizer = tokenizer
 
         self.topic_model_stats = TopicModelStats()

@@ -131,7 +131,7 @@ class FastText(Embedding):
         self.config.log.fast_text_log.info(f"Finished loading fast_text tokens: total={len(words)} words.")
         return np.array(vectors), words, word2idx
 
-    def get_gensim_keyedvectors(self) -> KeyedVectors:
+    def get_gensim_model(self) -> KeyedVectors:
         weights_path = self.weights_path / self.fast_text_type.value.filename
         weights = gensim.models.KeyedVectors.load_word2vec_format(weights_path, binary=False)
         return weights
