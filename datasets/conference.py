@@ -54,7 +54,7 @@ class NeurIPS_2021(Conference):
 
 class ANLP_2022(Conference):
     @classmethod
-    def load(self, preprocess: Optional[Tokenizer]) -> List[ConferenceText]:
+    def load(self, preprocess_tokenizer: Optional[Tokenizer]) -> List[ConferenceText]:
         data_path = Path("data/conference/ANLP/ANLP-2022.json")
 
         if not data_path.exists():
