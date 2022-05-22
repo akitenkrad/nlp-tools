@@ -32,7 +32,7 @@ class NeurIPS_2021(Conference):
                 ConferenceText(
                     title=paper["title"],
                     summary=paper["abstract"],
-                    keywords=paper["keywords"],
+                    keywords=[keyword.strip().lower() for keyword in paper["keywords"]],
                     pdf_url=paper["pdf_url"],
                     authors=paper["authors"],
                     language=Lang.ENGLISH,
@@ -59,7 +59,7 @@ class ANLP_2022(Conference):
                 ConferenceText(
                     title=paper["title"],
                     summary=paper["abstract"],
-                    keywords=[keywords[paper["id"].split("-")[0]]],
+                    keywords=[keywords[paper["id"].split("-")[0]].strip().lower()],
                     pdf_url="",
                     authors=[],
                     language=Lang.JAPANESE if paper["language"] == "japanese" else Lang.ENGLISH,
@@ -84,7 +84,7 @@ class JSAI_2022(Conference):
                 ConferenceText(
                     title=re.sub(r"^\[.+\]\s*", "", paper["title"]),
                     summary=paper["summary"],
-                    keywords=[keyword.replace("Keywords:", "").strip() for keyword in paper["keywords"]],
+                    keywords=[keyword.replace("Keywords:", "").strip().lower() for keyword in paper["keywords"]],
                     pdf_url="",
                     authors=paper["authors"],
                     language=Lang.JAPANESE,

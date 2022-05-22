@@ -30,14 +30,16 @@ class GloVeType(Enum):
 
 
 class GloVe(Embedding):
-    def __init__(self, config: Config, glove_type: GloVeType, max_sent_len=-1, max_word_len=-1, no_cache=False):
+    def __init__(self, config: Config, glove_type: GloVeType, max_sent_len=-1, max_word_len=-1, filter=None, no_cache=False):
         self.config = config
         self.config.add_logger("glove_log")
         self.glove_type: GloVeType = glove_type
         self.weights_path: Path = Path(config.weights.global_weights_dir) / "glove"
-        self.word_tokenizer: Tokenizer = WordTokenizerFactory.get_tokenizer(language=Lang.ENGLISH, pad="padding", max_sent_len=max_sent_len)
+        self.word_tokenizer: Tokenizer = WordTokenizerFactory.get_tokenizer(
+            language=Lang.ENGLISH, pad="padding", max_sent_len=max_sent_len, filter=filter
+        )
         self.char_tokenizer: Tokenizer = CharTokenizerFactory.get_tokenizer(
-            language=Lang.ENglish, pad="padding", max_sent_len=max_sent_len, max_word_len=max_word_len
+            language=Lang.ENglish, pad="padding", max_sent_len=max_sent_len, max_word_len=max_word_len, filter=filter
         )
 
         self.__vectors, self.__words, self.__word2idx = self.__load_glove__(no_cache)

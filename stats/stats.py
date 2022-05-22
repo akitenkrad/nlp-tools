@@ -12,7 +12,7 @@ from matplotlib.figure import Figure
 from nltk import FreqDist
 from utils.data import ConferenceText, Text
 from utils.tokenizers import Tokenizer
-from utils.utils import is_notebook, word_cloud
+from utils.utils import WordCloudMask, is_notebook, word_cloud
 
 if is_notebook():
     from tqdm.notebook import tqdm
@@ -175,8 +175,8 @@ class KeywordStats(object):
         ):
             self.__meta_data["top_n_keywords"].append({"keyword": keyword, "count": cnt, "word_cloud_file": f"{idx:03d}.png"})
             texts = self.keywords[keyword]
-            input_text = " ".join([text.preprocess() for text in texts])
-            word_cloud(input_text, Path(out_path) / f"{idx:03d}.png")
+            input_text = " ".join([text.text for text in texts])
+            word_cloud(input_text, Path(out_path) / f"{idx:03d}.png", mask_type=WordCloudMask.CIRCLE)
 
 
 class ConferenceStats(object):

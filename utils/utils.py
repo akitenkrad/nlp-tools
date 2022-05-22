@@ -65,8 +65,32 @@ class Phase(Enum):
     SUBMISSION = 5
 
 
-class Config(object):
+class WordCloudMask(Enum):
+    RANDOM = [
+        "circle.png",
+        "doragoslime.png",
+        "goldenslime.png",
+        "haguremetal.png",
+        "haguremetal2.png",
+        "kingslime.png",
+        "slime.png",
+        "slimetower.png",
+        "slimetsumuri.png",
+    ]
+    CIRCLE = ["circle.png"]
+    DQ = [
+        "doragoslime.png",
+        "goldenslime.png",
+        "haguremetal.png",
+        "haguremetal2.png",
+        "kingslime.png",
+        "slime.png",
+        "slimetower.png",
+        "slimetsumuri.png",
+    ]
 
+
+class Config(object):
     NVIDIA_SMI_DEFAULT_ATTRIBUTES = (
         "index",
         "uuid",
@@ -270,8 +294,8 @@ def un7zip(src_path: PathLike, dst_path: PathLike):
             print(os.path.join(dirname, filename))
 
 
-def word_cloud(input_text: str, out_path: PathLike):
-    mask = get_mask()
+def word_cloud(input_text: str, out_path: PathLike, mask_type=WordCloudMask.RANDOM):
+    mask: np.ndarray = get_mask(mask_type)
 
     font_path = Path(__file__).parent / "fonts/Utatane_v1.1.0/Utatane-Regular.ttf"
     if not font_path.exists():
@@ -295,12 +319,10 @@ def word_cloud(input_text: str, out_path: PathLike):
     wc.to_file(str(out_path))
 
 
-def get_mask(mask_path: PathLike = None) -> np.ndarray:
-    if mask_path is None:
-        mask_dir = Path(__file__).parent / "mask_images"
-        mask_files = [Path(f) for f in glob(str(mask_dir / "*.png"))]
-        mask_path = random.choice(mask_files)
-
+def get_mask(mask_type: WordCloudMask) -> np.ndarray:
+    mask_dir = Path(__file__).parent / "mask_images"
+    mask_file = random.choice(mask_type.value)
+    mask_path = mask_dir / mask_file
     mask_image = Image.open(str(mask_path)).convert("L")
     mask = np.array(mask_image, "f")
     mask = (mask > 128) * 255
