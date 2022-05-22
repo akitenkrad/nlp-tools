@@ -138,9 +138,9 @@ class FastText(Embedding):
             weights = gensim.models.KeyedVectors.load_word2vec_format(weights_path, binary=False)
 
             vectors = weights.vectors
-            words = [""] * len(weights.vocab)
+            words = [""] * len(weights.key_to_index)
             word2idx = {}
-            for word, value in weights.vocab.items():
+            for word, value in weights.key_to_index.items():
                 words[value.index] = word
                 word2idx[word] = value.index
 
