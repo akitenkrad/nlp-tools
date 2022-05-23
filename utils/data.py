@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, Dict, List
 
 import numpy as np
 
@@ -23,6 +23,9 @@ class Token(object):
         else:
             return False
 
+    def to_dict(self) -> Dict[str, Any]:
+        return {"surface": self.surface, "base": self.base, "pos_tag": self.pos_tag}
+
 
 class Text(object):
     def __init__(self, text: str, language=Lang.ENGLISH):
@@ -38,6 +41,9 @@ class Text(object):
     @property
     def text(self) -> str:
         return self.__text
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"text": self.__text, "language": self.language.value}
 
 
 class ConferenceText(Text):
@@ -59,9 +65,12 @@ class ConferenceText(Text):
         self.language = language
         self.topic = -99
         self.topic_prob = np.array([])
+
+        self.attrs = []
         for name, value in kwargs.items():
             if not hasattr(self, name):
                 setattr(self, name, value)
+                self.attrs.append({"name": name, "value": value})
 
         self.__text = f"{self.title} {self.summary}"
 
@@ -74,6 +83,22 @@ class ConferenceText(Text):
     @property
     def text(self) -> str:
         return self.__text
+
+    def to_dict(self) -> Dict[str, Any]:
+        res = {
+            "text": self.__text,
+            "title": self.title,
+            "summary": self.summary,
+            "keywords": self.keywords,
+            "pdf_url": self.pdf_url,
+            "authors": self.authors,
+            "language": self.language,
+            "topic": self.topic,
+            "topic_prob": self.topic_prob,
+        }
+        for attr in self.attrs:
+            res[attr["name"]] = attr["value"]
+        return res
 
 
 class QAText(Text):
