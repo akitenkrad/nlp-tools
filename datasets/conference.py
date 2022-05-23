@@ -13,13 +13,13 @@ from utils.utils import Lang
 class Conference(ABC):
     @classmethod
     @abstractmethod
-    def load(cls, preprocess_tokenizer: Optional[Tokenizer]) -> List[ConferenceText]:
+    def load(cls, preprocess_tokenizer: Optional[Tokenizer] = None) -> List[ConferenceText]:
         pass
 
 
 class NeurIPS_2021(Conference):
     @classmethod
-    def load(cls, preprocess_tokenizer: Optional[Tokenizer]) -> List[ConferenceText]:
+    def load(cls, preprocess_tokenizer: Optional[Tokenizer] = None) -> List[ConferenceText]:
         data_path = Path("data/conference/NeurIPS/neurips_2021.json")
 
         if not data_path.exists():
@@ -54,7 +54,7 @@ class NeurIPS_2021(Conference):
 
 class ANLP_2022(Conference):
     @classmethod
-    def load(self, preprocess_tokenizer: Optional[Tokenizer]) -> List[ConferenceText]:
+    def load(self, preprocess_tokenizer: Optional[Tokenizer] = None) -> List[ConferenceText]:
         data_path = Path("data/conference/ANLP/ANLP-2022.json")
 
         if not data_path.exists():
@@ -91,7 +91,7 @@ class ANLP_2022(Conference):
 
 class JSAI_2022(Conference):
     @classmethod
-    def load(self, preprocess_tokenizer: Optional[Tokenizer]) -> List[ConferenceText]:
+    def load(self, preprocess_tokenizer: Optional[Tokenizer] = None) -> List[ConferenceText]:
         data_path = Path("data/conference/JSAI/JSAI_2022.json")
 
         if not data_path.exists():
