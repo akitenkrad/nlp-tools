@@ -129,7 +129,7 @@ class JSAI_2022(Conference):
                     program_type=paper["program_type"],
                     primary_category=paper["primary_category"],
                     secondary_category=paper["secondary_category"],
-                    session_schedule=paper["sessoin_schedule"],
+                    session_schedule=paper["session_schedule"],
                     session_title=paper["session_title"],
                 )
             )
