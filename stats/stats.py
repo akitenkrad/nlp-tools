@@ -176,7 +176,7 @@ class KeywordStats(object):
             self.__meta_data["top_n_keywords"].append({"keyword": keyword, "count": cnt, "word_cloud_file": f"{idx:03d}.png"})
             texts = self.keywords[keyword]
             input_text = " ".join([text.text for text in texts])
-            word_cloud(input_text, Path(out_path) / f"{idx:03d}.png", mask_type=WordCloudMask.CIRCLE)
+            word_cloud(input_text, Path(out_path) / f"{keyword}.png", mask_type=WordCloudMask.CIRCLE)
 
 
 class ConferenceStats(object):

@@ -117,6 +117,9 @@ class JSAI_2022(Conference):
             else:
                 language = Lang.JAPANESE
 
+            if summary == "n/a":
+                continue
+
             texts.append(
                 ConferenceText(
                     title=title,
