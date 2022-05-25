@@ -49,16 +49,20 @@ class Text(object):
 class ConferenceText(Text):
     def __init__(
         self,
-        title: str,
-        summary: str,
+        original_title: str,
+        preprocessed_title: str,
+        original_summary: str,
+        preprocessed_summary: str,
         keywords: List[str],
         pdf_url: str,
         authors: List[str],
         language: Lang,
         **kwargs,
     ):
-        self.title: str = title
-        self.summary: str = summary
+        self.original_title: str = original_title
+        self.preprocessed_title: str = preprocessed_title
+        self.original_summary: str = original_summary
+        self.preprocessed_summary: str = preprocessed_summary
         self.keywords: List[str] = keywords
         self.pdf_url: str = pdf_url
         self.authors: List[str] = authors
@@ -72,10 +76,10 @@ class ConferenceText(Text):
                 setattr(self, name, value)
                 self.attrs.append({"name": name, "value": value})
 
-        self.__text = f"{self.title} {self.summary}"
+        self.__text = f"{self.preprocessed_title} {self.preprocessed_summary}"
 
     def __str__(self):
-        return f"<ConferenceText {self.title[:15]}... {self.language}>"
+        return f"<ConferenceText {self.original_title[:15]}... (in {self.language})>"
 
     def __repr__(self):
         return self.__str__()
@@ -87,8 +91,10 @@ class ConferenceText(Text):
     def to_dict(self) -> Dict[str, Any]:
         res = {
             "text": self.__text,
-            "title": self.title,
-            "summary": self.summary,
+            "original_title": self.original_title,
+            "preprocessed_title": self.preprocessed_title,
+            "original_summary": self.original_summary,
+            "preprocessed_summary": self.preprocessed_summary,
             "keywords": self.keywords,
             "pdf_url": self.pdf_url,
             "authors": self.authors,

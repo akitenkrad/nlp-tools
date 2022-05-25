@@ -101,14 +101,17 @@ class JSAI_2022(Conference):
         papers = json.load(open(data_path))
         texts = []
         for paper in papers:
-            title = paper["title"]
-            summary = paper["summary"]
+            original_title = paper["title"]
+            original_summary = paper["summary"]
 
             if preprocess_tokenizer:
-                title_tokens = preprocess_tokenizer.tokenize(Text(title, language=preprocess_tokenizer.language))
-                summary_tokens = preprocess_tokenizer.tokenize(Text(summary, language=preprocess_tokenizer.language))
-                title = " ".join(token.surface for token in title_tokens)
-                summary = " ".join(token.surface for token in summary_tokens)
+                title_tokens = preprocess_tokenizer.tokenize(Text(original_title, language=preprocess_tokenizer.language))
+                summary_tokens = preprocess_tokenizer.tokenize(Text(original_summary, language=preprocess_tokenizer.language))
+                preprocessed_title = " ".join(token.surface for token in title_tokens)
+                preprocessed_summary = " ".join(token.surface for token in summary_tokens)
+            else:
+                preprocessed_title = original_title
+                preprocessed_summary = preprocessed_summary
 
             if paper["language"] == "japanese":
                 language = Lang.JAPANESE
@@ -117,13 +120,15 @@ class JSAI_2022(Conference):
             else:
                 language = Lang.JAPANESE
 
-            if summary == "n/a":
+            if preprocessed_summary == "n/a":
                 continue
 
             texts.append(
                 ConferenceText(
-                    title=title,
-                    summary=summary,
+                    original_title=original_title,
+                    preprocessed_title=preprocessed_title,
+                    original_summary=original_summary,
+                    preprocessed_summary=preprocessed_summary,
                     keywords=paper["keywords"],
                     pdf_url=paper["url"],
                     authors=paper["authors"],

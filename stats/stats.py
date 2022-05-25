@@ -26,13 +26,13 @@ class DocStatTarget(Enum):
     KEYWORD_STATISTICS = "keyword_statistics"
 
 
-class TopicModelStats(object):
+class ConferenceTopicModelStats(object):
     def __init__(self):
         self.topics: List[int] = []
         self.probs: np.ndarray = np.ndarray([])
         self.topics_per_class: pd.DataFrame = pd.DataFrame()
-        self.texts: List[Text] = []
-        self.__meta_data = {"topics": self.topics}
+        self.texts: List[ConferenceText] = []
+        self.__meta_data = {}
 
     @property
     def meta_data(self) -> dict:
@@ -52,6 +52,10 @@ class TopicModelStats(object):
         for topic, prob in zip(_topics, _probs):
             topics[topic] = prob
         return topics
+
+    def save_topics(self, topic_model: BERTopic):
+        """save topics"""
+        self.__meta_data["topics"] = topic_model.topics
 
     def save_intertopic_distance_map(self, topic_model: BERTopic, out_path: PathLike):
         """save intertopic distance map as html
@@ -130,7 +134,7 @@ class TopicModelStats(object):
             topics = self.get_topic(topic_model, text)
             self.__meta_data["topic_prob_dist"].append(
                 {
-                    "title": text.title,
+                    "title": text.original_title,
                     "htmlfile": path.name,
                     "topics": topics,
                 }
@@ -154,7 +158,20 @@ class KeywordStats(object):
         """save keywords data into meta data"""
         self.__meta_data["keywords"] = []
         for keyword, texts in self.keywords.items():
-            self.__meta_data["keywords"].append({"keyword": keyword, "texts": [{"title": text.title, "summary": text.summary} for text in texts]})
+            self.__meta_data["keywords"].append(
+                {
+                    "keyword": keyword,
+                    "texts": [
+                        {
+                            "original_title": text.original_title,
+                            "preprocessed_title": text.preprocessed_title,
+                            "original_summary": text.original_summary,
+                            "preprocessed_summary": text.preprocessed_summary,
+                        }
+                        for text in texts
+                    ],
+                }
+            )
 
     def save_keyword_wordcloud(self, out_path: PathLike, top_n_keywords=25):
         """save WordCloud image for top-n keywords
@@ -185,7 +202,7 @@ class ConferenceStats(object):
         self.topic_model: BERTopic = BERTopic(calculate_probabilities=True, embedding_model=gensim_model)
         self.tokenizer: Tokenizer = tokenizer
 
-        self.topic_model_stats = TopicModelStats()
+        self.topic_model_stats = ConferenceTopicModelStats()
         self.keyword_stats = KeywordStats()
 
     def analyze(self, texts: List[ConferenceText]):
