@@ -27,8 +27,8 @@ class DocStatTarget(Enum):
 
 
 class ConferenceTopicModelStats(object):
-    def __init__(self, gensim_model=None):
-        self.topic_model: BERTopic = BERTopic(calculate_probabilities=True, embedding_model=gensim_model)
+    def __init__(self, embedding_model=None):
+        self.topic_model: BERTopic = BERTopic(calculate_probabilities=True, embedding_model=embedding_model)
         self.topics: List[int] = []
         self.probs: np.ndarray = np.ndarray([])
         self.topics_per_class: pd.DataFrame = pd.DataFrame()
@@ -72,13 +72,12 @@ class ConferenceTopicModelStats(object):
 
     def get_topic(self, text: Text) -> Tuple[int, str, Dict[int, float]]:
         topics = {idx: 0.0 for idx in self.topic_model.topics.keys()}
-        _topics, _probs = self.topic_model.find_topics(text.text)
+        [topic], _probs = self.topic_model.transform(text.text)
         for topic, prob in zip(_topics, _probs):
             topics[topic] = prob
         topic_info = self.topic_model.get_topic_info()
-        primary_topic_idx = _topics[np.argmax(_probs)]
-        primary_topic_name = topic_info[topic_info["Topic"] == primary_topic_idx]["Name"].values[0]
-        return primary_topic_idx, primary_topic_name, topics
+        primary_topic_name = topic_info[topic_info["Topic"] == topic]["Name"].values[0]
+        return topic, primary_topic_name, topics
 
     def save_topic_info(self, out_path: PathLike):
         """save topic info as csv
@@ -231,10 +230,10 @@ class KeywordStats(object):
 
 
 class ConferenceStats(object):
-    def __init__(self, conference_name: str, tokenizer: Tokenizer, gensim_model=None):
+    def __init__(self, conference_name: str, tokenizer: Tokenizer, embedding_for_topic_model=None):
         self.conference_name: str = conference_name
         self.tokenizer: Tokenizer = tokenizer
-        self.topic_model_stats = ConferenceTopicModelStats(gensim_model)
+        self.topic_model_stats = ConferenceTopicModelStats(embedding_for_topic_model)
         self.keyword_stats = KeywordStats()
 
     def __update_progress(self, progress: tqdm, desc_text: str):

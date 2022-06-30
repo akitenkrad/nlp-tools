@@ -103,8 +103,8 @@ class Config(object):
         "utilization.memory",
     )
 
-    def __init__(self, config_path: PathLike, ex_args: dict = None):
-        self.__load_config__(config_path, ex_args)
+    def __init__(self, config_path: PathLike, ex_args: dict = None, silent=False):
+        self.__load_config__(config_path, ex_args, silent)
 
         nltk.download("punkt", quiet=True)
 
@@ -127,7 +127,7 @@ class Config(object):
         JST = timezone(timedelta(hours=9))
         return datetime.now(JST)
 
-    def __load_config__(self, config_path: PathLike, ex_args: dict = None):
+    def __load_config__(self, config_path: PathLike, ex_args: dict = None, silent=False):
         self.__config__ = AttrDict(yaml.safe_load(open(config_path)))
         if ex_args is not None:
             self.__config__ = self.__config__ + ex_args
@@ -147,7 +147,7 @@ class Config(object):
 
         if hasattr(self, "__logger") and isinstance(self.__logger, Logger):
             kill_logger(self.__logger)
-        self.__config__["log"]["loggers"]["logger"] = get_logger(name="config", logfile=self.__config__["log"]["log_file"])
+        self.__config__["log"]["loggers"]["logger"] = get_logger(name="config", logfile=self.__config__["log"]["log_file"], silent=silent)
         self.__config__["log"]["logger"] = self.__config__["log"]["loggers"]["logger"]
 
         self.log.logger.info("====== show config =========")
