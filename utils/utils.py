@@ -43,7 +43,18 @@ if not Path(unidic.DICDIR).exists():
 
 
 def is_notebook():
-    return "google.colab" in sys.modules or "ipykernel" in sys.modules
+    try:
+        shell = get_ipython().__class.__name__
+        if shell == "ZMInteractiveShell":
+            return True # Jupyter notebook qtconsole
+        elif shell == "TerminalInteractiveShell":
+            return False    # Terminal ipython
+        elif "google.colab" in sys.modules:
+            return True # Google Colab
+        else:
+            return False
+    except NameError:
+        return False
 
 
 if is_notebook():
@@ -58,11 +69,11 @@ class Lang(Enum):
 
 
 class Phase(Enum):
-    DEV = 1
-    TRAIN = 2
-    VALID = 3
-    TEST = 4
-    SUBMISSION = 5
+    DEV = "dev"
+    TRAIN = "train"
+    VALID = "valid"
+    TEST = "test"
+    SUBMISSION = "submission"
 
 
 class WordCloudMask(Enum):
