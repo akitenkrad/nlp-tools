@@ -44,7 +44,7 @@ if not Path(unidic.DICDIR).exists():
 
 def is_notebook():
     try:
-        shell = get_ipython().__class.__name__
+        shell = get_ipython().__class__.__name__
         if shell == "ZMInteractiveShell":
             return True # Jupyter notebook qtconsole
         elif shell == "TerminalInteractiveShell":
