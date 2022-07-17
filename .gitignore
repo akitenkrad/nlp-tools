@@ -128,12 +128,12 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-data/*
-logs
-__cache__
-weights
-outputs
 .empty
-reports/apps/dataset_report/static/reports/
 .DS_Store
-resources/fonts/
+
+__logs__
+__data__
+__cache__
+__weights__
+__outputs__
+utils/resources/fonts/

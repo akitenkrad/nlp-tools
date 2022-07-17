@@ -44,6 +44,10 @@ mecab-python3 = "*"
 unidic = "*"
 kaggle = "*"
 gensim = "*"
+networkx = "*"
+sumeval = "*"
+h5py = "*"
+types-python-dateutil = "*"
 
 [dev-packages]
 daal = "*"

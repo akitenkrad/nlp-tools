@@ -16,20 +16,20 @@ lr_finder:
     beta: 0.98
 
 data:
-    data_path: /workplace/data
+    data_path: /workplace/__data__
     cache_path: /workplace/__cache__
 
 weights:
-    global_weights_dir: /workplace/weights
-    log_weights_dir: /workplace/logs # to be set in utils/utils.py
+    global_weights_dir: /workplace/__weights__
+    log_weights_dir: /workplace/__logs__ # to be set in utils/utils.py
 
 log:
-    log_dir: /workplace/logs
+    log_dir: /workplace/__logs__
     log_filename: system.log
 
 output:
-    out_dir: /workplace/outputs
+    out_dir: /workplace/__outputs__
 
 backup:
     backup: False
-    backup_dir: /workplace/backup
+    backup_dir: /workplace/__backup__

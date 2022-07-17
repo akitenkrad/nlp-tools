@@ -23,6 +23,7 @@ import unidic
 import yaml
 from attrdict import AttrDict
 from colorama import Fore, Style
+from IPython import get_ipython
 from PIL import Image
 from pyunpack import Archive
 from torchinfo import summary
@@ -30,8 +31,11 @@ from wordcloud import STOPWORDS, WordCloud
 
 from utils.logger import get_logger, kill_logger
 
-nltk.download("punkt", quiet=True)
-nltk.download("averaged_perceptron_tagger", quiet=True)
+if not (Path(nltk.downloader.Downloader().download_dir) / "tokenizers" / "punkt").exists():
+    nltk.download("punkt", quiet=True)
+
+if not (Path(nltk.downloader.Downloader().download_dir) / "taggers" / "averaged_perceptron_tagger").exists():
+    nltk.download("averaged_perceptron_tagger", quiet=True)
 
 if not Path(unidic.DICDIR).exists():
     subprocess.run(
@@ -42,15 +46,20 @@ if not Path(unidic.DICDIR).exists():
     )
 
 
-def is_notebook():
+def now() -> datetime:
+    JST = timezone(timedelta(hours=9))
+    return datetime.now(JST)
+
+
+def is_notebook() -> bool:
     try:
         shell = get_ipython().__class__.__name__
         if shell == "ZMInteractiveShell":
-            return True # Jupyter notebook qtconsole
+            return True  # Jupyter notebook qtconsole
         elif shell == "TerminalInteractiveShell":
-            return False    # Terminal ipython
+            return False  # Terminal ipython
         elif "google.colab" in sys.modules:
-            return True # Google Colab
+            return True  # Google Colab
         else:
             return False
     except NameError:
@@ -267,6 +276,13 @@ class Config(object):
         torch.use_deterministic_algorithms = True
 
 
+def timedelta2HMS(total_sec: int) -> str:
+    h = total_sec // 3600
+    m = total_sec % 3600 // 60
+    s = total_sec % 60
+    return f"{h:2d}h {m:2d}m {s:2d}s"
+
+
 def __show_progress__(block_count, block_size, total_size):
     percentage = 100.0 * block_count * block_size / total_size
     if percentage > 100:
@@ -299,7 +315,7 @@ def download(url: str, filepath: PathLike):
 
 def un7zip(src_path: PathLike, dst_path: PathLike):
     Path(dst_path).mkdir(parents=True, exist_ok=True)
-    Archive(src_path).extractall(dst_path)
+    Archive(str(src_path)).extractall(str(dst_path))
     for dirname, _, filenames in os.walk(str(dst_path)):
         for filename in filenames:
             print(os.path.join(dirname, filename))
