@@ -1,4 +1,6 @@
 import hashlib
+import json
+import os
 import time
 from collections import namedtuple
 from datetime import datetime, timedelta, timezone
@@ -176,15 +178,15 @@ class Papers(object):
         self.ss = SemanticScholar()
 
         try:
-            self.papers_index = self.load_index()
+            self.indices = self.load_index()
         except KeyError:
             print("index does not exist -> create index")
-            self.papers_index = self.create_index()
+            self.indices = self.create_index()
 
     def load_index(self):
         with h5py.File(self.hdf5_path, mode="a") as hdf5:
-            papers_index = list(np.array(hdf5["papers/index/papers_index"], dtype=str))
-            return papers_index
+            indices = list(np.array(hdf5["papers/index/paper_indices"], dtype=str))
+            return indices
 
     def create_index(self):
         with h5py.File(self.hdf5_path, mode="a") as hdf5:
@@ -200,8 +202,8 @@ class Papers(object):
 
                 hdf5.visititems(pick_paper_id)
             group = hdf5.require_group("papers/index")
-            papers_index = group.create_dataset(name="papers_index", shape=(len(papers),), dtype=Paper.HDF5_STR)
-            papers_index[...] = papers
+            indices = group.create_dataset(name="paper_indices", shape=(len(papers),), dtype=Papers.HDF5_STR)
+            indices[...] = papers
         return papers
 
     def str2datetime(self, date_str: str) -> Optional[datetime]:
@@ -212,8 +214,8 @@ class Papers(object):
         except OverflowError:
             return None
 
-    def get_paper(self, paper_id: str) -> Paper:
-        with h5py.File(self.hdf5_path, mode="r") as h5:
+    def get_paper(self, paper_id: str, hdf5: Optional[h5py.File] = None) -> Paper:
+        def _get_paper(paper_id: str, h5: h5py.File):
             key = f"/papers/{paper_id[0]}/{paper_id[1]}/{paper_id[2]}/{paper_id}"
 
             dict_data = {}
@@ -222,13 +224,22 @@ class Papers(object):
             dict_data["url"] = h5[key]["url"][0].decode("utf-8")
             dict_data["venue"] = h5[key]["venue"][0].decode("utf-8")
             dict_data["year"] = int(h5[key]["year"][0])
-            dict_data["authors"] = [{"author_id": item[0], "author_name": item[1]} for item in np.array(h5[key]["authors"], dtype=Papers.HDF5_STR)]
+            dict_data["authors"] = [
+                {"author_id": item[0].decode("utf-8"), "author_name": item[1].decode("utf-8")}
+                for item in np.array(h5[key]["authors"], dtype=Papers.HDF5_STR)
+            ]
             dict_data["abstract"] = h5[key]["abstract"][0].decode("utf-8")
             dict_data["reference_count"] = int(h5[key]["reference_count"][0])
             dict_data["citation_count"] = int(h5[key]["citation_count"][0])
-            dict_data["references"] = [{"paper_id": item[0], "title": item[1]} for item in np.array(h5[key]["references"], dtype=Papers.HDF5_STR)]
-            dict_data["citations"] = [{"paper_id": item[0], "title": item[1]} for item in np.array(h5[key]["citations"], dtype=Papers.HDF5_STR)]
-            dict_data["fields_of_study"] = [item for item in np.array(h5[key]["fields_of_study"], dtype=Papers.HDF5_STR)]
+            dict_data["references"] = [
+                {"paper_id": item[0].decode("utf-8"), "title": item[1].decode("utf-8")}
+                for item in np.array(h5[key]["references"], dtype=Papers.HDF5_STR)
+            ]
+            dict_data["citations"] = [
+                {"paper_id": item[0].decode("utf-8"), "title": item[1].decode("utf-8")}
+                for item in np.array(h5[key]["citations"], dtype=Papers.HDF5_STR)
+            ]
+            dict_data["fields_of_study"] = [item.decode("utf-8") for item in np.array(h5[key]["fields_of_study"], dtype=Papers.HDF5_STR)]
             dict_data["influencial_citation_count"] = int(h5[key]["influential_citation_count"][0])
             dict_data["is_open_access"] = bool(h5[key]["is_open_access"][0])
             dict_data["doi"] = h5[key]["doi"][0].decode("utf-8")
@@ -238,9 +249,15 @@ class Papers(object):
             dict_data["arxiv_id"] = h5[key]["arxiv_id"][0].decode("utf-8")
             dict_data["arxiv_title"] = h5[key]["arxiv_title"][0].decode("utf-8")
             dict_data["arxiv_primary_category"] = h5[key]["arxiv_primary_category"][0].decode("utf-8")
-            dict_data["arxiv_categories"] = [cat for cat in np.array(h5[key]["arxiv_categories"], dtype=Papers.HDF5_STR)]
+            dict_data["arxiv_categories"] = [cat.decode("utf-8") for cat in np.array(h5[key]["arxiv_categories"], dtype=Papers.HDF5_STR)]
 
-        return Paper(dict_data)
+            return Paper(dict_data)
+
+        if hdf5 is not None:
+            return _get_paper(paper_id, hdf5)
+        else:
+            with h5py.File(self.hdf5_path, mode="r") as h5:
+                return _get_paper(paper_id, h5)
 
     def put_paper(self, paper: Paper):
         """save new paper in hdf5 file"""
@@ -349,11 +366,11 @@ class Papers(object):
             )
 
             if export_papers:
-                res += f" | exported -> {len(self.papers_index):5d} papers"
+                res += f" | exported -> {len(self.indices):5d} papers"
             if graph_path != "":
                 res += f" | exported -> {str(Path(graph_path).resolve().absolute())}"
             if paper is not None and ci_paper is not None:
-                res += f" | papers: {len(self.papers_index):5d}"
+                res += f" | papers: {len(self.indices):5d}"
                 res += f" | {paper.paper_id[:5]} -> {ci_paper.paper_id[:5]} @icc: {ci_paper.influential_citation_count:4d}"
                 res += f' | {"=" * (depth // 100)}{"+" * ((depth % 100) // 10)}{"-" * (depth % 10)}★'
 
@@ -418,7 +435,7 @@ class Papers(object):
                 # 1. show progress
                 show_progress(stats["total"], stats["done"], start, leave=False)
 
-                if len(self.papers_index) > 0 and len(stats["new_papers"]) >= export_interval and len(self.papers_index) % export_interval == 0:
+                if len(self.indices) > 0 and len(stats["new_papers"]) >= export_interval and len(self.indices) % export_interval == 0:
                     export_graph(G, graph_cache)
                     show_progress(stats["total"], stats["done"], start, graph_path=graph_cache)
                     stats["new_papers"] = []
@@ -427,7 +444,7 @@ class Papers(object):
                 try:
                     ci_paper: Paper = self.get_paper(ci_ref_paper.paper_id)
                     self.put_paper(ci_paper)
-                    self.papers_index.append(ci_paper.paper_id)
+                    self.indices.append(ci_paper.paper_id)
                     stats["new_papers"].append(ci_paper.paper_id)
 
                 except Exception as ex:
@@ -462,3 +479,68 @@ class Papers(object):
         # post process
         export_graph(G, stats["graph_dir"] / f"{paper_id}.graphml")
         print("Done.\n")
+
+    def build_paper_categories_dataset(self, output_dir: PathLike):
+        """build dataset for paper-category-inference
+
+        input:
+            {
+                "paper_id": PAPER ID,
+                "title": PAPER TITLE,
+                "authors": [AUTHOR_NAME],
+                "abstract": PAPER ABSTRACT
+            }
+        label:
+            {
+                "paper_id": PAPER ID,
+                "categories": [PAPER CATEGORY]
+            }
+
+        Args:
+            output_dir (PathLike): output directory
+        """
+        train_dir = Path(output_dir) / "paper_categories" / "train"
+        train_dir.mkdir(parents=True, exist_ok=True)
+        test_dir = Path(output_dir) / "paper_categories" / "test"
+        test_dir.mkdir(parents=True, exist_ok=True)
+
+        train_label_path = train_dir / "labels.jsonl"
+        train_papers_dir = train_dir / "papers"
+        test_label_path = test_dir / "labels.jsonl"
+        test_papers_dir = test_dir / "papers"
+
+        with open(train_label_path, mode="w") as train_label_f, open(test_label_path, mode="w") as test_label_f:
+            for paper_idx in tqdm(self.indices, desc="Building dataset"):
+                paper = self.get_paper(paper_idx)
+
+                paper_data = {
+                    "paper_id": paper.paper_id,
+                    "title": paper.title,
+                    "authors": [author.author_name for author in paper.authors],
+                    "abstract": paper.abstract,
+                    "year": paper.year,
+                }
+
+                if len(paper.fields_of_study) > 0:
+                    # train data
+
+                    # save label
+                    label = {"paper_id": paper.paper_id, "categories": paper.fields_of_study}
+                    train_label_f.write(json.dumps(label, ensure_ascii=False) + os.linesep)
+
+                    # save text
+                    paper_path = train_papers_dir / paper.paper_id[0] / paper.paper_id[1] / paper.paper_id[2] / f"{paper.paper_id}.json"
+                    paper_path.parent.mkdir(parents=True, exist_ok=True)
+                    json.dump(paper_data, open(paper_path, mode="w"), ensure_ascii=False, indent=2)
+
+                else:
+                    # test data
+
+                    # save label
+                    label = {"paper_id": paper.paper_id, "categories": paper.fields_of_study}
+                    test_label_f.write(json.dumps(label, ensure_ascii=False) + os.linesep)
+
+                    # save text
+                    paper_path = test_papers_dir / paper.paper_id[0] / paper.paper_id[1] / paper.paper_id[2] / f"{paper.paper_id}.json"
+                    paper_path.parent.mkdir(parents=True, exist_ok=True)
+                    json.dump(paper_data, open(paper_path, mode="w"), ensure_ascii=False, indent=2)
