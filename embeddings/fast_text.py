@@ -35,6 +35,11 @@ class FastText(Embedding):
         no_cache=False,
         filter=None,
     ):
+        """
+        filter example:
+            >>> filter=lambda tk: tk.pos_tag=="名詞" or tk.pos_tag=="形容詞"    # CC_JA_300
+            >>> filter=lambda tok: tok.pos_tag.startswith("N") or tok.pos_tag.startswith("J")   # CC_EN_300
+        """
         self.config = config
         self.config.add_logger("fast_text_log")
         self.fast_text_type: FastTextType = fast_text_type

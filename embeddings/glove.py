@@ -8,7 +8,8 @@ from typing import Dict, List, Tuple
 import numpy as np
 from tqdm import tqdm
 from utils.data import Text, Token
-from utils.tokenizers import CharTokenizerFactory, Tokenizer, WordTokenizerFactory
+from utils.tokenizers import (CharTokenizerFactory, Tokenizer,
+                              WordTokenizerFactory)
 from utils.utils import Config, Lang, download
 
 from embeddings.base import Embedding
@@ -54,7 +55,7 @@ class GloVe(Embedding):
             filter=filter,
         )
         self.char_tokenizer: Tokenizer = CharTokenizerFactory.get_tokenizer(
-            language=Lang.ENglish,
+            language=Lang.ENGLISH,
             pad="padding",
             max_sent_len=max_sent_len,
             max_word_len=max_word_len,
