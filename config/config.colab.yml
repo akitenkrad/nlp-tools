@@ -17,7 +17,7 @@ lr_finder:
 
 data:
     data_path: /content/__data__
-    cache_path: /content/drive/MyDrive/Cloud/Outputs/nlp-tools/__cache__
+    cache_path: /content/drive/MyDrive/Outputs/nlp-tools/__cache__
 
 weights:
     global_weights_dir: /content/drive/MyDrive/Outputs/nlp-tools/weights

@@ -176,35 +176,27 @@ class Papers(object):
     def __init__(self, hdf5_path: PathLike):
         self.hdf5_path = Path(hdf5_path)
         self.ss = SemanticScholar()
-
-        try:
-            self.indices = self.load_index()
-        except KeyError:
-            print("index does not exist -> create index")
-            self.indices = self.create_index()
+        self.indices = self.load_index()
 
     def load_index(self):
         with h5py.File(self.hdf5_path, mode="a") as hdf5:
-            indices = list(np.array(hdf5["papers/index/paper_indices"], dtype=str))
+            indices = list(np.array(hdf5["papers/index"], dtype=Papers.HDF5_STR))
             return indices
 
-    def create_index(self):
+    def create_index(self, indices):
         with h5py.File(self.hdf5_path, mode="a") as hdf5:
-            with tqdm(desc="Loading hdf5 file", leave=False) as progress:
-                papers = []
 
-                def pick_paper_id(name, obj):
-                    if isinstance(obj, h5py.Dataset):
-                        paper_id = name.split("/")[-2]
-                        if paper_id not in papers:
-                            papers.append(paper_id)
-                            progress.update(1)
+            from_indices = []
+            for index in tqdm(indices):
+                path = f"papers/{index[0]}/{index[1]}/{index[2]}/{index}"
+                if path not in hdf5:
+                    print(f"WARNING: found unknown index: {index}")
+                    continue
+                from_indices.append(index)
 
-                hdf5.visititems(pick_paper_id)
-            group = hdf5.require_group("papers/index")
-            indices = group.create_dataset(name="paper_indices", shape=(len(papers),), dtype=Papers.HDF5_STR)
-            indices[...] = papers
-        return papers
+            group = hdf5.require_group("papers")
+            to_indices = group.require_dataset(name="index", shape=(len(from_indices),), dtype=Papers.HDF5_STR)
+            to_indices[...] = np.array(from_indices, dtype=Papers.HDF5_STR)
 
     def str2datetime(self, date_str: str) -> Optional[datetime]:
         try:
@@ -261,6 +253,7 @@ class Papers(object):
 
     def put_paper(self, paper: Paper):
         """save new paper in hdf5 file"""
+        self.indices.append(paper.paper_id)
         with h5py.File(self.hdf5_path, mode="a") as h5wf:
 
             # create group
