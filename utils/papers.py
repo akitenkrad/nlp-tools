@@ -183,7 +183,8 @@ class Papers(object):
             indices = list(np.array(hdf5["papers/index"], dtype=Papers.HDF5_STR))
             return indices
 
-    def create_index(self, indices):
+    def update_index(self, indices: List[str]):
+        """update index if hdf5 database -> /papers/index"""
         with h5py.File(self.hdf5_path, mode="a") as hdf5:
 
             from_indices = []
@@ -193,6 +194,7 @@ class Papers(object):
                     print(f"WARNING: found unknown index: {index}")
                     continue
                 from_indices.append(index)
+            from_indices = list(set(from_indices))
 
             group = hdf5.require_group("papers")
             to_indices = group.require_dataset(name="index", shape=(len(from_indices),), dtype=Papers.HDF5_STR)
@@ -207,43 +209,50 @@ class Papers(object):
             return None
 
     def get_paper(self, paper_id: str, hdf5: Optional[h5py.File] = None) -> Paper:
-        def _get_paper(paper_id: str, h5: h5py.File):
+        def _get_paper(paper_id: str, h5: h5py.File) -> Paper:
             key = f"/papers/{paper_id[0]}/{paper_id[1]}/{paper_id[2]}/{paper_id}"
 
-            dict_data = {}
-            dict_data["paper_id"] = h5[key]["paper_id"][0].decode("utf-8")
-            dict_data["title"] = h5[key]["title"][0].decode("utf-8")
-            dict_data["url"] = h5[key]["url"][0].decode("utf-8")
-            dict_data["venue"] = h5[key]["venue"][0].decode("utf-8")
-            dict_data["year"] = int(h5[key]["year"][0])
-            dict_data["authors"] = [
-                {"author_id": item[0].decode("utf-8"), "author_name": item[1].decode("utf-8")}
-                for item in np.array(h5[key]["authors"], dtype=Papers.HDF5_STR)
-            ]
-            dict_data["abstract"] = h5[key]["abstract"][0].decode("utf-8")
-            dict_data["reference_count"] = int(h5[key]["reference_count"][0])
-            dict_data["citation_count"] = int(h5[key]["citation_count"][0])
-            dict_data["references"] = [
-                {"paper_id": item[0].decode("utf-8"), "title": item[1].decode("utf-8")}
-                for item in np.array(h5[key]["references"], dtype=Papers.HDF5_STR)
-            ]
-            dict_data["citations"] = [
-                {"paper_id": item[0].decode("utf-8"), "title": item[1].decode("utf-8")}
-                for item in np.array(h5[key]["citations"], dtype=Papers.HDF5_STR)
-            ]
-            dict_data["fields_of_study"] = [item.decode("utf-8") for item in np.array(h5[key]["fields_of_study"], dtype=Papers.HDF5_STR)]
-            dict_data["influencial_citation_count"] = int(h5[key]["influential_citation_count"][0])
-            dict_data["is_open_access"] = bool(h5[key]["is_open_access"][0])
-            dict_data["doi"] = h5[key]["doi"][0].decode("utf-8")
-            dict_data["updated"] = self.str2datetime(h5[key]["updated"][0].decode("utf-8"))
-            dict_data["published"] = self.str2datetime(h5[key]["published"][0].decode("utf-8"))
-            dict_data["arxiv_hash"] = h5[key]["arxiv_hash"][0].decode("utf-8")
-            dict_data["arxiv_id"] = h5[key]["arxiv_id"][0].decode("utf-8")
-            dict_data["arxiv_title"] = h5[key]["arxiv_title"][0].decode("utf-8")
-            dict_data["arxiv_primary_category"] = h5[key]["arxiv_primary_category"][0].decode("utf-8")
-            dict_data["arxiv_categories"] = [cat.decode("utf-8") for cat in np.array(h5[key]["arxiv_categories"], dtype=Papers.HDF5_STR)]
+            if key in h5:
+                dict_data = {}
+                dict_data["paper_id"] = h5[key]["paper_id"][0].decode("utf-8")
+                dict_data["title"] = h5[key]["title"][0].decode("utf-8")
+                dict_data["url"] = h5[key]["url"][0].decode("utf-8")
+                dict_data["venue"] = h5[key]["venue"][0].decode("utf-8")
+                dict_data["year"] = int(h5[key]["year"][0])
+                dict_data["authors"] = [
+                    {"author_id": item[0].decode("utf-8"), "author_name": item[1].decode("utf-8")}
+                    for item in np.array(h5[key]["authors"], dtype=Papers.HDF5_STR)
+                ]
+                dict_data["abstract"] = h5[key]["abstract"][0].decode("utf-8")
+                dict_data["reference_count"] = int(h5[key]["reference_count"][0])
+                dict_data["citation_count"] = int(h5[key]["citation_count"][0])
+                dict_data["references"] = [
+                    {"paper_id": item[0].decode("utf-8"), "title": item[1].decode("utf-8")}
+                    for item in np.array(h5[key]["references"], dtype=Papers.HDF5_STR)
+                ]
+                dict_data["citations"] = [
+                    {"paper_id": item[0].decode("utf-8"), "title": item[1].decode("utf-8")}
+                    for item in np.array(h5[key]["citations"], dtype=Papers.HDF5_STR)
+                ]
+                dict_data["fields_of_study"] = [item.decode("utf-8") for item in np.array(h5[key]["fields_of_study"], dtype=Papers.HDF5_STR)]
+                dict_data["influencial_citation_count"] = int(h5[key]["influential_citation_count"][0])
+                dict_data["is_open_access"] = bool(h5[key]["is_open_access"][0])
+                dict_data["doi"] = h5[key]["doi"][0].decode("utf-8")
+                dict_data["updated"] = self.str2datetime(h5[key]["updated"][0].decode("utf-8"))
+                dict_data["published"] = self.str2datetime(h5[key]["published"][0].decode("utf-8"))
+                dict_data["arxiv_hash"] = h5[key]["arxiv_hash"][0].decode("utf-8")
+                dict_data["arxiv_id"] = h5[key]["arxiv_id"][0].decode("utf-8")
+                dict_data["arxiv_title"] = h5[key]["arxiv_title"][0].decode("utf-8")
+                dict_data["arxiv_primary_category"] = h5[key]["arxiv_primary_category"][0].decode("utf-8")
+                dict_data["arxiv_categories"] = [cat.decode("utf-8") for cat in np.array(h5[key]["arxiv_categories"], dtype=Papers.HDF5_STR)]
 
-            return Paper(dict_data)
+                return Paper(dict_data)
+            else:
+                paper_data = self.ss.get_paper_detail(paper_id)
+                if paper_data:
+                    return Paper(paper_data)
+                else:
+                    raise RuntimeError(f"Paper wasn't found with ss api: {paper_id}")
 
         if hdf5 is not None:
             return _get_paper(paper_id, hdf5)
@@ -416,8 +425,7 @@ class Papers(object):
         while 0 < len(stats["paper_queue"]):
             paper, depth = stats["paper_queue"].pop()
             if max_depth < depth:
-                while len(stats["paper_queue"]) > 0:
-                    paper, _ = stats["paper_queue"].pop()
+                stats["paper_queue"] = []
                 return
 
             for ci_ref_paper in paper.citations:

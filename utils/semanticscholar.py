@@ -146,5 +146,13 @@ class SemanticScholar(object):
         dict_data["authors"] = [{"author_id": item[0], "author_name": item[1]} for item in content["authors"]]
         dict_data["citations"] = [{"paper_id": item[0], "title": item[1]} for item in content["citations"]]
         dict_data["references"] = [{"paper_id": item[0], "title": item[1]} for item in content["references"]]
+        dict_data["doi"] = ""
+        dict_data["updated"] = ""
+        dict_data["published"] = ""
+        dict_data["arxiv_hash"] = ""
+        dict_data["arxiv_id"] = ""
+        dict_data["arxiv_title"] = ""
+        dict_data["arxiv_primary_category"] = ""
+        dict_data["arxiv_categories"] = ""
 
         return dict_data
