@@ -321,7 +321,6 @@ class Papers(object):
         paper_id: str,
         min_influential_citation_count=1,
         max_depth=3,
-        hdf5_path="__data__/papers.hdf5",
         graph_dir="__cache__/graphs",
         export_interval=1000,
     ):
