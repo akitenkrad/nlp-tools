@@ -262,9 +262,13 @@ class Papers(object):
 
     def put_paper(self, paper: Paper):
         """save new paper in hdf5 file"""
-        self.indices.append(paper.paper_id)
         with h5py.File(self.hdf5_path, mode="a") as h5wf:
 
+            key = f"/papers/{paper.paper_id[0]}/{paper.paper_id[1]}/{paper.paper_id[2]}/{paper.paper_id}"
+            if key in h5wf:
+                return
+
+            self.indices.append(paper.paper_id)
             # create group
             group = h5wf.require_group(paper.hdf5_key)
 
