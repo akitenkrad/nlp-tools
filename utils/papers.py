@@ -350,7 +350,7 @@ class Papers(object):
                 "citation_count",
                 "influential_citation_count",
                 "authors",
-                "primary_category",
+                "arxiv_primary_category",
             ),
         )
 
