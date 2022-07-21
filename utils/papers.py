@@ -477,7 +477,7 @@ class Papers(object):
                         stats["total"] += len(ci_paper.citations)
 
         # post process
-        export_graph(G, stats["graph_dir"] / f"{paper_id}.graphml")
+        export_graph(G, Path(graph_dir) / f"{paper_id}.graphml")
         print("Done.\n")
 
     def build_paper_categories_dataset(self, output_dir: PathLike):
