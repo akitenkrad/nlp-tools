@@ -418,6 +418,7 @@ class Papers(object):
             "paper_queue": [],
             "new_papers": [],
             "finished_papers": [],
+            "error_papers": [],
         }
         graph_cache = Path(graph_dir) / f"{paper_id}.graphml"
         start = time.time()
@@ -441,11 +442,16 @@ class Papers(object):
 
                 if len(self.indices) > 0 and len(stats["new_papers"]) >= export_interval and len(self.indices) % export_interval == 0:
                     export_graph(G, graph_cache)
+                    self.update_index(self.indices)
                     show_progress(stats["total"], stats["done"], start, graph_path=graph_cache)
                     stats["new_papers"] = []
 
                 # 2. get paper detail
                 try:
+
+                    if ci_ref_paper.paper_id in stats["error_papers"]:
+                        raise RuntimeError()
+
                     ci_paper: Paper = self.get_paper(ci_ref_paper.paper_id)
                     self.put_paper(ci_paper)
                     self.indices.append(ci_paper.paper_id)
@@ -454,6 +460,8 @@ class Papers(object):
                 except Exception as ex:
                     print(f"Warning: {ex} @{ci_ref_paper.paper_id}")
                     stats["done"] += 1
+                    if ci_ref_paper.paper_id not in stats["error_papers"]:
+                        stats["error_papers"].append(ci_ref_paper.paper_id)
                     continue
 
                 # 3. add the new paper into the list
@@ -482,6 +490,7 @@ class Papers(object):
 
         # post process
         export_graph(G, Path(graph_dir) / f"{paper_id}.graphml")
+        self.update_index(self.indices)
 
     def build_paper_categories_dataset(self, output_dir: PathLike):
         """build dataset for paper-category-inference
