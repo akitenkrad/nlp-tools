@@ -143,9 +143,9 @@ class SemanticScholar(object):
         dict_data["influential_citation_count"] = content["influentialCitationCount"]
         dict_data["is_open_access"] = content["isOpenAccess"]
         dict_data["fields_of_study"] = content["fieldsOfStudy"]
-        dict_data["authors"] = [{"author_id": item[0], "author_name": item[1]} for item in content["authors"]]
-        dict_data["citations"] = [{"paper_id": item[0], "title": item[1]} for item in content["citations"]]
-        dict_data["references"] = [{"paper_id": item[0], "title": item[1]} for item in content["references"]]
+        dict_data["authors"] = [{"author_id": item["authorId"], "author_name": item["name"]} for item in content["authors"]]
+        dict_data["citations"] = [{"paper_id": item["paperId"], "title": item["title"]} for item in content["citations"]]
+        dict_data["references"] = [{"paper_id": item["paperId"], "title": item["title"]} for item in content["references"]]
         dict_data["doi"] = ""
         dict_data["updated"] = ""
         dict_data["published"] = ""

@@ -182,6 +182,8 @@ class Papers(object):
         with h5py.File(self.hdf5_path, mode="a") as hdf5:
             indices = [item.decode("utf-8") for item in np.array(hdf5["papers/indices"], dtype=Papers.HDF5_STR)] if "papers/indices" in hdf5 else []
             errors = [item.decode("utf-8") for item in np.array(hdf5["papers/errors"], dtype=Papers.HDF5_STR)] if "papers/errors" in hdf5 else []
+            indices = [item for item in indices if len(item) > 0]
+            errors = [item for item in errors if len(item) > 0]
             return indices, errors
 
     def update_index(self, indices: List[str], errors: List[str]):
@@ -464,9 +466,9 @@ class Papers(object):
                     stats["new_papers"].append(ci_paper.paper_id)
 
                 except Exception as ex:
-                    print(f"Warning: {str(ex)} @{ci_ref_paper.paper_id}")
+                    print(f"Warning: {str(ex.__class__.__name__)}({str(ex)}) @{ci_ref_paper.paper_id}")
                     stats["done"] += 1
-                    if ci_ref_paper.paper_id not in self.errors:
+                    if len(ci_ref_paper.paper_id) > 0 and ci_ref_paper.paper_id not in self.errors:
                         self.errors.append(ci_ref_paper.paper_id)
                     continue
 
