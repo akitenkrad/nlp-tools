@@ -290,55 +290,60 @@ class Papers(object):
 
             self.indices.append(paper.paper_id)
             # create group
-            group = h5wf.require_group(paper.hdf5_key)
+            try:
+                group = h5wf.require_group(paper.hdf5_key)
 
-            # create dataset
-            new_abstract = group.create_dataset(name="abstract", shape=(1,), dtype=Papers.HDF5_STR)
-            new_authors = group.create_dataset(name="authors", shape=(len(paper.authors), 2), dtype=Papers.HDF5_STR)  # author_id, author_name
-            new_citation_count = group.create_dataset(name="citation_count", shape=(1,), dtype=np.int32)
-            new_citations = group.create_dataset(name="citations", shape=(len(paper.citations), 2), dtype=Papers.HDF5_STR)  # paper_id, title
-            new_fields_of_study = group.create_dataset(name="fields_of_study", shape=(len(paper.fields_of_study),), dtype=Papers.HDF5_STR)
-            new_influential_citation_count = group.create_dataset(name="influential_citation_count", shape=(1,), dtype=np.int32)
-            new_is_open_access = group.create_dataset(name="is_open_access", shape=(1,), dtype=bool)
-            new_paper_id = group.create_dataset(name="paper_id", shape=(1,), dtype=Papers.HDF5_STR)
-            new_reference_count = group.create_dataset(name="reference_count", shape=(1,), dtype=np.int32)
-            new_references = group.create_dataset(name="references", shape=(len(paper.references), 2), dtype=Papers.HDF5_STR)  # paper_id, title
-            new_title = group.create_dataset(name="title", shape=(1,), dtype=Papers.HDF5_STR)
-            new_url = group.create_dataset(name="url", shape=(1,), dtype=Papers.HDF5_STR)
-            new_venue = group.create_dataset(name="venue", shape=(1,), dtype=Papers.HDF5_STR)
-            new_year = group.create_dataset(name="year", shape=(1,), dtype=np.int32)
-            new_doi = group.create_dataset(name="doi", shape=(1,), dtype=Papers.HDF5_STR)
-            new_updated = group.create_dataset(name="updated", shape=(1,), dtype=Papers.HDF5_STR)
-            new_published = group.create_dataset(name="published", shape=(1,), dtype=Papers.HDF5_STR)
-            new_arxiv_hash = group.create_dataset(name="arxiv_hash", shape=(1,), dtype=Papers.HDF5_STR)
-            new_arxiv_id = group.create_dataset(name="arxiv_id", shape=(1,), dtype=Papers.HDF5_STR)
-            new_arxiv_title = group.create_dataset(name="arxiv_title", shape=(1,), dtype=Papers.HDF5_STR)
-            new_arxiv_primary_category = group.create_dataset(name="arxiv_primary_category", shape=(1,), dtype=Papers.HDF5_STR)
-            new_arxiv_categories = group.create_dataset(name="arxiv_categories", shape=(len(paper.arxiv_categories),), dtype=Papers.HDF5_STR)
+                # create dataset
+                new_abstract = group.create_dataset(name="abstract", shape=(1,), dtype=Papers.HDF5_STR)
+                new_authors = group.create_dataset(name="authors", shape=(len(paper.authors), 2), dtype=Papers.HDF5_STR)  # author_id, author_name
+                new_citation_count = group.create_dataset(name="citation_count", shape=(1,), dtype=np.int32)
+                new_citations = group.create_dataset(name="citations", shape=(len(paper.citations), 2), dtype=Papers.HDF5_STR)  # paper_id, title
+                new_fields_of_study = group.create_dataset(name="fields_of_study", shape=(len(paper.fields_of_study),), dtype=Papers.HDF5_STR)
+                new_influential_citation_count = group.create_dataset(name="influential_citation_count", shape=(1,), dtype=np.int32)
+                new_is_open_access = group.create_dataset(name="is_open_access", shape=(1,), dtype=bool)
+                new_paper_id = group.create_dataset(name="paper_id", shape=(1,), dtype=Papers.HDF5_STR)
+                new_reference_count = group.create_dataset(name="reference_count", shape=(1,), dtype=np.int32)
+                new_references = group.create_dataset(name="references", shape=(len(paper.references), 2), dtype=Papers.HDF5_STR)  # paper_id, title
+                new_title = group.create_dataset(name="title", shape=(1,), dtype=Papers.HDF5_STR)
+                new_url = group.create_dataset(name="url", shape=(1,), dtype=Papers.HDF5_STR)
+                new_venue = group.create_dataset(name="venue", shape=(1,), dtype=Papers.HDF5_STR)
+                new_year = group.create_dataset(name="year", shape=(1,), dtype=np.int32)
+                new_doi = group.create_dataset(name="doi", shape=(1,), dtype=Papers.HDF5_STR)
+                new_updated = group.create_dataset(name="updated", shape=(1,), dtype=Papers.HDF5_STR)
+                new_published = group.create_dataset(name="published", shape=(1,), dtype=Papers.HDF5_STR)
+                new_arxiv_hash = group.create_dataset(name="arxiv_hash", shape=(1,), dtype=Papers.HDF5_STR)
+                new_arxiv_id = group.create_dataset(name="arxiv_id", shape=(1,), dtype=Papers.HDF5_STR)
+                new_arxiv_title = group.create_dataset(name="arxiv_title", shape=(1,), dtype=Papers.HDF5_STR)
+                new_arxiv_primary_category = group.create_dataset(name="arxiv_primary_category", shape=(1,), dtype=Papers.HDF5_STR)
+                new_arxiv_categories = group.create_dataset(name="arxiv_categories", shape=(len(paper.arxiv_categories),), dtype=Papers.HDF5_STR)
 
-            # store data
-            new_abstract[0] = paper.abstract
-            new_authors[...] = np.array([(author.author_id, author.author_name) for author in paper.authors], dtype=Papers.HDF5_STR)
-            new_citation_count[0] = paper.citation_count
-            new_citations[...] = np.array([(paper.paper_id, paper.title) for paper in paper.citations], dtype=Papers.HDF5_STR)
-            new_fields_of_study[...] = np.array([field for field in paper.fields_of_study], dtype=Papers.HDF5_STR)
-            new_influential_citation_count[0] = paper.influential_citation_count
-            new_is_open_access[0] = paper.is_open_access
-            new_paper_id[0] = paper.paper_id
-            new_reference_count[0] = paper.reference_count
-            new_references[...] = np.array([(paper.paper_id, paper.title) for paper in paper.references], dtype=Papers.HDF5_STR)
-            new_title[0] = paper.title
-            new_url[0] = paper.url
-            new_venue[0] = paper.venue
-            new_year[0] = paper.year
-            new_published[0] = paper.published
-            new_updated[0] = paper.updated
-            new_doi[0] = paper.doi
-            new_arxiv_id[0] = paper.arxiv_id
-            new_arxiv_hash[0] = paper.arxiv_hash
-            new_arxiv_title[0] = paper.arxiv_title
-            new_arxiv_primary_category[0] = paper.arxiv_primary_category
-            new_arxiv_categories[...] = np.array(paper.arxiv_categories, dtype=Papers.HDF5_STR)
+                # store data
+                new_abstract[0] = paper.abstract
+                new_authors[...] = np.array([(author.author_id, author.author_name) for author in paper.authors], dtype=Papers.HDF5_STR)
+                new_citation_count[0] = paper.citation_count
+                new_citations[...] = np.array([(paper.paper_id, paper.title) for paper in paper.citations], dtype=Papers.HDF5_STR)
+                new_fields_of_study[...] = np.array([field for field in paper.fields_of_study], dtype=Papers.HDF5_STR)
+                new_influential_citation_count[0] = paper.influential_citation_count
+                new_is_open_access[0] = paper.is_open_access
+                new_paper_id[0] = paper.paper_id
+                new_reference_count[0] = paper.reference_count
+                new_references[...] = np.array([(paper.paper_id, paper.title) for paper in paper.references], dtype=Papers.HDF5_STR)
+                new_title[0] = paper.title
+                new_url[0] = paper.url
+                new_venue[0] = paper.venue
+                new_year[0] = paper.year
+                new_published[0] = paper.published
+                new_updated[0] = paper.updated
+                new_doi[0] = paper.doi
+                new_arxiv_id[0] = paper.arxiv_id
+                new_arxiv_hash[0] = paper.arxiv_hash
+                new_arxiv_title[0] = paper.arxiv_title
+                new_arxiv_primary_category[0] = paper.arxiv_primary_category
+                new_arxiv_categories[...] = np.array(paper.arxiv_categories, dtype=Papers.HDF5_STR)
+            except Exception as ex:
+                if paper.hdf5_key in h5wf:
+                    del h5wf[paper.hdf5_key]
+                raise ex
 
     def build_reference_graph(
         self,
