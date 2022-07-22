@@ -461,7 +461,6 @@ class Papers(object):
 
                     ci_paper: Paper = self.get_paper(ci_ref_paper.paper_id)
                     self.put_paper(ci_paper)
-                    self.indices.append(ci_paper.paper_id)
                     stats["new_papers"].append(ci_paper.paper_id)
 
                 except Exception as ex:
