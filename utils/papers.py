@@ -180,12 +180,12 @@ class Papers(object):
 
     def load_index(self):
         with h5py.File(self.hdf5_path, mode="a") as hdf5:
-            indices = [item.decode("utf-8") for item in np.array(hdf5["papers/index"], dtype=Papers.HDF5_STR)] if "papers/index" in hdf5 else []
+            indices = [item.decode("utf-8") for item in np.array(hdf5["papers/indices"], dtype=Papers.HDF5_STR)] if "papers/indices" in hdf5 else []
             errors = [item.decode("utf-8") for item in np.array(hdf5["papers/errors"], dtype=Papers.HDF5_STR)] if "papers/errors" in hdf5 else []
             return indices, errors
 
     def update_index(self, indices: List[str], errors: List[str]):
-        """update index if hdf5 database -> /papers/index"""
+        """update index if hdf5 database -> /papers/indices"""
         with h5py.File(self.hdf5_path, mode="a") as hdf5:
 
             from_indices = []
@@ -198,8 +198,13 @@ class Papers(object):
             from_indices = list(set(from_indices))
 
             group = hdf5.require_group("papers")
-            to_indices = group.require_dataset(name="index", shape=(len(from_indices),), dtype=Papers.HDF5_STR)
+
+            del hdf5["papers/indices"]
+            to_indices = group.require_dataset(name="indices", shape=(len(from_indices),), dtype=Papers.HDF5_STR)
+
+            del hdf5["papers/errors"]
             to_errors = group.require_dataset(name="errors", shape=(len(errors),), dtype=Papers.HDF5_STR)
+
             to_indices[...] = np.array(sorted(from_indices), dtype=Papers.HDF5_STR)
             to_errors[...] = np.array(sorted(errors), dtype=Papers.HDF5_STR)
 
