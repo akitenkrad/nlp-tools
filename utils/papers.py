@@ -492,7 +492,7 @@ class Papers(object):
 
         # post process
         export_graph(G, Path(graph_dir) / f"{paper_id}.graphml")
-        self.update_index(self.indices)
+        self.update_index(self.indices, self.errors)
 
     def build_paper_categories_dataset(self, output_dir: PathLike):
         """build dataset for paper-category-inference
