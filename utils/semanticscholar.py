@@ -137,15 +137,27 @@ class SemanticScholar(object):
         dict_data["title"] = content["title"]
         dict_data["abstract"] = content["abstract"] if content["abstract"] else ""
         dict_data["venue"] = content["venue"] if content["venue"] else ""
-        dict_data["year"] = content["year"] if content["year"] else ""
-        dict_data["reference_count"] = content["referenceCount"]
-        dict_data["citation_count"] = content["citationCount"]
-        dict_data["influential_citation_count"] = content["influentialCitationCount"]
-        dict_data["is_open_access"] = content["isOpenAccess"]
-        dict_data["fields_of_study"] = content["fieldsOfStudy"]
-        dict_data["authors"] = [{"author_id": item["authorId"], "author_name": item["name"]} for item in content["authors"]]
-        dict_data["citations"] = [{"paper_id": item["paperId"], "title": item["title"]} for item in content["citations"]]
-        dict_data["references"] = [{"paper_id": item["paperId"], "title": item["title"]} for item in content["references"]]
+        dict_data["year"] = content["year"] if content["year"] else 0
+        dict_data["reference_count"] = content["referenceCount"] if content["referenceCount"] else 0
+        dict_data["citation_count"] = content["citationCount"] if content["citationCount"] else 0
+        dict_data["influential_citation_count"] = content["influentialCitationCount"] if content["influentialCitationCount"] else 0
+        dict_data["is_open_access"] = content["isOpenAccess"] if content["isOpenAccess"] else False
+        dict_data["fields_of_study"] = content["fieldsOfStudy"] if content["fieldsOfStudy"] else []
+        dict_data["authors"] = (
+            [{"author_id": item["authorId"], "author_name": item["name"]} for item in content["authors"] if item["authorId"]]
+            if content["authors"]
+            else []
+        )
+        dict_data["citations"] = (
+            [{"paper_id": item["paperId"], "title": item["title"]} for item in content["citations"] if item["paperId"]]
+            if content["citations"]
+            else []
+        )
+        dict_data["references"] = (
+            [{"paper_id": item["paperId"], "title": item["title"]} for item in content["references"] if item["paperId"]]
+            if content["references"]
+            else []
+        )
         dict_data["doi"] = ""
         dict_data["updated"] = ""
         dict_data["published"] = ""
