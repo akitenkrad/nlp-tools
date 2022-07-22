@@ -210,6 +210,15 @@ class Papers(object):
             to_indices[...] = np.array(sorted(from_indices), dtype=Papers.HDF5_STR)
             to_errors[...] = np.array(sorted(errors), dtype=Papers.HDF5_STR)
 
+    def clear_errors(self):
+        """clear error paper indices"""
+        with h5py.File(self.hdf5_path, mode="a") as hdf5:
+
+            group = hdf5.require_group("papers")
+            del hdf5["papers/errors"]
+            to_errors = group.require_dataset(name="errors", shape=(0,), dtype=Papers.HDF5_STR)
+            to_errors[...] = np.array([], dtype=Papers.HDF5_STR)
+
     def str2datetime(self, date_str: str) -> Optional[datetime]:
         try:
             return date_parse(date_str)
