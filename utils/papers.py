@@ -220,6 +220,13 @@ class Papers(object):
             to_errors[...] = np.array([], dtype=Papers.HDF5_STR)
             self.errors = []
 
+    def delete_paper(self, paper_id: str):
+        """delete the specified paper"""
+        with h5py.File(self.hdf5_path, mode="a") as hdf5:
+            key = f"/papers/{paper_id[0]}/{paper_id[1]}/{paper_id[2]}/{paper_id}"
+            if key in hdf5:
+                del hdf5[key]
+
     def str2datetime(self, date_str: str) -> Optional[datetime]:
         try:
             return date_parse(date_str)
