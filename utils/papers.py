@@ -189,7 +189,7 @@ class Papers(object):
         with h5py.File(self.hdf5_path, mode="a") as hdf5:
 
             from_indices = []
-            for index in tqdm(indices):
+            for index in tqdm(indices, leave=False):
                 path = f"papers/{index[0]}/{index[1]}/{index[2]}/{index}"
                 if path not in hdf5:
                     print(f"WARNING: found unknown index: {index}")
@@ -199,7 +199,7 @@ class Papers(object):
 
             group = hdf5.require_group("papers")
             to_indices = group.require_dataset(name="index", shape=(len(from_indices),), dtype=Papers.HDF5_STR)
-            to_errors = group.require.dataset(name="errors", shape=(len(errors),), dtype=Papers.HDF5_STR)
+            to_errors = group.require_dataset(name="errors", shape=(len(errors),), dtype=Papers.HDF5_STR)
             to_indices[...] = np.array(sorted(from_indices), dtype=Papers.HDF5_STR)
             to_errors[...] = np.array(sorted(errors), dtype=Papers.HDF5_STR)
 
