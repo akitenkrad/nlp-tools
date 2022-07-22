@@ -133,11 +133,11 @@ class SemanticScholar(object):
 
         dict_data = {}
         dict_data["paper_id"] = content["paperId"]
-        dict_data["url"] = content["url"]
+        dict_data["url"] = content["url"] if content["url"] else ""
         dict_data["title"] = content["title"]
-        dict_data["abstract"] = content["abstract"]
-        dict_data["venue"] = content["venue"]
-        dict_data["year"] = content["year"]
+        dict_data["abstract"] = content["abstract"] if content["abstract"] else ""
+        dict_data["venue"] = content["venue"] if content["venue"] else ""
+        dict_data["year"] = content["year"] if content["year"] else ""
         dict_data["reference_count"] = content["referenceCount"]
         dict_data["citation_count"] = content["citationCount"]
         dict_data["influential_citation_count"] = content["influentialCitationCount"]

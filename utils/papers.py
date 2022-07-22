@@ -218,6 +218,7 @@ class Papers(object):
             del hdf5["papers/errors"]
             to_errors = group.require_dataset(name="errors", shape=(0,), dtype=Papers.HDF5_STR)
             to_errors[...] = np.array([], dtype=Papers.HDF5_STR)
+            self.errors = []
 
     def str2datetime(self, date_str: str) -> Optional[datetime]:
         try:
