@@ -176,14 +176,15 @@ class Papers(object):
     def __init__(self, hdf5_path: PathLike):
         self.hdf5_path = Path(hdf5_path)
         self.ss = SemanticScholar()
-        self.indices = self.load_index()
+        self.indices, self.errors = self.load_index()
 
     def load_index(self):
         with h5py.File(self.hdf5_path, mode="a") as hdf5:
             indices = list(np.array(hdf5["papers/index"], dtype=Papers.HDF5_STR))
-            return indices
+            errors = list(np.array(hdf5["papers/errors"], dtype=Papers.HDF5_STR))
+            return indices, errors
 
-    def update_index(self, indices: List[str]):
+    def update_index(self, indices: List[str], errors: List[str]):
         """update index if hdf5 database -> /papers/index"""
         with h5py.File(self.hdf5_path, mode="a") as hdf5:
 
@@ -198,7 +199,9 @@ class Papers(object):
 
             group = hdf5.require_group("papers")
             to_indices = group.require_dataset(name="index", shape=(len(from_indices),), dtype=Papers.HDF5_STR)
-            to_indices[...] = np.array(from_indices, dtype=Papers.HDF5_STR)
+            to_errors = group.require.dataset(name="errors", shape=(len(errors),), dtype=Papers.HDF5_STR)
+            to_indices[...] = np.array(sorted(from_indices), dtype=Papers.HDF5_STR)
+            to_errors[...] = np.array(sorted(errors), dtype=Papers.HDF5_STR)
 
     def str2datetime(self, date_str: str) -> Optional[datetime]:
         try:
@@ -418,7 +421,6 @@ class Papers(object):
             "paper_queue": [],
             "new_papers": [],
             "finished_papers": [],
-            "error_papers": [],
         }
         graph_cache = Path(graph_dir) / f"{paper_id}.graphml"
         start = time.time()
@@ -442,14 +444,14 @@ class Papers(object):
 
                 if len(self.indices) > 0 and len(stats["new_papers"]) >= export_interval and len(self.indices) % export_interval == 0:
                     export_graph(G, graph_cache)
-                    self.update_index(self.indices)
+                    self.update_index(self.indices, self.errors)
                     show_progress(stats["total"], stats["done"], start, graph_path=graph_cache)
                     stats["new_papers"] = []
 
                 # 2. get paper detail
                 try:
 
-                    if ci_ref_paper.paper_id in stats["error_papers"]:
+                    if ci_ref_paper.paper_id in self.errors:
                         raise RuntimeError()
 
                     ci_paper: Paper = self.get_paper(ci_ref_paper.paper_id)
@@ -460,8 +462,8 @@ class Papers(object):
                 except Exception as ex:
                     print(f"Warning: {ex} @{ci_ref_paper.paper_id}")
                     stats["done"] += 1
-                    if ci_ref_paper.paper_id not in stats["error_papers"]:
-                        stats["error_papers"].append(ci_ref_paper.paper_id)
+                    if ci_ref_paper.paper_id not in self.errors:
+                        self.errors.append(ci_ref_paper.paper_id)
                     continue
 
                 # 3. add the new paper into the list
