@@ -130,16 +130,16 @@ class Paper(object):
         return self.__get("arxiv_categories", default=[])
 
     @property
-    def updated(self) -> Optional[datetime]:
+    def updated(self) -> Optional[str]:
         """updated from arxiv"""
-        value = self.__get("updated", default=None)
-        return value if value else None
+        value = self.__get("updated", default="")
+        return value if value else ""
 
     @property
-    def published(self) -> Optional[datetime]:
+    def published(self) -> Optional[str]:
         """published from arxiv"""
-        value = self.__get("published", default=None)
-        return value if value else None
+        value = self.__get("published", default="")
+        return value if value else ""
 
     @property
     def arxiv_id(self) -> str:
@@ -167,7 +167,7 @@ class Paper(object):
         return self.__str__()
 
     def to_dict(self):
-        return self.__data_dict
+        return self.__dict_data
 
 
 class Papers(object):
