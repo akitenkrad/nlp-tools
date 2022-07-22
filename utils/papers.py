@@ -180,9 +180,8 @@ class Papers(object):
 
     def load_index(self):
         with h5py.File(self.hdf5_path, mode="a") as hdf5:
-            group = hdf5.require_group("papers")
-            indices = list(np.array(group.require_dataset(name="index", dtype=Papers.HDF5_STR), dtype=Papers.HDF5_STR))
-            errors = list(np.array(group.require.dataset(name="errors", dtype=Papers.HDF5_STR), dtype=Papers.HDF5_STR))
+            indices = list(np.array(hdf5["papers/index"], dtype=Papers.HDF5_STR)) if "papers/index" in hdf5 else []
+            errors = list(np.array(hdf5["papers/errors"], dtype=Papers.HDF5_STR)) if "papers/errors" in hdf5 else []
             return indices, errors
 
     def update_index(self, indices: List[str], errors: List[str]):
