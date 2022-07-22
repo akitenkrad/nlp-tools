@@ -464,7 +464,7 @@ class Papers(object):
                     stats["new_papers"].append(ci_paper.paper_id)
 
                 except Exception as ex:
-                    print(f"Warning: {ex} @{ci_ref_paper.paper_id}")
+                    print(f"Warning: {str(ex)} @{ci_ref_paper.paper_id}")
                     stats["done"] += 1
                     if ci_ref_paper.paper_id not in self.errors:
                         self.errors.append(ci_ref_paper.paper_id)
