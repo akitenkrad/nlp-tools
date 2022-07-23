@@ -173,20 +173,22 @@ class Paper(object):
 class Papers(object):
     HDF5_STR = h5py.string_dtype(encoding="utf-8")
 
+    @classmethod
+    def to_key(cls, paper_id: str):
+        return f"/papers/{paper_id[0]}/{paper_id[1]}/{paper_id[2]}/{paper_id}"
+
     def __init__(self, hdf5_path: PathLike):
         self.hdf5_path = Path(hdf5_path)
         self.ss = SemanticScholar()
-        self.indices, self.errors = self.load_index()
+        self.indices = self.load_index()
 
     def load_index(self):
         with h5py.File(self.hdf5_path, mode="a") as hdf5:
             indices = [item.decode("utf-8") for item in np.array(hdf5["papers/indices"], dtype=Papers.HDF5_STR)] if "papers/indices" in hdf5 else []
-            errors = [item.decode("utf-8") for item in np.array(hdf5["papers/errors"], dtype=Papers.HDF5_STR)] if "papers/errors" in hdf5 else []
             indices = [item for item in indices if len(item) > 0]
-            errors = [item for item in errors if len(item) > 0]
-            return indices, errors
+            return indices
 
-    def update_index(self, indices: List[str], errors: List[str]):
+    def update_index(self, indices: List[str]):
         """update index if hdf5 database -> /papers/indices"""
         with h5py.File(self.hdf5_path, mode="a") as hdf5:
 
@@ -200,30 +202,20 @@ class Papers(object):
             from_indices = list(set(from_indices))
 
             group = hdf5.require_group("papers")
-
             del hdf5["papers/indices"]
             to_indices = group.require_dataset(name="indices", shape=(len(from_indices),), dtype=Papers.HDF5_STR)
-
-            del hdf5["papers/errors"]
-            to_errors = group.require_dataset(name="errors", shape=(len(errors),), dtype=Papers.HDF5_STR)
-
             to_indices[...] = np.array(sorted(from_indices), dtype=Papers.HDF5_STR)
-            to_errors[...] = np.array(sorted(errors), dtype=Papers.HDF5_STR)
 
-    def clear_errors(self):
-        """clear error paper indices"""
+    def is_exists(self, paper_id: str) -> bool:
+        """check if the specified paper exists in hdf5"""
         with h5py.File(self.hdf5_path, mode="a") as hdf5:
-
-            group = hdf5.require_group("papers")
-            del hdf5["papers/errors"]
-            to_errors = group.require_dataset(name="errors", shape=(0,), dtype=Papers.HDF5_STR)
-            to_errors[...] = np.array([], dtype=Papers.HDF5_STR)
-            self.errors = []
+            key = Papers.to_key(paper_id)
+            return key in hdf5
 
     def delete_paper(self, paper_id: str):
         """delete the specified paper"""
         with h5py.File(self.hdf5_path, mode="a") as hdf5:
-            key = f"/papers/{paper_id[0]}/{paper_id[1]}/{paper_id[2]}/{paper_id}"
+            key = Papers.to_key(paper_id)
             if key in hdf5:
                 del hdf5[key]
 
@@ -237,7 +229,7 @@ class Papers(object):
 
     def get_paper(self, paper_id: str, hdf5: Optional[h5py.File] = None) -> Paper:
         def _get_paper(paper_id: str, h5: h5py.File) -> Paper:
-            key = f"/papers/{paper_id[0]}/{paper_id[1]}/{paper_id[2]}/{paper_id}"
+            key = Papers.to_key(paper_id)
 
             if key in h5:
                 dict_data = {}
@@ -279,7 +271,7 @@ class Papers(object):
                 if paper_data:
                     return Paper(paper_data)
                 else:
-                    raise RuntimeError(f"Paper wasn't found with ss api: {paper_id}")
+                    raise RuntimeError(f"Paper doesn't found with ss api: {paper_id}")
 
         if hdf5 is not None:
             return _get_paper(paper_id, hdf5)
@@ -291,13 +283,12 @@ class Papers(object):
         """save new paper in hdf5 file"""
         with h5py.File(self.hdf5_path, mode="a") as h5wf:
 
-            key = f"/papers/{paper.paper_id[0]}/{paper.paper_id[1]}/{paper.paper_id[2]}/{paper.paper_id}"
-            if key in h5wf:
+            if self.is_exists(paper.paper_id):
                 return
 
-            self.indices.append(paper.paper_id)
-            # create group
             try:
+                self.indices.append(paper.paper_id)
+                # create group
                 group = h5wf.require_group(paper.hdf5_key)
 
                 # create dataset
@@ -347,6 +338,7 @@ class Papers(object):
                 new_arxiv_title[0] = paper.arxiv_title
                 new_arxiv_primary_category[0] = paper.arxiv_primary_category
                 new_arxiv_categories[...] = np.array(paper.arxiv_categories, dtype=Papers.HDF5_STR)
+
             except Exception as ex:
                 if paper.hdf5_key in h5wf:
                     del h5wf[paper.hdf5_key]
@@ -387,28 +379,27 @@ class Papers(object):
         )
 
         def show_progress(
+            paper_id: str,
             total: int,
             done: int,
             start: float,
             leave=True,
             export_papers=False,
-            graph_path="",
             depth=1,
             paper: Optional[Paper] = None,
             ci_paper: Optional[Paper] = None,
         ):
             res = (
-                f" -> {done:5d}/{total:5d} ({done / (total + 1e-10) * 100.0:5.2f}%) | "
+                f"{paper_id[:8]} -> {done:5d}/{total:5d} ({done / (total + 1e-10) * 100.0:5.2f}%) | "
                 f"etime: {timedelta2HMS(int(time.time() - start))} @{now().strftime('%H:%M:%S')}"
             )
 
             if export_papers:
                 res += f" | exported -> {len(self.indices):5d} papers"
-            if graph_path != "":
-                res += f" | exported -> {str(Path(graph_path).resolve().absolute())}"
             if paper is not None and ci_paper is not None:
                 res += f" | papers: {len(self.indices):5d}"
-                res += f" | {paper.paper_id[:5]} -> {ci_paper.paper_id[:5]} @icc: {ci_paper.influential_citation_count:4d}"
+                res += f" | {paper.paper_id[:5]} -> {ci_paper.paper_id[:5]}"
+                res += f" @cc(icc): {ci_paper.citation_count:4d}({ci_paper.influential_citation_count:4d})"
                 res += f' | {"=" * (depth // 100)}{"+" * ((depth % 100) // 10)}{"-" * (depth % 10)}★'
 
             if not leave:
@@ -437,9 +428,9 @@ class Papers(object):
                 graph.nodes[paper.paper_id]["first_author_id"] = paper.authors[0].author_id if len(paper.authors) > 0 else ""
                 graph.nodes[paper.paper_id]["arxiv_primary_category"] = paper.arxiv_primary_category
 
-        def export_graph(graph: nx.DiGraph, out_path="paper.graphml"):
-            outfile: Path = Path(out_path)
-            outfile = outfile.parent / outfile.stem[0] / outfile.stem[1] / outfile.stem[2] / outfile.name
+        def export_graph(graph: nx.DiGraph, paper_id: str, out_dir="__graph__"):
+            outfile: Path = Path(out_dir)
+            outfile = outfile / paper_id[0] / paper_id[1] / paper_id[2] / f"{paper_id}.graphml"
             outfile.parent.mkdir(parents=True, exist_ok=True)
             nx.write_graphml_lxml(graph, str(outfile.resolve().absolute()), encoding="utf-8", prettyprint=True, named_key_ids=True)
 
@@ -450,8 +441,8 @@ class Papers(object):
             "paper_queue": [],
             "new_papers": [],
             "finished_papers": [],
+            "errors": [],
         }
-        graph_cache = Path(graph_dir) / f"{paper_id}.graphml"
         start = time.time()
 
         root_paper = self.get_paper(paper_id)
@@ -469,18 +460,17 @@ class Papers(object):
                     continue
 
                 # 1. show progress
-                show_progress(stats["total"], stats["done"], start, leave=False)
+                show_progress(paper_id, stats["total"], stats["done"], start, leave=False)
 
                 if len(self.indices) > 0 and len(stats["new_papers"]) >= export_interval and len(self.indices) % export_interval == 0:
-                    export_graph(G, graph_cache)
-                    self.update_index(self.indices, self.errors)
-                    show_progress(stats["total"], stats["done"], start, graph_path=graph_cache)
+                    export_graph(G, paper_id, graph_dir)
+                    self.update_index(self.indices)
                     stats["new_papers"] = []
 
                 # 2. get paper detail
                 try:
 
-                    if ci_ref_paper.paper_id in self.errors:
+                    if ci_ref_paper.paper_id in stats["errors"]:
                         raise RuntimeError()
 
                     ci_paper: Paper = self.get_paper(ci_ref_paper.paper_id)
@@ -490,15 +480,15 @@ class Papers(object):
                 except Exception as ex:
                     print(f"Warning: {str(ex.__class__.__name__)}({str(ex)}) @{ci_ref_paper.paper_id}")
                     stats["done"] += 1
-                    if len(ci_ref_paper.paper_id) > 0 and ci_ref_paper.paper_id not in self.errors:
-                        self.errors.append(ci_ref_paper.paper_id)
+                    if len(ci_ref_paper.paper_id) > 0 and ci_ref_paper.paper_id not in stats["errors"]:
+                        stats["errors"].append(ci_ref_paper.paper_id)
                     continue
 
                 # 3. add the new paper into the list
                 stats["done"] += 1
                 if ci_paper.influential_citation_count >= min_influential_citation_count:
                     add_edge(G, paper, ci_paper)
-                    show_progress(stats["total"], stats["done"], start, depth=depth, paper=paper, ci_paper=ci_paper)
+                    show_progress(paper_id, stats["total"], stats["done"], start, depth=depth, paper=paper, ci_paper=ci_paper)
 
                     if ci_paper.paper_id not in stats["finished_papers"]:
                         stats["finished_papers"].append(ci_paper.paper_id)
@@ -519,8 +509,8 @@ class Papers(object):
                         stats["total"] += len(ci_paper.citations)
 
         # post process
-        export_graph(G, Path(graph_dir) / f"{paper_id}.graphml")
-        self.update_index(self.indices, self.errors)
+        export_graph(G, paper_id, graph_dir)
+        self.update_index(self.indices)
 
     def build_paper_categories_dataset(self, output_dir: PathLike):
         """build dataset for paper-category-inference
