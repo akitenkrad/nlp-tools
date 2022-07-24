@@ -508,7 +508,9 @@ class Papers(object):
                             ci_paper.arxiv_primary_category,
                         )
                         stats["paper_queue"].insert(0, (temp_paper, depth + 1))
-                        stats["total"] += len(ci_paper.citations)
+
+                        if depth < max_depth:
+                            stats["total"] += len(ci_paper.citations)
 
         # post process
         export_graph(G, paper_id, graph_dir)
