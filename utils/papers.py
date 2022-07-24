@@ -3,6 +3,7 @@ import json
 import os
 import time
 from collections import namedtuple
+from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from os import PathLike
 from pathlib import Path
@@ -436,7 +437,7 @@ class Papers(object):
 
         G: nx.DiGraph = nx.DiGraph()
         stats: Dict[str, Any] = {
-            "initial_papers": len(self.indices),
+            "initial_papers": len(deepcopy(self.indices)),
             "total": 0,
             "done": 0,
             "paper_queue": [],
