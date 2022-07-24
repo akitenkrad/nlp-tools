@@ -436,6 +436,7 @@ class Papers(object):
 
         G: nx.DiGraph = nx.DiGraph()
         stats: Dict[str, Any] = {
+            "initial_papers": len(self.indices),
             "total": 0,
             "done": 0,
             "paper_queue": [],
@@ -510,7 +511,9 @@ class Papers(object):
 
         # post process
         export_graph(G, paper_id, graph_dir)
-        self.update_index(self.indices)
+
+        if stats["initial_papers"] < len(self.indices):
+            self.update_index(self.indices)
 
     def build_paper_categories_dataset(self, output_dir: PathLike):
         """build dataset for paper-category-inference
