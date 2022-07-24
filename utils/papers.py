@@ -454,7 +454,7 @@ class Papers(object):
             paper, depth = stats["paper_queue"].pop()
             if max_depth < depth:
                 stats["paper_queue"] = []
-                return
+                break
 
             for ci_ref_paper in paper.citations:
                 if ci_ref_paper.paper_id is None:
