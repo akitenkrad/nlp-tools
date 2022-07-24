@@ -284,11 +284,13 @@ class Papers(object):
         """save new paper in hdf5 file"""
         with h5py.File(self.hdf5_path, mode="a") as h5wf:
 
+            if paper.paper_id not in self.indices:
+                self.indices.append(paper.paper_id)
+
             if self.is_exists(paper.paper_id):
                 return
 
             try:
-                self.indices.append(paper.paper_id)
                 # create group
                 group = h5wf.require_group(paper.hdf5_key)
 
