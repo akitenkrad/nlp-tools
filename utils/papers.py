@@ -37,11 +37,6 @@ class Paper(object):
             return default
 
     @property
-    def hdf5_key(self):
-        """key for hdf5"""
-        return f"/papers/{self.paper_id[0]}/{self.paper_id[1]}/{self.paper_id[2]}/{self.paper_id}"
-
-    @property
     def paper_id(self) -> str:
         """paper id from SemanticScholar"""
         return self.__get("paper_id", default="")
@@ -174,51 +169,39 @@ class Papers(object):
     HDF5_STR = h5py.string_dtype(encoding="utf-8")
 
     @classmethod
-    def to_key(cls, paper_id: str):
-        return f"/papers/{paper_id[0]}/{paper_id[1]}/{paper_id[2]}/{paper_id}"
+    def to_hdf5_path(cls, hdf5_path: PathLike, paper_id: str) -> Path:
+        path = Path(hdf5_path) / f"{paper_id[0]}/{paper_id[1]}/{paper_id[2]}/{paper_id[:3]}.hdf5"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        return path
 
     def __init__(self, hdf5_path: PathLike):
         self.hdf5_path = Path(hdf5_path)
+        self.index_path = self.hdf5_path / "indices.csv"
         self.ss = SemanticScholar()
         self.indices = self.load_index()
 
-    def load_index(self):
-        with h5py.File(self.hdf5_path, mode="a") as hdf5:
-            indices = [item.decode("utf-8") for item in np.array(hdf5["papers/indices"], dtype=Papers.HDF5_STR)] if "papers/indices" in hdf5 else []
-            indices = [item for item in indices if len(item) > 0]
-            return indices
+    def load_index(self) -> List[str]:
+        """load index from <HDF5_PATH>/indices.csv"""
+        indices = [item.strip() for item in open(self.index_path) if len(item.strip()) > 0]
+        return indices
 
     def update_index(self, indices: List[str]):
-        """update index if hdf5 database -> /papers/indices"""
-        with h5py.File(self.hdf5_path, mode="a") as hdf5:
-
-            from_indices = []
-            for index in tqdm(indices, leave=False):
-                if len(index) > 3:
-                    path = f"papers/{index[0]}/{index[1]}/{index[2]}/{index}"
-                    if path not in hdf5:
-                        print(f"WARNING: found unknown index: {index}")
-                        continue
-                    from_indices.append(index)
-            from_indices = list(set(from_indices))
-
-            group = hdf5.require_group("papers")
-            del hdf5["papers/indices"]
-            to_indices = group.require_dataset(name="indices", shape=(len(from_indices),), dtype=Papers.HDF5_STR)
-            to_indices[...] = np.array(sorted(from_indices), dtype=Papers.HDF5_STR)
+        """update index if hdf5 database -> <HDF5_DIR>/indices.csv"""
+        with open(self.index_path, mode="w", encoding="utf-8") as wf:
+            wf.write(os.linesep.join(indices))
 
     def is_exists(self, paper_id: str) -> bool:
         """check if the specified paper exists in hdf5"""
-        with h5py.File(self.hdf5_path, mode="a") as hdf5:
-            key = Papers.to_key(paper_id)
-            return key in hdf5
+        hdf5_path = Papers.to_hdf5_path(self.hdf5_path, paper_id)
+        with h5py.File(hdf5_path, mode="r") as hdf5:
+            return paper_id in hdf5
 
     def delete_paper(self, paper_id: str):
         """delete the specified paper"""
-        with h5py.File(self.hdf5_path, mode="a") as hdf5:
-            key = Papers.to_key(paper_id)
-            if key in hdf5:
-                del hdf5[key]
+        hdf5_path = Papers.to_hdf5_path(self.hdf5_path, paper_id)
+        with h5py.File(hdf5_path, mode="a") as hdf5:
+            if paper_id in hdf5:
+                del hdf5[paper_id]
 
     def str2datetime(self, date_str: str) -> Optional[datetime]:
         try:
@@ -228,44 +211,47 @@ class Papers(object):
         except OverflowError:
             return None
 
-    def get_paper(self, paper_id: str, hdf5: Optional[h5py.File] = None) -> Paper:
-        def _get_paper(paper_id: str, h5: h5py.File) -> Paper:
-            key = Papers.to_key(paper_id)
+    def parse_hdf5_data(self, hdf5_data: Any) -> Dict:
+        dict_data = {}
+        dict_data["paper_id"] = hdf5_data["paper_id"][0].decode("utf-8")
+        dict_data["title"] = hdf5_data["title"][0].decode("utf-8")
+        dict_data["url"] = hdf5_data["url"][0].decode("utf-8")
+        dict_data["venue"] = hdf5_data["venue"][0].decode("utf-8")
+        dict_data["year"] = int(hdf5_data["year"][0])
+        dict_data["authors"] = [
+            {"author_id": item[0].decode("utf-8"), "author_name": item[1].decode("utf-8")}
+            for item in np.array(hdf5_data["authors"], dtype=Papers.HDF5_STR)
+        ]
+        dict_data["abstract"] = hdf5_data["abstract"][0].decode("utf-8")
+        dict_data["reference_count"] = int(hdf5_data["reference_count"][0])
+        dict_data["citation_count"] = int(hdf5_data["citation_count"][0])
+        dict_data["references"] = [
+            {"paper_id": item[0].decode("utf-8"), "title": item[1].decode("utf-8")}
+            for item in np.array(hdf5_data["references"], dtype=Papers.HDF5_STR)
+        ]
+        dict_data["citations"] = [
+            {"paper_id": item[0].decode("utf-8"), "title": item[1].decode("utf-8")}
+            for item in np.array(hdf5_data["citations"], dtype=Papers.HDF5_STR)
+        ]
+        dict_data["fields_of_study"] = [item.decode("utf-8") for item in np.array(hdf5_data["fields_of_study"], dtype=Papers.HDF5_STR)]
+        dict_data["influencial_citation_count"] = int(hdf5_data["influential_citation_count"][0])
+        dict_data["is_open_access"] = bool(hdf5_data["is_open_access"][0])
+        dict_data["doi"] = hdf5_data["doi"][0].decode("utf-8")
+        dict_data["updated"] = self.str2datetime(hdf5_data["updated"][0].decode("utf-8"))
+        dict_data["published"] = self.str2datetime(hdf5_data["published"][0].decode("utf-8"))
+        dict_data["arxiv_hash"] = hdf5_data["arxiv_hash"][0].decode("utf-8")
+        dict_data["arxiv_id"] = hdf5_data["arxiv_id"][0].decode("utf-8")
+        dict_data["arxiv_title"] = hdf5_data["arxiv_title"][0].decode("utf-8")
+        dict_data["arxiv_primary_category"] = hdf5_data["arxiv_primary_category"][0].decode("utf-8")
+        dict_data["arxiv_categories"] = [cat.decode("utf-8") for cat in np.array(hdf5_data["arxiv_categories"], dtype=Papers.HDF5_STR)]
+        return dict_data
 
-            if key in h5:
-                dict_data = {}
-                dict_data["paper_id"] = h5[key]["paper_id"][0].decode("utf-8")
-                dict_data["title"] = h5[key]["title"][0].decode("utf-8")
-                dict_data["url"] = h5[key]["url"][0].decode("utf-8")
-                dict_data["venue"] = h5[key]["venue"][0].decode("utf-8")
-                dict_data["year"] = int(h5[key]["year"][0])
-                dict_data["authors"] = [
-                    {"author_id": item[0].decode("utf-8"), "author_name": item[1].decode("utf-8")}
-                    for item in np.array(h5[key]["authors"], dtype=Papers.HDF5_STR)
-                ]
-                dict_data["abstract"] = h5[key]["abstract"][0].decode("utf-8")
-                dict_data["reference_count"] = int(h5[key]["reference_count"][0])
-                dict_data["citation_count"] = int(h5[key]["citation_count"][0])
-                dict_data["references"] = [
-                    {"paper_id": item[0].decode("utf-8"), "title": item[1].decode("utf-8")}
-                    for item in np.array(h5[key]["references"], dtype=Papers.HDF5_STR)
-                ]
-                dict_data["citations"] = [
-                    {"paper_id": item[0].decode("utf-8"), "title": item[1].decode("utf-8")}
-                    for item in np.array(h5[key]["citations"], dtype=Papers.HDF5_STR)
-                ]
-                dict_data["fields_of_study"] = [item.decode("utf-8") for item in np.array(h5[key]["fields_of_study"], dtype=Papers.HDF5_STR)]
-                dict_data["influencial_citation_count"] = int(h5[key]["influential_citation_count"][0])
-                dict_data["is_open_access"] = bool(h5[key]["is_open_access"][0])
-                dict_data["doi"] = h5[key]["doi"][0].decode("utf-8")
-                dict_data["updated"] = self.str2datetime(h5[key]["updated"][0].decode("utf-8"))
-                dict_data["published"] = self.str2datetime(h5[key]["published"][0].decode("utf-8"))
-                dict_data["arxiv_hash"] = h5[key]["arxiv_hash"][0].decode("utf-8")
-                dict_data["arxiv_id"] = h5[key]["arxiv_id"][0].decode("utf-8")
-                dict_data["arxiv_title"] = h5[key]["arxiv_title"][0].decode("utf-8")
-                dict_data["arxiv_primary_category"] = h5[key]["arxiv_primary_category"][0].decode("utf-8")
-                dict_data["arxiv_categories"] = [cat.decode("utf-8") for cat in np.array(h5[key]["arxiv_categories"], dtype=Papers.HDF5_STR)]
-
+    def get_paper(self, paper_id: str) -> Paper:
+        """get paper data"""
+        hdf5_path = Papers.to_hdf5_path(self.hdf5_path, paper_id)
+        with h5py.File(hdf5_path, mode="r") as h5:
+            if paper_id in h5:
+                dict_data = self.parse_hdf5_data(h5[paper_id])
                 return Paper(dict_data)
             else:
                 paper_data = self.ss.get_paper_detail(paper_id)
@@ -274,15 +260,10 @@ class Papers(object):
                 else:
                     raise RuntimeError(f"Paper doesn't found with ss api: {paper_id}")
 
-        if hdf5 is not None:
-            return _get_paper(paper_id, hdf5)
-        else:
-            with h5py.File(self.hdf5_path, mode="r") as h5:
-                return _get_paper(paper_id, h5)
-
     def put_paper(self, paper: Paper):
         """save new paper in hdf5 file"""
-        with h5py.File(self.hdf5_path, mode="a") as h5wf:
+        hdf5_path = Papers.to_hdf5_path(self.hdf5_path, paper.paper_id)
+        with h5py.File(hdf5_path, mode="a") as h5wf:
 
             if len(paper.paper_id) > 0 and paper.paper_id not in self.indices:
                 self.indices.append(paper.paper_id)
@@ -292,7 +273,7 @@ class Papers(object):
 
             try:
                 # create group
-                group = h5wf.require_group(paper.hdf5_key)
+                group = h5wf.require_group(paper.paper_id)
 
                 # create dataset
                 new_abstract = group.create_dataset(name="abstract", shape=(1,), dtype=Papers.HDF5_STR)
@@ -343,8 +324,8 @@ class Papers(object):
                 new_arxiv_categories[...] = np.array(paper.arxiv_categories, dtype=Papers.HDF5_STR)
 
             except Exception as ex:
-                if paper.hdf5_key in h5wf:
-                    del h5wf[paper.hdf5_key]
+                if paper.paper_id in h5wf:
+                    del h5wf[paper.paper_id]
                 raise ex
 
     def build_reference_graph(
@@ -516,9 +497,7 @@ class Papers(object):
 
         # post process
         export_graph(G, paper_id, graph_dir)
-
-        if stats["initial_papers"] < len(self.indices):
-            self.update_index(self.indices)
+        self.update_index(self.indices)
 
     def build_paper_categories_dataset(self, output_dir: PathLike):
         """build dataset for paper-category-inference
