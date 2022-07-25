@@ -3,7 +3,6 @@ import json
 import os
 import time
 from collections import namedtuple
-from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from os import PathLike
 from pathlib import Path
@@ -195,11 +194,12 @@ class Papers(object):
 
             from_indices = []
             for index in tqdm(indices, leave=False):
-                path = f"papers/{index[0]}/{index[1]}/{index[2]}/{index}"
-                if path not in hdf5:
-                    print(f"WARNING: found unknown index: {index}")
-                    continue
-                from_indices.append(index)
+                if len(index) > 3:
+                    path = f"papers/{index[0]}/{index[1]}/{index[2]}/{index}"
+                    if path not in hdf5:
+                        print(f"WARNING: found unknown index: {index}")
+                        continue
+                    from_indices.append(index)
             from_indices = list(set(from_indices))
 
             group = hdf5.require_group("papers")
@@ -284,7 +284,7 @@ class Papers(object):
         """save new paper in hdf5 file"""
         with h5py.File(self.hdf5_path, mode="a") as h5wf:
 
-            if paper.paper_id not in self.indices:
+            if len(paper.paper_id) > 0 and paper.paper_id not in self.indices:
                 self.indices.append(paper.paper_id)
 
             if self.is_exists(paper.paper_id):
@@ -439,7 +439,7 @@ class Papers(object):
 
         G: nx.DiGraph = nx.DiGraph()
         stats: Dict[str, Any] = {
-            "initial_papers": len(deepcopy(self.indices)),
+            "initial_papers": len(self.indices),
             "total": 0,
             "done": 0,
             "paper_queue": [],
