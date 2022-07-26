@@ -193,6 +193,8 @@ class Papers(object):
     def is_exists(self, paper_id: str) -> bool:
         """check if the specified paper exists in hdf5"""
         hdf5_path = Papers.to_hdf5_path(self.hdf5_path, paper_id)
+        if not hdf5_path.exists():
+            return False
         with h5py.File(hdf5_path, mode="r") as hdf5:
             return paper_id in hdf5
 
