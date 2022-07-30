@@ -1,9 +1,11 @@
 import hashlib
 import json
 import os
+import shutil
 import time
 from collections import namedtuple
 from datetime import datetime, timedelta, timezone
+from glob import glob
 from os import PathLike
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -190,6 +192,32 @@ class Papers(object):
         with open(self.index_path, mode="w", encoding="utf-8") as wf:
             wf.write(os.linesep.join(indices))
 
+    def backup(self, backup_dir: PathLike, target_paper_indices: List[str]):
+        """backup hdf5 files
+
+        Args:
+            backup_dir (PathLike): backup directory
+            target_paper_indices (List[str]): a list of paper_id to backup
+        """
+        target_dir = Path(backup_dir)
+
+        # hdf5
+        if len(target_paper_indices) > 0:
+            target_hdf5 = list(set([index[:3] for index in target_paper_indices]))
+        else:
+            target_hdf5 = list(set([index[:3] for index in self.indices]))
+        hdf5_files = sorted([Path(f) for f in glob(str(Path(self.hdf5_path) / "**" / "*.hdf5"), recursive=True)])
+        with tqdm(hdf5_files, leave=False) as it:
+            for hdf5_file in it:
+                if hdf5_file.stem in target_hdf5:
+                    it.set_description(f"Backup hdf5: {hdf5_file.name} ---> {target_dir}")
+                    from_path = hdf5_file
+                    to_path = target_dir / "papers" / hdf5_file.stem[0] / hdf5_file.stem[1] / hdf5_file.stem[2] / hdf5_file.name
+                    to_path.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(from_path, to_path)
+                else:
+                    it.set_description(f"Skipped: {hdf5_file.name}")
+
     def is_exists(self, paper_id: str) -> bool:
         """check if the specified paper exists in hdf5"""
         hdf5_path = Papers.to_hdf5_path(self.hdf5_path, paper_id)
@@ -336,6 +364,7 @@ class Papers(object):
         min_influential_citation_count=1,
         max_depth=3,
         graph_dir="__cache__/graphs",
+        backup_dir="__backup__",
         export_interval=1000,
     ):
         """build a reference graph
@@ -427,6 +456,7 @@ class Papers(object):
             "done": 0,
             "paper_queue": [],
             "new_papers": [],
+            "papers_to_backup": [],
             "finished_papers": [],
             "errors": [],
         }
@@ -452,6 +482,11 @@ class Papers(object):
                 if len(self.indices) > 0 and len(stats["new_papers"]) >= export_interval and len(self.indices) % export_interval == 0:
                     export_graph(G, paper_id, graph_dir)
                     self.update_index(self.indices)
+
+                    if len(stats["papers_to_backup"]) > 0:
+                        self.backup(backup_dir, stats["papers_to_backup"])
+
+                    stats["papers_to_backup"] = []
                     stats["new_papers"] = []
 
                 # 2. get paper detail
@@ -461,6 +496,9 @@ class Papers(object):
                         raise RuntimeError()
 
                     ci_paper: Paper = self.get_paper(ci_ref_paper.paper_id)
+                    if not self.is_exists(ci_paper.paper_id):
+                        stats["papers_to_backup"].append(ci_paper.paper_id)
+
                     self.put_paper(ci_paper)
                     stats["new_papers"].append(ci_paper.paper_id)
 
