@@ -1,26 +1,27 @@
-from typing import List
-from pathlib import Path
 import pickle
-from tqdm import tqdm
-from enum import Enum
-from collections import namedtuple
-import numpy as np
 import zipfile
-from sentence_transformers import SentenceTransformer as _SentenceTransformer
+from collections import namedtuple
+from enum import Enum
+from pathlib import Path
+from typing import List
 
-from utils.utils import Config
+import numpy as np
+from sentence_transformers import SentenceTransformer as _SentenceTransformer
+from tqdm import tqdm
 from utils.tokenizers import WordTokenizer
+from utils.utils import Config
+
 from embeddings.base import Embedding
 
-class SentenceTransformer(Embedding):
 
-    def __init__(self, config:Config, model:str='all-MiniLM-L6-v2'):
+class SentenceTransformer(Embedding):
+    def __init__(self, config: Config, model: str = "all-MiniLM-L6-v2"):
         self.config = config
         self.model = _SentenceTransformer(model)
 
-        self._embedding_dim = self.model('This is a test sentence.').shape[0]
+        self._embedding_dim = self.model("This is a test sentence.").shape[0]
         self.__idx2word = self.model.tokenizer.vocab
-        self.__word2idx = {v:i for i, v in self.__idx2word.items()}
+        self.__word2idx = {v: i for i, v in self.__idx2word.items()}
 
     @property
     def embedding_dim(self) -> int:
@@ -30,12 +31,12 @@ class SentenceTransformer(Embedding):
     def tokens(self) -> List[str]:
         return list(self.model.tokenizer.vocab.keys())
 
-    def tokenize(self, text:str):
+    def tokenize(self, text: str):
         return self.model.tokenize(text)
 
     def index2token(self, index: int) -> str:
         if index not in self.__idx2word:
-            return '<unk>'
+            return "<unk>"
         else:
             return self.__idx2word[index]
 
@@ -45,5 +46,5 @@ class SentenceTransformer(Embedding):
         else:
             return self.__word2idx[token]
 
-    def embed(self, input_text:str) -> np.ndarray:
+    def embed(self, input_text: str) -> np.ndarray:
         return self.model.encode(input_text)
