@@ -192,13 +192,23 @@ class Papers(object):
         with open(self.index_path, mode="w", encoding="utf-8") as wf:
             wf.write(os.linesep.join(indices))
 
-    def backup(self, backup_dir: PathLike, target_paper_indices: List[str], progress_state: Dict = {}, save_progress_only=False):
+    def backup(
+        self,
+        backup_dir: PathLike,
+        graph_dir: PathLike,
+        G: nx.DiGraph,
+        paper_id: str,
+        target_paper_indices: List[str],
+        progress_state: Dict = {},
+        save_progress_only=False,
+    ):
         """backup hdf5 files
 
         Args:
             backup_dir (PathLike): backup directory
             target_paper_indices (List[str]): a list of paper_id to backup
             progress_state (Dict): progress status
+            save_progress_only (bool): if True, backup only progress status and index
         """
         target_dir = Path(backup_dir)
         target_dir.mkdir(parents=True, exist_ok=True)
@@ -206,6 +216,14 @@ class Papers(object):
         # progress status
         if len(progress_state) > 0:
             json.dump(progress_state, open(target_dir / "progress_state.json", mode="w", encoding="utf-8"), ensure_ascii=False, indent=2)
+
+        # export graph
+        outfile: Path = Path(graph_dir)
+        outfile = outfile / paper_id[0] / paper_id[1] / paper_id[2] / f"{paper_id}.graphml"
+        outfile.parent.mkdir(parents=True, exist_ok=True)
+        nx.write_graphml_lxml(G, str(outfile.resolve().absolute()), encoding="utf-8", prettyprint=True, named_key_ids=True)
+
+        self.update_index(self.indices)
 
         if save_progress_only:
             return
@@ -461,8 +479,10 @@ class Papers(object):
         def load_graph(paper_id: str, out_dir="__graph__"):
             outfile: Path = Path(out_dir)
             outfile = outfile / paper_id[0] / paper_id[1] / paper_id[2] / f"{paper_id}.graphml"
-            outfile.parent.mkdir(parents=True, exist_ok=True)
-            return nx.read_graphml(outfile)
+            if outfile.exists():
+                return nx.read_graphml(outfile)
+            else:
+                return nx.DiGraph()
 
         G: nx.DiGraph = nx.DiGraph()
         stats: Dict[str, Any] = {
@@ -501,14 +521,10 @@ class Papers(object):
                 show_progress(paper_id, stats["total"], stats["done"], start, leave=False)
 
                 if stats["done"] > 0 and stats["done"] % export_interval == 0:
-                    export_graph(G, paper_id, graph_dir)
-                    self.update_index(self.indices)
-
                     if len(stats["papers_to_backup"]) > 0:
-                        self.backup(backup_dir, stats["papers_to_backup"], stats)
+                        self.backup(backup_dir, graph_dir, G, paper_id, stats["papers_to_backup"], stats)
                     else:
-                        self.backup(backup_dir, stats["papers_to_backup"], stats, save_progress_only=True)
-
+                        self.backup(backup_dir, graph_dir, G, paper_id, stats["papers_to_backup"], stats, save_progress_only=True)
                     stats["papers_to_backup"] = []
 
                 # 2. get paper detail
@@ -537,22 +553,23 @@ class Papers(object):
 
                     if ci_paper.paper_id not in stats["finished_papers"]:
                         stats["finished_papers"].append(ci_paper.paper_id)
-                        temp_paper = TemporaryPaper(
-                            ci_paper.paper_id,
-                            ci_paper.title,
-                            ci_paper.year,
-                            ci_paper.venue,
-                            ci_paper.citations,
-                            ci_paper.references,
-                            ci_paper.reference_count,
-                            ci_paper.citation_count,
-                            ci_paper.influential_citation_count,
-                            ci_paper.authors,
-                            ci_paper.arxiv_primary_category,
-                        )
-                        stats["paper_queue"].insert(0, (temp_paper, depth + 1))
 
                         if depth < max_depth:
+                            temp_paper = TemporaryPaper(
+                                ci_paper.paper_id,
+                                ci_paper.title,
+                                ci_paper.year,
+                                ci_paper.venue,
+                                ci_paper.citations,
+                                ci_paper.references,
+                                ci_paper.reference_count,
+                                ci_paper.citation_count,
+                                ci_paper.influential_citation_count,
+                                ci_paper.authors,
+                                ci_paper.arxiv_primary_category,
+                            )
+
+                            stats["paper_queue"].insert(0, (temp_paper, depth + 1))
                             stats["total"] += len(ci_paper.citations)
 
         # post process
