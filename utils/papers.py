@@ -458,6 +458,12 @@ class Papers(object):
             outfile.parent.mkdir(parents=True, exist_ok=True)
             nx.write_graphml_lxml(graph, str(outfile.resolve().absolute()), encoding="utf-8", prettyprint=True, named_key_ids=True)
 
+        def load_graph(paper_id: str, out_dir="__graph__"):
+            outfile: Path = Path(out_dir)
+            outfile = outfile / paper_id[0] / paper_id[1] / paper_id[2] / f"{paper_id}.graphml"
+            outfile.parent.mkdir(parents=True, exist_ok=True)
+            return nx.read_graphml(outfile)
+
         G: nx.DiGraph = nx.DiGraph()
         stats: Dict[str, Any] = {
             "initial_papers": len(self.indices),
@@ -477,6 +483,7 @@ class Papers(object):
         # restore stats
         if (Path(backup_dir) / "progress_state.json").exists():
             stats = json.load(open(Path(backup_dir) / "progress_state.json"))
+            G = load_graph(paper_id)
             stats["errors"] = []
 
         while 0 < len(stats["paper_queue"]):
