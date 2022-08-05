@@ -192,7 +192,7 @@ class Papers(object):
         with open(self.index_path, mode="w", encoding="utf-8") as wf:
             wf.write(os.linesep.join(indices))
 
-    def backup(self, backup_dir: PathLike, target_paper_indices: List[str], progress_state: Dict = {}):
+    def backup(self, backup_dir: PathLike, target_paper_indices: List[str], progress_state: Dict = {}, save_progress_only=False):
         """backup hdf5 files
 
         Args:
@@ -206,6 +206,9 @@ class Papers(object):
         # progress status
         if len(progress_state) > 0:
             json.dump(progress_state, open(target_dir / "progress_state.json", mode="w", encoding="utf-8"), ensure_ascii=False, indent=2)
+
+        if save_progress_only:
+            return
 
         # hdf5
         if len(target_paper_indices) > 0:
@@ -493,7 +496,11 @@ class Papers(object):
                 if stats["done"] > 0 and stats["done"] % export_interval == 0:
                     export_graph(G, paper_id, graph_dir)
                     self.update_index(self.indices)
-                    self.backup(backup_dir, stats["papers_to_backup"], stats)
+
+                    if len(stats["papers_to_backup"]) > 0:
+                        self.backup(backup_dir, stats["papers_to_backup"], stats)
+                    else:
+                        self.backup(backup_dir, stats["papers_to_backup"], stats, save_progress_only=True)
 
                     stats["papers_to_backup"] = []
 
