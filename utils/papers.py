@@ -201,6 +201,11 @@ class Papers(object):
             progress_state (Dict): progress status
         """
         target_dir = Path(backup_dir)
+        target_dir.mkdir(parents=True, exist_ok=True)
+
+        # progress status
+        if len(progress_state) > 0:
+            json.dump(progress_state, open(target_dir / "progress_state.json", mode="w", encoding="utf-8"), ensure_ascii=False, indent=2)
 
         # hdf5
         if len(target_paper_indices) > 0:
@@ -218,10 +223,6 @@ class Papers(object):
                     shutil.copyfile(from_path, to_path)
                 else:
                     it.set_description(f"Skipped: {hdf5_file.name}")
-
-        # progress status
-        if progress_state:
-            json.dump(progress_state, open(target_dir / "progress_state.json", mode="w", encoding="utf-8"), ensure_ascii=False, indent=2)
 
     def is_exists(self, paper_id: str) -> bool:
         """check if the specified paper exists in hdf5"""
