@@ -493,9 +493,7 @@ class Papers(object):
                 if stats["done"] > 0 and stats["done"] % export_interval == 0:
                     export_graph(G, paper_id, graph_dir)
                     self.update_index(self.indices)
-
-                    if len(stats["papers_to_backup"]) > 0:
-                        self.backup(backup_dir, stats["papers_to_backup"], stats)
+                    self.backup(backup_dir, stats["papers_to_backup"], stats)
 
                     stats["papers_to_backup"] = []
 
