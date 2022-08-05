@@ -192,12 +192,13 @@ class Papers(object):
         with open(self.index_path, mode="w", encoding="utf-8") as wf:
             wf.write(os.linesep.join(indices))
 
-    def backup(self, backup_dir: PathLike, target_paper_indices: List[str]):
+    def backup(self, backup_dir: PathLike, target_paper_indices: List[str], progress_state: Dict = {}):
         """backup hdf5 files
 
         Args:
             backup_dir (PathLike): backup directory
             target_paper_indices (List[str]): a list of paper_id to backup
+            progress_state (Dict): progress status
         """
         target_dir = Path(backup_dir)
 
@@ -217,6 +218,10 @@ class Papers(object):
                     shutil.copyfile(from_path, to_path)
                 else:
                     it.set_description(f"Skipped: {hdf5_file.name}")
+
+        # progress status
+        if progress_state:
+            json.dump(progress_state, open(target_dir / "progress_state.json", mode="w", encoding="utf-8"), ensure_ascii=False, indent=2)
 
     def is_exists(self, paper_id: str) -> bool:
         """check if the specified paper exists in hdf5"""
@@ -455,7 +460,6 @@ class Papers(object):
             "total": 0,
             "done": 0,
             "paper_queue": [],
-            "new_papers": [],
             "papers_to_backup": [],
             "finished_papers": [],
             "errors": [],
@@ -465,6 +469,12 @@ class Papers(object):
         root_paper = self.get_paper(paper_id)
         stats["paper_queue"].insert(0, (root_paper, 0))
         stats["total"] += len(root_paper.citations)
+
+        # restore stats
+        if (Path(backup_dir) / "progress_state.json").exists():
+            stats = json.load(open(Path(backup_dir) / "progress_state.json"))
+            stats["errors"] = []
+
         while 0 < len(stats["paper_queue"]):
             paper, depth = stats["paper_queue"].pop()
             if max_depth < depth:
@@ -479,15 +489,14 @@ class Papers(object):
                 # 1. show progress
                 show_progress(paper_id, stats["total"], stats["done"], start, leave=False)
 
-                if len(self.indices) > 0 and len(stats["new_papers"]) >= export_interval and len(self.indices) % export_interval == 0:
+                if stats["done"] > 0 and stats["done"] % export_interval == 0:
                     export_graph(G, paper_id, graph_dir)
                     self.update_index(self.indices)
 
                     if len(stats["papers_to_backup"]) > 0:
-                        self.backup(backup_dir, stats["papers_to_backup"])
+                        self.backup(backup_dir, stats["papers_to_backup"], stats)
 
                     stats["papers_to_backup"] = []
-                    stats["new_papers"] = []
 
                 # 2. get paper detail
                 try:
@@ -498,9 +507,7 @@ class Papers(object):
                     ci_paper: Paper = self.get_paper(ci_ref_paper.paper_id)
                     if not self.is_exists(ci_paper.paper_id):
                         stats["papers_to_backup"].append(ci_paper.paper_id)
-
                     self.put_paper(ci_paper)
-                    stats["new_papers"].append(ci_paper.paper_id)
 
                 except Exception as ex:
                     print(f"Warning: {str(ex.__class__.__name__)}({str(ex)}) @{ci_ref_paper.paper_id}")
@@ -538,6 +545,10 @@ class Papers(object):
         # post process
         export_graph(G, paper_id, graph_dir)
         self.update_index(self.indices)
+
+        # remove cache
+        if (Path(backup_dir) / "progress_state.json").exists():
+            os.remove(Path(backup_dir) / "progress_state.json")
 
     def build_paper_categories_dataset(self, output_dir: PathLike):
         """build dataset for paper-category-inference
