@@ -187,64 +187,6 @@ class Papers(object):
         indices = [item.strip() for item in open(self.index_path) if len(item.strip()) > 0]
         return indices
 
-    def update_index(self, indices: List[str]):
-        """update index if hdf5 database -> <HDF5_DIR>/indices.csv"""
-        with open(self.index_path, mode="w", encoding="utf-8") as wf:
-            wf.write(os.linesep.join(indices))
-
-    def backup(
-        self,
-        backup_dir: PathLike,
-        graph_dir: PathLike,
-        G: nx.DiGraph,
-        paper_id: str,
-        target_paper_indices: List[str],
-        progress_state: Dict = {},
-        save_progress_only=False,
-    ):
-        """backup hdf5 files
-
-        Args:
-            backup_dir (PathLike): backup directory
-            target_paper_indices (List[str]): a list of paper_id to backup
-            progress_state (Dict): progress status
-            save_progress_only (bool): if True, backup only progress status and index
-        """
-        target_dir = Path(backup_dir)
-        target_dir.mkdir(parents=True, exist_ok=True)
-
-        # progress status
-        if len(progress_state) > 0:
-            json.dump(progress_state, open(target_dir / "progress_state.json", mode="w", encoding="utf-8"), ensure_ascii=False, indent=2)
-
-        # export graph
-        outfile: Path = Path(graph_dir)
-        outfile = outfile / paper_id[0] / paper_id[1] / paper_id[2] / f"{paper_id}.graphml"
-        outfile.parent.mkdir(parents=True, exist_ok=True)
-        nx.write_graphml_lxml(G, str(outfile.resolve().absolute()), encoding="utf-8", prettyprint=True, named_key_ids=True)
-
-        self.update_index(self.indices)
-
-        if save_progress_only:
-            return
-
-        # hdf5
-        if len(target_paper_indices) > 0:
-            target_hdf5 = list(set([index[:3] for index in target_paper_indices]))
-        else:
-            target_hdf5 = list(set([index[:3] for index in self.indices]))
-        hdf5_files = sorted([Path(f) for f in glob(str(Path(self.hdf5_path) / "**" / "*.hdf5"), recursive=True)])
-        with tqdm(hdf5_files, leave=False) as it:
-            for hdf5_file in it:
-                if hdf5_file.stem in target_hdf5:
-                    it.set_description(f"Backup hdf5: {hdf5_file.name} ---> {target_dir}")
-                    from_path = hdf5_file
-                    to_path = target_dir / "papers" / hdf5_file.stem[0] / hdf5_file.stem[1] / hdf5_file.stem[2] / hdf5_file.name
-                    to_path.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copyfile(from_path, to_path)
-                else:
-                    it.set_description(f"Skipped: {hdf5_file.name}")
-
     def is_exists(self, paper_id: str) -> bool:
         """check if the specified paper exists in hdf5"""
         hdf5_path = Papers.to_hdf5_path(self.hdf5_path, paper_id)
@@ -476,6 +418,65 @@ class Papers(object):
             outfile.parent.mkdir(parents=True, exist_ok=True)
             nx.write_graphml_lxml(graph, str(outfile.resolve().absolute()), encoding="utf-8", prettyprint=True, named_key_ids=True)
 
+        def update_index(indices: List[str]):
+            """update index if hdf5 database -> <HDF5_DIR>/indices.csv"""
+            with open(self.index_path, mode="w", encoding="utf-8") as wf:
+                wf.write(os.linesep.join(indices))
+
+        def backup(
+            hdf5_path: PathLike,
+            backup_dir: PathLike,
+            indices: List[str],
+            graph_dir: PathLike,
+            G: nx.DiGraph,
+            paper_id: str,
+            target_paper_indices: List[str],
+            progress_state: Dict = {},
+            save_progress_only=False,
+        ):
+            """backup hdf5 files
+
+            Args:
+                backup_dir (PathLike): backup directory
+                target_paper_indices (List[str]): a list of paper_id to backup
+                progress_state (Dict): progress status
+                save_progress_only (bool): if True, backup only progress status and index
+            """
+            target_dir = Path(backup_dir)
+            target_dir.mkdir(parents=True, exist_ok=True)
+
+            # progress status
+            if len(progress_state) > 0:
+                json.dump(progress_state, open(target_dir / "progress_state.json", mode="w", encoding="utf-8"), ensure_ascii=False, indent=2)
+
+            # export graph
+            outfile: Path = Path(graph_dir)
+            outfile = outfile / paper_id[0] / paper_id[1] / paper_id[2] / f"{paper_id}.graphml"
+            outfile.parent.mkdir(parents=True, exist_ok=True)
+            nx.write_graphml_lxml(G, str(outfile.resolve().absolute()), encoding="utf-8", prettyprint=True, named_key_ids=True)
+
+            update_index(indices)
+
+            if save_progress_only:
+                return
+
+            # hdf5
+            if len(target_paper_indices) > 0:
+                target_hdf5 = list(set([index[:3] for index in target_paper_indices]))
+            else:
+                target_hdf5 = list(set([index[:3] for index in indices]))
+            hdf5_files = sorted([Path(f) for f in glob(str(Path(hdf5_path) / "**" / "*.hdf5"), recursive=True)])
+            with tqdm(hdf5_files, leave=False) as it:
+                for hdf5_file in it:
+                    if hdf5_file.stem in target_hdf5:
+                        it.set_description(f"Backup hdf5: {hdf5_file.name} ---> {target_dir}")
+                        from_path = hdf5_file
+                        to_path = target_dir / "papers" / hdf5_file.stem[0] / hdf5_file.stem[1] / hdf5_file.stem[2] / hdf5_file.name
+                        to_path.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copyfile(from_path, to_path)
+                    else:
+                        it.set_description(f"Skipped: {hdf5_file.name}")
+
         def load_graph(paper_id: str, out_dir="__graph__"):
             outfile: Path = Path(out_dir)
             outfile = outfile / paper_id[0] / paper_id[1] / paper_id[2] / f"{paper_id}.graphml"
@@ -483,6 +484,18 @@ class Papers(object):
                 return nx.read_graphml(outfile)
             else:
                 return nx.DiGraph()
+
+        def load_stats(backup_dir: PathLike):
+            stats = json.load(open(Path(backup_dir) / "progress_state.json"))
+            paper_queue = []
+            for paper_data, depth in stats["paper_queue"]:
+                paper_data[4] = [RefPaper(*args) for args in paper_data[4]]
+                paper_data[5] = [RefPaper(*args) for args in paper_data[5]]
+                paper_data[9] = [Author(*args) for args in paper_data[9]]
+                tmp_paper = TemporaryPaper(*paper_data)
+                paper_queue.append((tmp_paper, depth))
+            stats["paper_queue"] = paper_queue
+            return stats
 
         G: nx.DiGraph = nx.DiGraph()
         stats: Dict[str, Any] = {
@@ -502,10 +515,8 @@ class Papers(object):
 
         # restore stats
         if (Path(backup_dir) / "progress_state.json").exists():
-            stats = json.load(open(Path(backup_dir) / "progress_state.json"))
             G = load_graph(paper_id, graph_dir)
-            stats["paper_queue"] = [(TemporaryPaper(*args), depth) for args, depth in stats["paper_queue"]]
-            stats["errors"] = []
+            stats = load_stats(backup_dir)
 
         while 0 < len(stats["paper_queue"]):
             paper, depth = stats["paper_queue"].pop()
@@ -523,9 +534,29 @@ class Papers(object):
 
                 if stats["done"] > 0 and stats["done"] % export_interval == 0:
                     if len(stats["papers_to_backup"]) > 0:
-                        self.backup(backup_dir, graph_dir, G, paper_id, stats["papers_to_backup"], stats)
+                        backup(
+                            self.hdf5_path,
+                            backup_dir,
+                            graph_dir,
+                            G,
+                            paper_id,
+                            stats["papers_to_backup"],
+                            self.indices,
+                            stats,
+                            save_progress_only=False,
+                        )
                     else:
-                        self.backup(backup_dir, graph_dir, G, paper_id, stats["papers_to_backup"], stats, save_progress_only=True)
+                        backup(
+                            self.hdf5_path,
+                            backup_dir,
+                            graph_dir,
+                            G,
+                            paper_id,
+                            stats["papers_to_backup"],
+                            self.indices,
+                            stats,
+                            save_progress_only=True,
+                        )
                     stats["papers_to_backup"] = []
 
                 # 2. get paper detail
@@ -575,7 +606,7 @@ class Papers(object):
 
         # post process
         export_graph(G, paper_id, graph_dir)
-        self.update_index(self.indices)
+        update_index(self.indices)
 
         # remove cache
         if (Path(backup_dir) / "progress_state.json").exists():
