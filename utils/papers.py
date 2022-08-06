@@ -504,6 +504,7 @@ class Papers(object):
         if (Path(backup_dir) / "progress_state.json").exists():
             stats = json.load(open(Path(backup_dir) / "progress_state.json"))
             G = load_graph(paper_id)
+            stats["paper_queue"] = [(TemporaryPaper(*args), depth) for args, depth in stats["paper_queue"]]
             stats["errors"] = []
 
         while 0 < len(stats["paper_queue"]):
@@ -554,7 +555,7 @@ class Papers(object):
                     if ci_paper.paper_id not in stats["finished_papers"]:
                         stats["finished_papers"].append(ci_paper.paper_id)
 
-                        if depth < max_depth:
+                        if depth <= max_depth:
                             temp_paper = TemporaryPaper(
                                 ci_paper.paper_id,
                                 ci_paper.title,
