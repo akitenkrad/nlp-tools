@@ -503,7 +503,7 @@ class Papers(object):
         # restore stats
         if (Path(backup_dir) / "progress_state.json").exists():
             stats = json.load(open(Path(backup_dir) / "progress_state.json"))
-            G = load_graph(paper_id)
+            G = load_graph(paper_id, graph_dir)
             stats["paper_queue"] = [(TemporaryPaper(*args), depth) for args, depth in stats["paper_queue"]]
             stats["errors"] = []
 
