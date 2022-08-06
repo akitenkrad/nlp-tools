@@ -418,14 +418,15 @@ class Papers(object):
             outfile.parent.mkdir(parents=True, exist_ok=True)
             nx.write_graphml_lxml(graph, str(outfile.resolve().absolute()), encoding="utf-8", prettyprint=True, named_key_ids=True)
 
-        def update_index(indices: List[str]):
+        def update_index(index_path, indices: List[str]):
             """update index if hdf5 database -> <HDF5_DIR>/indices.csv"""
-            with open(self.index_path, mode="w", encoding="utf-8") as wf:
+            with open(index_path, mode="w", encoding="utf-8") as wf:
                 wf.write(os.linesep.join(indices))
 
         def backup(
             hdf5_path: PathLike,
             backup_dir: PathLike,
+            index_path: PathLike,
             indices: List[str],
             graph_dir: PathLike,
             G: nx.DiGraph,
@@ -445,6 +446,9 @@ class Papers(object):
             target_dir = Path(backup_dir)
             target_dir.mkdir(parents=True, exist_ok=True)
 
+            # update index
+            update_index(index_path, indices)
+
             # progress status
             if len(progress_state) > 0:
                 json.dump(progress_state, open(target_dir / "progress_state.json", mode="w", encoding="utf-8"), ensure_ascii=False, indent=2)
@@ -454,8 +458,6 @@ class Papers(object):
             outfile = outfile / paper_id[0] / paper_id[1] / paper_id[2] / f"{paper_id}.graphml"
             outfile.parent.mkdir(parents=True, exist_ok=True)
             nx.write_graphml_lxml(G, str(outfile.resolve().absolute()), encoding="utf-8", prettyprint=True, named_key_ids=True)
-
-            update_index(indices)
 
             if save_progress_only:
                 return
@@ -537,6 +539,7 @@ class Papers(object):
                         backup(
                             hdf5_path=self.hdf5_path,
                             backup_dir=backup_dir,
+                            index_path=self.index_path,
                             indices=self.indices,
                             graph_dir=graph_dir,
                             G=G,
@@ -549,6 +552,7 @@ class Papers(object):
                         backup(
                             hdf5_path=self.hdf5_path,
                             backup_dir=backup_dir,
+                            index_path=self.index_path,
                             indices=self.indices,
                             graph_dir=graph_dir,
                             G=G,
@@ -606,7 +610,7 @@ class Papers(object):
 
         # post process
         export_graph(G, paper_id, graph_dir)
-        update_index(self.indices)
+        update_index(self.index_path, self.indices)
 
         # remove cache
         if (Path(backup_dir) / "progress_state.json").exists():
