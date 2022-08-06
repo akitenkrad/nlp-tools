@@ -426,7 +426,6 @@ class Papers(object):
         def backup(
             hdf5_path: PathLike,
             backup_dir: PathLike,
-            index_path: PathLike,
             indices: List[str],
             graph_dir: PathLike,
             G: nx.DiGraph,
@@ -447,6 +446,7 @@ class Papers(object):
             target_dir.mkdir(parents=True, exist_ok=True)
 
             # update index
+            index_path = target_dir / "papers" / "indices.csv"
             update_index(index_path, indices)
 
             # progress status
@@ -539,7 +539,6 @@ class Papers(object):
                         backup(
                             hdf5_path=self.hdf5_path,
                             backup_dir=backup_dir,
-                            index_path=self.index_path,
                             indices=self.indices,
                             graph_dir=graph_dir,
                             G=G,
@@ -552,7 +551,6 @@ class Papers(object):
                         backup(
                             hdf5_path=self.hdf5_path,
                             backup_dir=backup_dir,
-                            index_path=self.index_path,
                             indices=self.indices,
                             graph_dir=graph_dir,
                             G=G,
