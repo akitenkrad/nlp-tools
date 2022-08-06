@@ -588,7 +588,8 @@ class Papers(object):
                     if ci_paper.paper_id not in stats["finished_papers"]:
                         stats["finished_papers"].append(ci_paper.paper_id)
 
-                        if depth <= max_depth:
+                        latest_depth = stats["paper_queue"][0][1]
+                        if latest_depth <= max_depth:
                             temp_paper = TemporaryPaper(
                                 ci_paper.paper_id,
                                 ci_paper.title,
