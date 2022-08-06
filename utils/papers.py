@@ -488,7 +488,7 @@ class Papers(object):
         def load_stats(backup_dir: PathLike):
             stats = json.load(open(Path(backup_dir) / "progress_state.json"))
             paper_queue = []
-            for paper_data, depth in stats["paper_queue"]:
+            for paper_data, depth in tqdm(stats["paper_queue"], desc="Restoring stats...", leave=False):
                 paper_data[4] = [RefPaper(*args) for args in paper_data[4]]
                 paper_data[5] = [RefPaper(*args) for args in paper_data[5]]
                 paper_data[9] = [Author(*args) for args in paper_data[9]]
@@ -535,26 +535,26 @@ class Papers(object):
                 if stats["done"] > 0 and stats["done"] % export_interval == 0:
                     if len(stats["papers_to_backup"]) > 0:
                         backup(
-                            self.hdf5_path,
-                            backup_dir,
-                            graph_dir,
-                            G,
-                            paper_id,
-                            stats["papers_to_backup"],
-                            self.indices,
-                            stats,
+                            hdf5_path=self.hdf5_path,
+                            backup_dir=backup_dir,
+                            indices=self.indices,
+                            graph_dir=graph_dir,
+                            G=G,
+                            paper_id=paper_id,
+                            target_paper_indices=stats["papers_to_backup"],
+                            progress_state=stats,
                             save_progress_only=False,
                         )
                     else:
                         backup(
-                            self.hdf5_path,
-                            backup_dir,
-                            graph_dir,
-                            G,
-                            paper_id,
-                            stats["papers_to_backup"],
-                            self.indices,
-                            stats,
+                            hdf5_path=self.hdf5_path,
+                            backup_dir=backup_dir,
+                            indices=self.indices,
+                            graph_dir=graph_dir,
+                            G=G,
+                            paper_id=paper_id,
+                            target_paper_indices=stats["papers_to_backup"],
+                            progress_state=stats,
                             save_progress_only=True,
                         )
                     stats["papers_to_backup"] = []
