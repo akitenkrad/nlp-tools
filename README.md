@@ -1,6 +1,11 @@
 ![GitHub](https://img.shields.io/github/license/akitenkrad/nlp-tools?style=for-the-badge)
 ![GitHub last commit](https://img.shields.io/github/last-commit/akitenkrad/nlp-tools?style=for-the-badge)
 
+![Code Style](https://img.shields.io/badge/code%20style-black-black?style=for-the-badge)
+![Code Style](https://img.shields.io/badge/code%20style-flake8-black?style=for-the-badge)
+![Code Style](https://img.shields.io/badge/imports-isort-blue?style=for-the-badge)
+![Code Style](https://img.shields.io/badge/typing-mypy-blue?style=for-the-badge)
+
 ![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/akitenkrad/nlp-tools/torch?style=for-the-badge)
 ![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/akitenkrad/nlp-tools/transformers?style=for-the-badge)
 ![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/akitenkrad/nlp-tools/bertopic?style=for-the-badge)
