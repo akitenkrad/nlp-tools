@@ -6,13 +6,6 @@
 ![Code Style](https://img.shields.io/badge/imports-isort-blue?style=for-the-badge)
 ![Code Style](https://img.shields.io/badge/typing-mypy-blue?style=for-the-badge)
 
-![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/akitenkrad/nlp-tools/torch?style=for-the-badge)
-![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/akitenkrad/nlp-tools/transformers?style=for-the-badge)
-![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/akitenkrad/nlp-tools/bertopic?style=for-the-badge)
-![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/akitenkrad/nlp-tools/wordcloud?style=for-the-badge)
-![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/akitenkrad/nlp-tools/mecab-python3?style=for-the-badge)
-
-
 # NLP-Tools
 
 ## Datasets
