@@ -23,7 +23,7 @@
     "editor.rulers": [
         80,
         100,
-        120,
+        120
     ],
     "editor.suggest.preview": true,
     "editor.suggestSelection": "recentlyUsedByPrefix",
@@ -44,7 +44,7 @@
     "python.linting.flake8CategorySeverity.F": "Error",
     "python.linting.flake8CategorySeverity.E": "Error",
     "[python]": {
-        "editor.defaultFormatter": null,
+        "editor.defaultFormatter": null
     },
     "python.formatting.provider": "black",
     "python.formatting.blackPath": "black",
@@ -55,5 +55,5 @@
     "python.linting.maxNumberOfProblems": 10000,
     "python.formatting.blackArgs": [
         "--line-length=120"
-    ],
+    ]
 }
