@@ -15,7 +15,6 @@ import networkx as nx
 import numpy as np
 from dateutil.parser import ParserError
 from dateutil.parser import parse as date_parse
-
 from utils.semanticscholar import SemanticScholar
 from utils.utils import is_notebook, now, timedelta2HMS
 
@@ -25,10 +24,10 @@ else:
     from tqdm import tqdm
 
 Author = namedtuple("Author", ("author_id", "author_name"))
-RefPaper = namedtuple("RefPaper", ("paper_id", "title"))
+ArXivRefPaper = namedtuple("ArXivRefPaper", ("paper_id", "title"))
 
 
-class Paper(object):
+class ArXivPaper(object):
     def __init__(self, dict_data: Dict[str, Any]):
         self.__dict_data: Dict[str, Any] = dict_data
 
@@ -100,16 +99,16 @@ class Paper(object):
         return [Author(a["author_id"], a["author_name"]) for a in author_list]
 
     @property
-    def citations(self) -> List[RefPaper]:
+    def citations(self) -> List[ArXivRefPaper]:
         """citations from SemanticScholar"""
         citation_list = self.__get("citations", default=[])
-        return [RefPaper(p["paper_id"], p["title"]) for p in citation_list]
+        return [ArXivRefPaper(p["paper_id"], p["title"]) for p in citation_list]
 
     @property
-    def references(self) -> List[RefPaper]:
+    def references(self) -> List[ArXivRefPaper]:
         """references from SemanticScholar"""
         reference_list = self.__get("references", default=[])
-        return [RefPaper(p["paper_id"], p["title"]) for p in reference_list]
+        return [ArXivRefPaper(p["paper_id"], p["title"]) for p in reference_list]
 
     @property
     def doi(self) -> str:
@@ -167,7 +166,7 @@ class Paper(object):
         return self.__dict_data
 
 
-class Papers(object):
+class ArXivPapers(object):
     HDF5_STR = h5py.string_dtype(encoding="utf-8")
 
     @classmethod
@@ -189,7 +188,7 @@ class Papers(object):
 
     def is_exists(self, paper_id: str) -> bool:
         """check if the specified paper exists in hdf5"""
-        hdf5_path = Papers.to_hdf5_path(self.hdf5_path, paper_id)
+        hdf5_path = ArXivPapers.to_hdf5_path(self.hdf5_path, paper_id)
         if not hdf5_path.exists():
             return False
         with h5py.File(hdf5_path, mode="r") as hdf5:
@@ -197,7 +196,7 @@ class Papers(object):
 
     def delete_paper(self, paper_id: str):
         """delete the specified paper"""
-        hdf5_path = Papers.to_hdf5_path(self.hdf5_path, paper_id)
+        hdf5_path = ArXivPapers.to_hdf5_path(self.hdf5_path, paper_id)
         with h5py.File(hdf5_path, mode="a") as hdf5:
             if paper_id in hdf5:
                 del hdf5[paper_id]
@@ -219,20 +218,22 @@ class Papers(object):
         dict_data["year"] = int(hdf5_data["year"][0])
         dict_data["authors"] = [
             {"author_id": item[0].decode("utf-8"), "author_name": item[1].decode("utf-8")}
-            for item in np.array(hdf5_data["authors"], dtype=Papers.HDF5_STR)
+            for item in np.array(hdf5_data["authors"], dtype=ArXivPapers.HDF5_STR)
         ]
         dict_data["abstract"] = hdf5_data["abstract"][0].decode("utf-8")
         dict_data["reference_count"] = int(hdf5_data["reference_count"][0])
         dict_data["citation_count"] = int(hdf5_data["citation_count"][0])
         dict_data["references"] = [
             {"paper_id": item[0].decode("utf-8"), "title": item[1].decode("utf-8")}
-            for item in np.array(hdf5_data["references"], dtype=Papers.HDF5_STR)
+            for item in np.array(hdf5_data["references"], dtype=ArXivPapers.HDF5_STR)
         ]
         dict_data["citations"] = [
             {"paper_id": item[0].decode("utf-8"), "title": item[1].decode("utf-8")}
-            for item in np.array(hdf5_data["citations"], dtype=Papers.HDF5_STR)
+            for item in np.array(hdf5_data["citations"], dtype=ArXivPapers.HDF5_STR)
         ]
-        dict_data["fields_of_study"] = [item.decode("utf-8") for item in np.array(hdf5_data["fields_of_study"], dtype=Papers.HDF5_STR)]
+        dict_data["fields_of_study"] = [
+            item.decode("utf-8") for item in np.array(hdf5_data["fields_of_study"], dtype=ArXivPapers.HDF5_STR)
+        ]
         dict_data["influencial_citation_count"] = int(hdf5_data["influential_citation_count"][0])
         dict_data["is_open_access"] = bool(hdf5_data["is_open_access"][0])
         dict_data["doi"] = hdf5_data["doi"][0].decode("utf-8")
@@ -242,26 +243,28 @@ class Papers(object):
         dict_data["arxiv_id"] = hdf5_data["arxiv_id"][0].decode("utf-8")
         dict_data["arxiv_title"] = hdf5_data["arxiv_title"][0].decode("utf-8")
         dict_data["arxiv_primary_category"] = hdf5_data["arxiv_primary_category"][0].decode("utf-8")
-        dict_data["arxiv_categories"] = [cat.decode("utf-8") for cat in np.array(hdf5_data["arxiv_categories"], dtype=Papers.HDF5_STR)]
+        dict_data["arxiv_categories"] = [
+            cat.decode("utf-8") for cat in np.array(hdf5_data["arxiv_categories"], dtype=ArXivPapers.HDF5_STR)
+        ]
         return dict_data
 
-    def get_paper(self, paper_id: str) -> Paper:
+    def get_paper(self, paper_id: str) -> ArXivPaper:
         """get paper data"""
-        hdf5_path = Papers.to_hdf5_path(self.hdf5_path, paper_id)
+        hdf5_path = ArXivPapers.to_hdf5_path(self.hdf5_path, paper_id)
         with h5py.File(hdf5_path, mode="r") as h5:
             if paper_id in h5:
                 dict_data = self.parse_hdf5_data(h5[paper_id])
-                return Paper(dict_data)
+                return ArXivPaper(dict_data)
             else:
                 paper_data = self.ss.get_paper_detail(paper_id)
                 if paper_data:
-                    return Paper(paper_data)
+                    return ArXivPaper(paper_data)
                 else:
                     raise RuntimeError(f"Paper doesn't found with ss api: {paper_id}")
 
-    def put_paper(self, paper: Paper):
+    def put_paper(self, paper: ArXivPaper):
         """save new paper in hdf5 file"""
-        hdf5_path = Papers.to_hdf5_path(self.hdf5_path, paper.paper_id)
+        hdf5_path = ArXivPapers.to_hdf5_path(self.hdf5_path, paper.paper_id)
         with h5py.File(hdf5_path, mode="a") as h5wf:
 
             if len(paper.paper_id) > 0 and paper.paper_id not in self.indices:
@@ -275,40 +278,62 @@ class Papers(object):
                 group = h5wf.require_group(paper.paper_id)
 
                 # create dataset
-                new_abstract = group.create_dataset(name="abstract", shape=(1,), dtype=Papers.HDF5_STR)
-                new_authors = group.create_dataset(name="authors", shape=(len(paper.authors), 2), dtype=Papers.HDF5_STR)  # author_id, author_name
+                new_abstract = group.create_dataset(name="abstract", shape=(1,), dtype=ArXivPapers.HDF5_STR)
+                new_authors = group.create_dataset(
+                    name="authors", shape=(len(paper.authors), 2), dtype=ArXivPapers.HDF5_STR
+                )  # author_id, author_name
                 new_citation_count = group.create_dataset(name="citation_count", shape=(1,), dtype=np.int32)
-                new_citations = group.create_dataset(name="citations", shape=(len(paper.citations), 2), dtype=Papers.HDF5_STR)  # paper_id, title
-                new_fields_of_study = group.create_dataset(name="fields_of_study", shape=(len(paper.fields_of_study),), dtype=Papers.HDF5_STR)
-                new_influential_citation_count = group.create_dataset(name="influential_citation_count", shape=(1,), dtype=np.int32)
+                new_citations = group.create_dataset(
+                    name="citations", shape=(len(paper.citations), 2), dtype=ArXivPapers.HDF5_STR
+                )  # paper_id, title
+                new_fields_of_study = group.create_dataset(
+                    name="fields_of_study", shape=(len(paper.fields_of_study),), dtype=ArXivPapers.HDF5_STR
+                )
+                new_influential_citation_count = group.create_dataset(
+                    name="influential_citation_count", shape=(1,), dtype=np.int32
+                )
                 new_is_open_access = group.create_dataset(name="is_open_access", shape=(1,), dtype=bool)
-                new_paper_id = group.create_dataset(name="paper_id", shape=(1,), dtype=Papers.HDF5_STR)
+                new_paper_id = group.create_dataset(name="paper_id", shape=(1,), dtype=ArXivPapers.HDF5_STR)
                 new_reference_count = group.create_dataset(name="reference_count", shape=(1,), dtype=np.int32)
-                new_references = group.create_dataset(name="references", shape=(len(paper.references), 2), dtype=Papers.HDF5_STR)  # paper_id, title
-                new_title = group.create_dataset(name="title", shape=(1,), dtype=Papers.HDF5_STR)
-                new_url = group.create_dataset(name="url", shape=(1,), dtype=Papers.HDF5_STR)
-                new_venue = group.create_dataset(name="venue", shape=(1,), dtype=Papers.HDF5_STR)
+                new_references = group.create_dataset(
+                    name="references", shape=(len(paper.references), 2), dtype=ArXivPapers.HDF5_STR
+                )  # paper_id, title
+                new_title = group.create_dataset(name="title", shape=(1,), dtype=ArXivPapers.HDF5_STR)
+                new_url = group.create_dataset(name="url", shape=(1,), dtype=ArXivPapers.HDF5_STR)
+                new_venue = group.create_dataset(name="venue", shape=(1,), dtype=ArXivPapers.HDF5_STR)
                 new_year = group.create_dataset(name="year", shape=(1,), dtype=np.int32)
-                new_doi = group.create_dataset(name="doi", shape=(1,), dtype=Papers.HDF5_STR)
-                new_updated = group.create_dataset(name="updated", shape=(1,), dtype=Papers.HDF5_STR)
-                new_published = group.create_dataset(name="published", shape=(1,), dtype=Papers.HDF5_STR)
-                new_arxiv_hash = group.create_dataset(name="arxiv_hash", shape=(1,), dtype=Papers.HDF5_STR)
-                new_arxiv_id = group.create_dataset(name="arxiv_id", shape=(1,), dtype=Papers.HDF5_STR)
-                new_arxiv_title = group.create_dataset(name="arxiv_title", shape=(1,), dtype=Papers.HDF5_STR)
-                new_arxiv_primary_category = group.create_dataset(name="arxiv_primary_category", shape=(1,), dtype=Papers.HDF5_STR)
-                new_arxiv_categories = group.create_dataset(name="arxiv_categories", shape=(len(paper.arxiv_categories),), dtype=Papers.HDF5_STR)
+                new_doi = group.create_dataset(name="doi", shape=(1,), dtype=ArXivPapers.HDF5_STR)
+                new_updated = group.create_dataset(name="updated", shape=(1,), dtype=ArXivPapers.HDF5_STR)
+                new_published = group.create_dataset(name="published", shape=(1,), dtype=ArXivPapers.HDF5_STR)
+                new_arxiv_hash = group.create_dataset(name="arxiv_hash", shape=(1,), dtype=ArXivPapers.HDF5_STR)
+                new_arxiv_id = group.create_dataset(name="arxiv_id", shape=(1,), dtype=ArXivPapers.HDF5_STR)
+                new_arxiv_title = group.create_dataset(name="arxiv_title", shape=(1,), dtype=ArXivPapers.HDF5_STR)
+                new_arxiv_primary_category = group.create_dataset(
+                    name="arxiv_primary_category", shape=(1,), dtype=ArXivPapers.HDF5_STR
+                )
+                new_arxiv_categories = group.create_dataset(
+                    name="arxiv_categories", shape=(len(paper.arxiv_categories),), dtype=ArXivPapers.HDF5_STR
+                )
 
                 # store data
                 new_abstract[0] = paper.abstract
-                new_authors[...] = np.array([(author.author_id, author.author_name) for author in paper.authors], dtype=Papers.HDF5_STR)
+                new_authors[...] = np.array(
+                    [(author.author_id, author.author_name) for author in paper.authors], dtype=ArXivPapers.HDF5_STR
+                )
                 new_citation_count[0] = paper.citation_count
-                new_citations[...] = np.array([(paper.paper_id, paper.title) for paper in paper.citations], dtype=Papers.HDF5_STR)
-                new_fields_of_study[...] = np.array([field for field in paper.fields_of_study], dtype=Papers.HDF5_STR)
+                new_citations[...] = np.array(
+                    [(paper.paper_id, paper.title) for paper in paper.citations], dtype=ArXivPapers.HDF5_STR
+                )
+                new_fields_of_study[...] = np.array(
+                    [field for field in paper.fields_of_study], dtype=ArXivPapers.HDF5_STR
+                )
                 new_influential_citation_count[0] = paper.influential_citation_count
                 new_is_open_access[0] = paper.is_open_access
                 new_paper_id[0] = paper.paper_id
                 new_reference_count[0] = paper.reference_count
-                new_references[...] = np.array([(paper.paper_id, paper.title) for paper in paper.references], dtype=Papers.HDF5_STR)
+                new_references[...] = np.array(
+                    [(paper.paper_id, paper.title) for paper in paper.references], dtype=ArXivPapers.HDF5_STR
+                )
                 new_title[0] = paper.title
                 new_url[0] = paper.url
                 new_venue[0] = paper.venue
@@ -320,7 +345,7 @@ class Papers(object):
                 new_arxiv_hash[0] = paper.arxiv_hash
                 new_arxiv_title[0] = paper.arxiv_title
                 new_arxiv_primary_category[0] = paper.arxiv_primary_category
-                new_arxiv_categories[...] = np.array(paper.arxiv_categories, dtype=Papers.HDF5_STR)
+                new_arxiv_categories[...] = np.array(paper.arxiv_categories, dtype=ArXivPapers.HDF5_STR)
 
             except Exception as ex:
                 if paper.paper_id in h5wf:
@@ -340,7 +365,8 @@ class Papers(object):
 
         Args:
             paper_id (str): if of the root paper
-            min_influential_citation_count (int): number of citation count. ignore papers with the citation count under the threshold
+            min_influential_citation_count (int): number of citation count.
+                                                  ignore papers with the citation count under the threshold
             max_depth (int): max depth
             cache_dir (StrOrPath): path to cache directory
             export_interval (int): export cache with the specified interval
@@ -370,8 +396,8 @@ class Papers(object):
             leave=True,
             export_papers=False,
             depth=1,
-            paper: Optional[Paper] = None,
-            ci_paper: Optional[Paper] = None,
+            paper: Optional[ArXivPaper] = None,
+            ci_paper: Optional[ArXivPaper] = None,
         ):
             res = (
                 f"{paper_id[:8]} -> {done:5d}/{total:5d} ({done / (total + 1e-10) * 100.0:5.2f}%) | "
@@ -394,7 +420,7 @@ class Papers(object):
             else:
                 print(res, end="")
 
-        def add_edge(graph: nx.DiGraph, src: Paper, dst: Paper):
+        def add_edge(graph: nx.DiGraph, src: ArXivPaper, dst: ArXivPaper):
             graph.add_edge(src.paper_id, dst.paper_id)
 
             for paper in [src, dst]:
@@ -408,15 +434,21 @@ class Papers(object):
                 graph.nodes[paper.paper_id]["reference_count"] = paper.reference_count
                 graph.nodes[paper.paper_id]["citation_count"] = paper.citation_count
                 graph.nodes[paper.paper_id]["influential_citation_count"] = paper.influential_citation_count
-                graph.nodes[paper.paper_id]["first_author_name"] = paper.authors[0].author_name if len(paper.authors) > 0 else ""
-                graph.nodes[paper.paper_id]["first_author_id"] = paper.authors[0].author_id if len(paper.authors) > 0 else ""
+                graph.nodes[paper.paper_id]["first_author_name"] = (
+                    paper.authors[0].author_name if len(paper.authors) > 0 else ""
+                )
+                graph.nodes[paper.paper_id]["first_author_id"] = (
+                    paper.authors[0].author_id if len(paper.authors) > 0 else ""
+                )
                 graph.nodes[paper.paper_id]["arxiv_primary_category"] = paper.arxiv_primary_category
 
         def export_graph(graph: nx.DiGraph, paper_id: str, out_dir="__graph__"):
             outfile: Path = Path(out_dir)
             outfile = outfile / paper_id[0] / paper_id[1] / paper_id[2] / f"{paper_id}.graphml"
             outfile.parent.mkdir(parents=True, exist_ok=True)
-            nx.write_graphml_lxml(graph, str(outfile.resolve().absolute()), encoding="utf-8", prettyprint=True, named_key_ids=True)
+            nx.write_graphml_lxml(
+                graph, str(outfile.resolve().absolute()), encoding="utf-8", prettyprint=True, named_key_ids=True
+            )
 
         def update_index(index_path, indices: List[str]):
             """update index if hdf5 database -> <HDF5_DIR>/indices.csv"""
@@ -451,13 +483,20 @@ class Papers(object):
 
             # progress status
             if len(progress_state) > 0:
-                json.dump(progress_state, open(target_dir / "progress_state.json", mode="w", encoding="utf-8"), ensure_ascii=False, indent=2)
+                json.dump(
+                    progress_state,
+                    open(target_dir / "progress_state.json", mode="w", encoding="utf-8"),
+                    ensure_ascii=False,
+                    indent=2,
+                )
 
             # export graph
             outfile: Path = Path(graph_dir)
             outfile = outfile / paper_id[0] / paper_id[1] / paper_id[2] / f"{paper_id}.graphml"
             outfile.parent.mkdir(parents=True, exist_ok=True)
-            nx.write_graphml_lxml(G, str(outfile.resolve().absolute()), encoding="utf-8", prettyprint=True, named_key_ids=True)
+            nx.write_graphml_lxml(
+                G, str(outfile.resolve().absolute()), encoding="utf-8", prettyprint=True, named_key_ids=True
+            )
 
             if save_progress_only:
                 return
@@ -473,7 +512,14 @@ class Papers(object):
                     if hdf5_file.stem in target_hdf5:
                         it.set_description(f"Backup hdf5: {hdf5_file.name} ---> {target_dir}")
                         from_path = hdf5_file
-                        to_path = target_dir / "papers" / hdf5_file.stem[0] / hdf5_file.stem[1] / hdf5_file.stem[2] / hdf5_file.name
+                        to_path = (
+                            target_dir
+                            / "papers"
+                            / hdf5_file.stem[0]
+                            / hdf5_file.stem[1]
+                            / hdf5_file.stem[2]
+                            / hdf5_file.name
+                        )
                         to_path.parent.mkdir(parents=True, exist_ok=True)
                         shutil.copyfile(from_path, to_path)
                     else:
@@ -491,8 +537,8 @@ class Papers(object):
             stats = json.load(open(Path(backup_dir) / "progress_state.json"))
             paper_queue = []
             for paper_data, depth in tqdm(stats["paper_queue"], desc="Restoring stats...", leave=False):
-                paper_data[4] = [RefPaper(*args) for args in paper_data[4]]
-                paper_data[5] = [RefPaper(*args) for args in paper_data[5]]
+                paper_data[4] = [ArXivRefPaper(*args) for args in paper_data[4]]
+                paper_data[5] = [ArXivRefPaper(*args) for args in paper_data[5]]
                 paper_data[9] = [Author(*args) for args in paper_data[9]]
                 tmp_paper = TemporaryPaper(*paper_data)
                 paper_queue.append((tmp_paper, depth))
@@ -567,7 +613,7 @@ class Papers(object):
                     if ci_ref_paper.paper_id in stats["errors"]:
                         raise RuntimeError()
 
-                    ci_paper: Paper = self.get_paper(ci_ref_paper.paper_id)
+                    ci_paper: ArXivPaper = self.get_paper(ci_ref_paper.paper_id)
                     if not self.is_exists(ci_paper.paper_id):
                         stats["papers_to_backup"].append(ci_paper.paper_id)
                     self.put_paper(ci_paper)
@@ -583,13 +629,14 @@ class Papers(object):
                 stats["done"] += 1
                 if ci_paper.influential_citation_count >= min_influential_citation_count:
                     add_edge(G, paper, ci_paper)
-                    show_progress(paper_id, stats["total"], stats["done"], start, depth=depth, paper=paper, ci_paper=ci_paper)
+                    show_progress(
+                        paper_id, stats["total"], stats["done"], start, depth=depth, paper=paper, ci_paper=ci_paper
+                    )
 
                     if ci_paper.paper_id not in stats["finished_papers"]:
                         stats["finished_papers"].append(ci_paper.paper_id)
 
-                        latest_depth = stats["paper_queue"][0][1]
-                        if latest_depth <= max_depth:
+                        if depth <= max_depth:
                             temp_paper = TemporaryPaper(
                                 ci_paper.paper_id,
                                 ci_paper.title,
@@ -664,7 +711,13 @@ class Papers(object):
                     train_label_f.write(json.dumps(label, ensure_ascii=False) + os.linesep)
 
                     # save text
-                    paper_path = train_papers_dir / paper.paper_id[0] / paper.paper_id[1] / paper.paper_id[2] / f"{paper.paper_id}.json"
+                    paper_path = (
+                        train_papers_dir
+                        / paper.paper_id[0]
+                        / paper.paper_id[1]
+                        / paper.paper_id[2]
+                        / f"{paper.paper_id}.json"
+                    )
                     paper_path.parent.mkdir(parents=True, exist_ok=True)
                     json.dump(paper_data, open(paper_path, mode="w"), ensure_ascii=False, indent=2)
 
@@ -676,6 +729,12 @@ class Papers(object):
                     test_label_f.write(json.dumps(label, ensure_ascii=False) + os.linesep)
 
                     # save text
-                    paper_path = test_papers_dir / paper.paper_id[0] / paper.paper_id[1] / paper.paper_id[2] / f"{paper.paper_id}.json"
+                    paper_path = (
+                        test_papers_dir
+                        / paper.paper_id[0]
+                        / paper.paper_id[1]
+                        / paper.paper_id[2]
+                        / f"{paper.paper_id}.json"
+                    )
                     paper_path.parent.mkdir(parents=True, exist_ok=True)
                     json.dump(paper_data, open(paper_path, mode="w"), ensure_ascii=False, indent=2)
