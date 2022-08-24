@@ -129,7 +129,27 @@ class MsmarcoRecord(object):
 
         return word_tokens, char_tokens, is_selected
 
+    def is_answerable(self) -> bool:
+        """return if the query can be answered
+
+        Return:
+            bool
+        """
+        if self.answers[0].text == "No Answer Present.":
+            return False
+        if self.answers[0].text == "":
+            return False
+        return True
+
     def to_data(self, embedding: Embedding) -> Tuple[MsmarcoItemX, MsmarcoItemPos]:
+        """return MS-MARCO record converted into PyTorch Tensor
+
+        Args:
+            embedding (Embedding)
+
+        Return:
+            Tuple[MsmarcoItemX, MsmarcoItemPos]
+        """
         qwt, qct = self.query2tokens(embedding)
         pwt, pct, psl = self.passages2tokens(embedding)
         awt, act = self.answers2tokens(embedding)
