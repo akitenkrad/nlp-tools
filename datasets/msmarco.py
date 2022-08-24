@@ -54,6 +54,7 @@ class MsmarcoRecord(object):
             idx: int
             item:
                 {
+                    'key': KEY FOR THE RECORD,
                     'answers': [ANSWER],
                     'passages': [{'is_selected': IS_SELECTED, 'passage_text': PASSAGE}],
                     'query': QUERY,
@@ -71,8 +72,9 @@ class MsmarcoRecord(object):
                 }
         """
         self.index = idx
+        self.key = str(item["key"])
         self.query_id: int = int(item["query_id"])
-        self.query_type: Text = Text(item["query_type"])
+        self.query_type: str = item["query_type"]
         self.query: Text = Text(item["query"])
         self.passages: List[Passage] = [Passage(p["is_selected"], Text(p["passage_text"])) for p in item["passages"]]
         self.answers: List[Text] = [Text(answer) for answer in item["answers"]]
@@ -85,7 +87,7 @@ class MsmarcoRecord(object):
         )
 
     def __str__(self):
-        return f"<Record query_id:{self.query_id} query:{self.query[:10]}...>"
+        return f"<Record ({self.key}) query_id:{self.query_id} query:{self.query.text[:10]}...>"
 
     def __repr__(self):
         return self.__str__()
@@ -222,6 +224,7 @@ class MsmarcoDataset(BaseDataset):
         for idx, key in tqdm(enumerate(keys), desc="loading data...", total=len(keys)):
 
             loaded_data = {
+                "key": key,
                 "answers": json_data["answers"][key],
                 "passages": json_data["passages"][key],
                 "query": json_data["query"][key],
