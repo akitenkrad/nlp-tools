@@ -141,6 +141,17 @@ class MsmarcoRecord(object):
             return False
         return True
 
+    def is_yes_or_no(self) -> bool:
+        """return if the query is yes/no type
+
+        Return:
+            bool
+        """
+        if self.answers[0].text.lower() in ["yes", "no"]:
+            return True
+        else:
+            return False
+
     def to_data(self, embedding: Embedding) -> Tuple[MsmarcoItemX, MsmarcoItemPos]:
         """return MS-MARCO record converted into PyTorch Tensor
 
