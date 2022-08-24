@@ -74,13 +74,13 @@ class MsmarcoRecord(object):
         self.query_id: int = int(item["query_id"])
         self.query_type: Text = Text(item["query_type"])
         self.query: Text = Text(item["query"])
-        self.passages: List[Passage] = [Passage(p["is_selected"], p["passage_text"]) for p in item["passages"]]
+        self.passages: List[Passage] = [Passage(p["is_selected"], Text(p["passage_text"])) for p in item["passages"]]
         self.answers: List[Text] = [Text(answer) for answer in item["answers"]]
         self.rouge_l = RougeL(
             int(rouge_l["start_pos"]),
             int(rouge_l["end_pos"]),
-            str(rouge_l["passage_span"]),
-            str(rouge_l["answer"]),
+            Text(str(rouge_l["passage_span"])),
+            Text(str(rouge_l["answer"])),
             float(rouge_l["rouge_l"]),
         )
 
