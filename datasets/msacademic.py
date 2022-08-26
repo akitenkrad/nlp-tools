@@ -69,7 +69,7 @@ def triple2hdf5(src_triples: PathLike, dst_dir: PathLike):
 
             # configure key
             key: str = "0" * max_digit + str(_key)
-            key = key[:max_digit]
+            key = key[-max_digit:]
             assert _key in key
 
             # write into hdf5
