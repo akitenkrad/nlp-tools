@@ -56,7 +56,7 @@ def triple2hdf5(src_triples: PathLike, dst_dir: PathLike):
 
     # 2. convert triples -> hdf5
     with bz2.open(src_path, mode="rt", encoding="utf-8") as rf:
-        for triple in tqdm(rf, leave=False, desc="Converting triples -> htf5"):
+        for triple in tqdm(rf, leave=False, desc="Converting triples -> htf5", total=len(keys)):
             items = ptn.findall(triple)
             if not items[2][0]:
                 continue
