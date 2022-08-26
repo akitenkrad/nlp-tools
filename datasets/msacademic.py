@@ -46,17 +46,19 @@ def triple2hdf5(src_triples: PathLike, dst_dir: PathLike):
     # write into hdf5
     # 1. calculate max digit
     with bz2.open(src_path, mode="rt", encoding="utf-8") as rf:
+        total = 0
         keys = []
         for triple in tqdm(rf, leave=False, desc="Counting keys"):
             items = ptn.findall(triple)
             num_key = int(get_field(items[0][1]))
             keys.append(num_key)
+            total += 1
         keys = list(set(keys))
         max_digit = int(np.ceil(np.log10(max(keys))))
 
     # 2. convert triples -> hdf5
     with bz2.open(src_path, mode="rt", encoding="utf-8") as rf:
-        for triple in tqdm(rf, leave=False, desc="Converting triples -> htf5", total=len(keys)):
+        for triple in tqdm(rf, leave=False, desc="Converting triples -> htf5", total=total):
             items = ptn.findall(triple)
             if not items[2][0]:
                 continue
