@@ -47,6 +47,8 @@ networkx = "*"
 sumeval = "*"
 h5py = "*"
 types-python-dateutil = "*"
+sqlalchemy = "*"
+psycopg2 = "*"
 
 [dev-packages]
 daal = "*"

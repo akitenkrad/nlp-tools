@@ -1,4 +1,5 @@
-from typing import Any, Dict, List
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -50,13 +51,14 @@ class ConferenceText(Text):
     def __init__(
         self,
         original_title: str,
-        preprocessed_title: str,
-        original_summary: str,
-        preprocessed_summary: str,
-        keywords: List[str],
-        pdf_url: str,
-        authors: List[str],
-        language: Lang,
+        preprocessed_title: str = "",
+        original_summary: str = "",
+        preprocessed_summary: str = "",
+        keywords: List[str] = [],
+        pdf_url: str = "",
+        authors: List[str] = [],
+        language: Lang = Lang.ENGLISH,
+        published_at: Optional[datetime] = None,
         **kwargs,
     ):
         self.original_title: str = original_title
@@ -66,7 +68,8 @@ class ConferenceText(Text):
         self.keywords: List[str] = keywords
         self.pdf_url: str = pdf_url
         self.authors: List[str] = authors
-        self.language = language
+        self.language: Lang = language
+        self.published_at: datetime = published_at if published_at is not None else datetime(1800, 1, 1)
         self.topic = -99
         self.topic_prob = np.array([])
 

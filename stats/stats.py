@@ -72,7 +72,7 @@ class ConferenceTopicModelStats(object):
 
     def get_topic(self, text: Text) -> Tuple[int, str, Dict[int, float]]:
         topics = {idx: 0.0 for idx in self.topic_model.topics.keys()}
-        [topic], _probs = self.topic_model.transform(text.text)
+        [_topic], _probs = self.topic_model.transform(text.text)
         for topic, prob in zip(_topics, _probs):
             topics[topic] = prob
         topic_info = self.topic_model.get_topic_info()

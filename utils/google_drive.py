@@ -41,12 +41,16 @@ def __save_google_drive_content(response, dst_filename):
 
 
 class GDriveObjects(Enum):
-    NeurIPS_2021 = "1JmYpSatyr2OTCPpovUDQa3PzJmz39USV"
-    ANLP_2022 = "1A3Kk_tpaPPAd543j5xApco89gHAnKMCF"
-    JSAI_2022 = "1-93EeiCJp5vyXatK7H6uLSIyozLeUFIL"
 
+    # MS-MARCO
     MSMARCO_TRAIN_DATA = "1Ul_5hZ1znlkmjciAVkL-R6mTvN2ZPUcF"
     MSMARCO_TRAIN_ROUGE = "10JXIrBqvWenEdVkI3b0MPeddx0VHr_w-"
     MSMARCO_DEV_DATA = "1bkIL69AjznJfdPEjgGlxORq-i_uNGgC3"
     MSMARCO_DEV_ROUGE = "11L08_GFK5lj9607or9JaZ6WR0SlxYEo4"
     MSMARCO_EXP_DATA = "1tVtIYSs7YDn6lv-1hK5WrDvS-Sj-Et5u"
+
+    # Conference Datasets
+    NeurIPS_2021 = "1JmYpSatyr2OTCPpovUDQa3PzJmz39USV"
+    ANLP_2022 = "1A3Kk_tpaPPAd543j5xApco89gHAnKMCF"
+    JSAI_2022 = "1-93EeiCJp5vyXatK7H6uLSIyozLeUFIL"
+    ACL_20222 = "1-PtEnglF1SNk38H-yDMg4chAQf7KqsJe"

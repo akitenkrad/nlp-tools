@@ -16,20 +16,20 @@ lr_finder:
     beta: 0.98
 
 data:
-    data_path: /workplace/__data__
-    cache_path: /workplace/__cache__
+    data_path: /data/__data__/nlp-tools
+    cache_path: /data/__cache__/nlp-tools
 
 weights:
-    global_weights_dir: /workplace/__weights__
-    log_weights_dir: /workplace/__logs__ # to be set in utils/utils.py
+    global_weights_dir: /workplace/__weights__/nlp-tools
+    log_weights_dir: /workplace/__logs__/nlp-tools # to be set in utils/utils.py
 
 log:
-    log_dir: /workplace/__logs__
+    log_dir: /workplace/__logs__/nlp-tools
     log_filename: system.log
 
 output:
-    out_dir: /workplace/__outputs__
+    out_dir: /workplace/__outputs__/nlp-tools
 
 backup:
     backup: False
-    backup_dir: /workplace/__backup__
+    backup_dir: /workplace/__backup__/nlp-tools
