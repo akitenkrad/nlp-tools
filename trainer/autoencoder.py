@@ -34,7 +34,12 @@ class Trainer(BaseTrainer):
         self.model.train().to(self.config.train.device)
         global_step = 0
         epochs = self.config.train.epochs
-        loss_function = nn.BCELoss()
+
+        kl_loss = nn.KLDivLoss(reduction="batchmean")
+        mse_loss = nn.MSELoss()
+
+        def loss_function(t, o):
+            return kl_loss(o, t) + mse_loss(o, t)
 
         # initialize learning rate
         self.optimizer.param_groups[0]["lr"] = self.config.train.lr
@@ -90,9 +95,9 @@ class Trainer(BaseTrainer):
                     loss = loss_function(out, x)
                     loss_watcher.put(loss.item())
 
-                    self.config.log.train.info(
-                        self.iterdesc(fold=fold_index, epoch=epoch_index, batch=valid_index, loss=loss.item())
-                    )
+                self.config.log.train.info(
+                    self.iterdesc(fold=fold_index, epoch=epoch_index, batch=valid_index, loss=loss_watcher.mean)
+                )
 
                 # step scheduler
                 self.lr_scheduler.step()
