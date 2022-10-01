@@ -8,7 +8,7 @@ from dateutil.parser import parse as parse_date
 from utils.data import ConferenceText, Text
 from utils.google_drive import GDriveObjects, download_from_google_drive
 from utils.tokenizers import Tokenizer
-from utils.utils import Lang
+from utils.utils import Config, Lang
 
 
 class Conference(ABC):
@@ -32,23 +32,23 @@ class NeurIPS_2021(Conference):
         for paper in papers:
 
             title = paper["title"]
-            summary = paper["abstract"]
+            abstract = paper["abstract"]
 
             if preprocess_tokenizer:
                 title_tokens = preprocess_tokenizer.tokenize(Text(title, language=preprocess_tokenizer.language))
-                summary_tokens = preprocess_tokenizer.tokenize(Text(summary, language=preprocess_tokenizer.language))
+                abstract_tokens = preprocess_tokenizer.tokenize(Text(abstract, language=preprocess_tokenizer.language))
                 preprocessed_title = " ".join(token.surface for token in title_tokens)
-                preprocessed_summary = " ".join(token.surface for token in summary_tokens)
+                preprocessed_abstract = " ".join(token.surface for token in abstract_tokens)
             else:
                 preprocessed_title = ""
-                preprocessed_summary = ""
+                preprocessed_abstract = ""
 
             texts.append(
                 ConferenceText(
-                    original_title=title,
-                    original_summary=summary,
+                    title=title,
+                    abstract=abstract,
                     preprocessed_title=preprocessed_title,
-                    preprocessed_summary=preprocessed_summary,
+                    preprocessed_abstract=preprocessed_abstract,
                     keywords=[keyword.strip().lower() for keyword in paper["keywords"]],
                     pdf_url=paper["pdf_url"],
                     authors=paper["authors"],
@@ -74,23 +74,23 @@ class ANLP_2022(Conference):
         for paper in papers:
 
             title = paper["title"]
-            summary = paper["abstract"]
+            abstract = paper["abstract"]
 
             if preprocess_tokenizer:
-                title_tokens = preprocess_tokenizer.tokenize(Text(title, language=preprocess_tokenizer.languge))
-                summary_tokens = preprocess_tokenizer.tokenize(Text(summary, language=preprocess_tokenizer.language))
+                title_tokens = preprocess_tokenizer.tokenize(Text(title, language=preprocess_tokenizer.language))
+                abstract_tokens = preprocess_tokenizer.tokenize(Text(abstract, language=preprocess_tokenizer.language))
                 preprocessed_title = " ".join(token.surface for token in title_tokens)
-                preprocessed_summary = " ".join(token.surface for token in summary_tokens)
+                preprocessed_abstract = " ".join(token.surface for token in abstract_tokens)
             else:
                 preprocessed_title = ""
-                preprocessed_summary = ""
+                preprocessed_abstract = ""
 
             texts.append(
                 ConferenceText(
-                    original_title=title,
-                    original_summary=summary,
+                    title=title,
+                    abstract=abstract,
                     preprocessed_title=preprocessed_title,
-                    preprocessed_summary=preprocessed_summary,
+                    preprocessed_abstract=preprocessed_abstract,
                     keywords=[keywords[paper["id"].split("-")[0]].strip().lower()],
                     pdf_url="",
                     authors=[],
@@ -107,26 +107,22 @@ class JSAI_2022(Conference):
 
         if not data_path.exists():
             data_path.parent.mkdir(parents=True, exist_ok=True)
-            download_from_google_drive(GDriveObjects.ACL_20222.value, str(data_path))
+            download_from_google_drive(GDriveObjects.JSAI_20222.value, str(data_path))
 
         papers = json.load(open(data_path))
         texts = []
         for paper in papers:
-            original_title = paper["title"]
-            original_summary = paper["summary"]
+            title = paper["title"]
+            abstract = paper["abstract"]
 
             if preprocess_tokenizer:
-                title_tokens = preprocess_tokenizer.tokenize(
-                    Text(original_title, language=preprocess_tokenizer.language)
-                )
-                summary_tokens = preprocess_tokenizer.tokenize(
-                    Text(original_summary, language=preprocess_tokenizer.language)
-                )
+                title_tokens = preprocess_tokenizer.tokenize(Text(title, language=preprocess_tokenizer.language))
+                abstract_tokens = preprocess_tokenizer.tokenize(Text(abstract, language=preprocess_tokenizer.language))
                 preprocessed_title = " ".join(token.surface for token in title_tokens)
-                preprocessed_summary = " ".join(token.surface for token in summary_tokens)
+                preprocessed_abstract = " ".join(token.surface for token in abstract_tokens)
             else:
-                preprocessed_title = original_title
-                preprocessed_summary = preprocessed_summary
+                preprocessed_title = title
+                preprocessed_abstract = preprocessed_abstract
 
             if paper["language"] == "japanese":
                 language = Lang.JAPANESE
@@ -135,15 +131,15 @@ class JSAI_2022(Conference):
             else:
                 language = Lang.JAPANESE
 
-            if preprocessed_summary == "n/a":
+            if preprocessed_abstract == "n/a":
                 continue
 
             texts.append(
                 ConferenceText(
-                    original_title=original_title,
-                    original_summary=original_summary,
+                    title=title,
+                    abstract=abstract,
                     preprocessed_title=preprocessed_title,
-                    preprocessed_summary=preprocessed_summary,
+                    preprocessed_abstract=preprocessed_abstract,
                     keywords=paper["keywords"],
                     pdf_url=paper["url"],
                     authors=paper["authors"],
@@ -155,42 +151,136 @@ class JSAI_2022(Conference):
         return texts
 
 
-class ACL_2022(Conference):
+class ACL_Base(Conference):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2022
+
     @classmethod
     def load(self, preprocess_tokenizer: Optional[Tokenizer] = None) -> List[ConferenceText]:
-        data_path = Path("data/conference/ACL/ACL-2022.json")
+        data_path = Path(f"data/conference/ACL/{self.GDRIVE_OBJECT.name}.json")
 
         if not data_path.exists():
             data_path.parent.mkdir(parents=True, exist_ok=True)
-            download_from_google_drive(GDriveObjects.ANLP_2022.value, str(data_path))
+            download_from_google_drive(self.GDRIVE_OBJECT.value, str(data_path))
 
         papers = json.load(open(data_path))
         texts = []
         for paper in papers:
 
             title = paper["title"]
-            summary = paper["abstract"]
+            abstract = paper["abstract"]
 
             if preprocess_tokenizer:
-                title_tokens = preprocess_tokenizer.tokenize(Text(title, language=preprocess_tokenizer.languge))
-                summary_tokens = preprocess_tokenizer.tokenize(Text(summary, language=preprocess_tokenizer.language))
+                title_tokens = preprocess_tokenizer.tokenize(Text(title, language=preprocess_tokenizer.language))
+                abstract_tokens = preprocess_tokenizer.tokenize(Text(abstract, language=preprocess_tokenizer.language))
                 preprocessed_title = " ".join(token.surface for token in title_tokens)
-                preprocessed_summary = " ".join(token.surface for token in summary_tokens)
+                preprocessed_abstract = " ".join(token.surface for token in abstract_tokens)
             else:
                 preprocessed_title = ""
-                preprocessed_summary = ""
+                preprocessed_abstract = ""
 
             texts.append(
                 ConferenceText(
-                    original_title=title,
-                    original_summary=summary,
+                    title=title,
+                    abstract=abstract,
                     preprocessed_title=preprocessed_title,
-                    preprocessed_summary=preprocessed_summary,
-                    pdf_url=paper["pdf_url"],
+                    preprocessed_abstract=preprocessed_abstract,
+                    pdf_url=paper["pdf_url"] if "pdf_url" in paper else "",
                     authors=paper["authors"],
                     language=Lang.ENGLISH,
                     published_at=parse_date(f"{paper['year']} {paper['month']}"),
-                    venue=paper["venue"],
+                    venue=paper["venue"] if "venue" in paper else "",
                 )
             )
         return texts
+
+
+class ACL_2022(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2022
+
+
+class ACL_2021(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2021
+
+
+class ACL_2020(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2020
+
+
+class ACL_2019(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2019
+
+
+class ACL_2018(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2018
+
+
+class ACL_2017(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2017
+
+
+class ACL_2016(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2016
+
+
+class ACL_2015(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2015
+
+
+class ACL_2014(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2014
+
+
+class ACL_2013(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2013
+
+
+class ACL_2012(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2012
+
+
+class ACL_2011(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2011
+
+
+class ACL_2010(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2010
+
+
+class ACL_2009(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2009
+
+
+class ACL_2008(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2008
+
+
+class ACL_2007(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2007
+
+
+class ACL_2006(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2006
+
+
+class ACL_2005(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2005
+
+
+class ACL_2004(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2004
+
+
+class ACL_2003(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2003
+
+
+class ACL_2002(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2002
+
+
+class ACL_2001(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2001
+
+
+class ACL_2000(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2000

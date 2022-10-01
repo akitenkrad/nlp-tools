@@ -2,13 +2,14 @@ train:
     exp_name: exp
     k_folds: 3
     epochs: 5
-    batch_size: 512
+    batch_size: 64
     valid_size: 0.1
     test_size: 0.1
     lr: 0.001
     lr_decay: 0.9
     early_stop_patience: 5
     logging_per_batch: 25
+    seed: 42
 
 lr_finder:
     initial_value: 0.000000001
@@ -16,20 +17,20 @@ lr_finder:
     beta: 0.98
 
 data:
-    data_path: /data/__data__/nlp-tools
-    cache_path: /data/__cache__/nlp-tools
+    data_path: /Volumes/data/repo_data/nlp-tools/__data__
+    cache_path: /Volumes/data/repo_data/nlp-tools/__cache__
 
 weights:
-    global_weights_dir: /workplace/__weights__/nlp-tools
-    log_weights_dir: /workplace/__logs__/nlp-tools # to be set in utils/utils.py
+    global_weights_dir: /Volumes/data/repo_data/global_weights/__weights__
+    log_weights_dir: /Volumes/data/repo_data/nlp-tools/__logs__     # to be set in utils/utils.py
 
 log:
-    log_dir: /workplace/__logs__/nlp-tools
+    log_dir: /Volumes/data/repo_data/nlp-tools/__logs__
     log_filename: system.log
 
 output:
-    out_dir: /workplace/__outputs__/nlp-tools
+    out_dir: /Volumes/data/repo_data/nlp-tools/__outputs__
 
 backup:
     backup: False
-    backup_dir: /workplace/__backup__/nlp-tools
+    backup_dir: /Volumes/data/repo_data/nlp-tools/__backup__

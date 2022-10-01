@@ -4,8 +4,9 @@ import numpy as np
 from sklearn.metrics import roc_auc_score, precision_score, recall_score
 from .logger import get_logger
 
+
 class SimpleWatcher(object):
-    def __init__(self, name, default_value=0, order='ascending', patience=10):
+    def __init__(self, name, default_value=0, order="ascending", patience=10):
         self.name = name
         self.default_value = default_value
         self.order = order
@@ -23,10 +24,10 @@ class SimpleWatcher(object):
     @property
     def early_stop(self):
         return self.counter > self.patience
+
     @property
     def is_best(self):
         return self.__is_best
-
 
     def put(self, x):
         timestamp = datetime.now(self.jst)
@@ -34,7 +35,7 @@ class SimpleWatcher(object):
         self.data = self.data[-1000:]
         self.__count += 1
 
-        if self.order == 'ascending':
+        if self.order == "ascending":
             if self.best_score < x:
                 self.best_score = x
                 self.counter = 0
@@ -42,7 +43,7 @@ class SimpleWatcher(object):
             else:
                 self.counter += 1
                 self.__is_best = False
-        if self.order == 'descending':
+        if self.order == "descending":
             if x < self.best_score:
                 self.best_score = x
                 self.counter = 0
@@ -60,9 +61,11 @@ class SimpleWatcher(object):
     @property
     def mean(self):
         return self.__mean
+
     @property
     def max(self):
         return self.__max
+
     @property
     def min(self):
         return self.__min
@@ -73,9 +76,11 @@ class SimpleWatcher(object):
         m = np.mean(np.diff([x[1] for x in self.data]))
         return 1.0 / (m.seconds + 1e-10)
 
+
 class LossWatcher(SimpleWatcher):
     def __init__(self, name, patience=10):
-        super().__init__(name, default_value=sys.maxsize, order='descending', patience=patience)
+        super().__init__(name, default_value=sys.maxsize, order="descending", patience=patience)
+
 
 class AucWatcher(object):
     def __init__(self, name, threshold=0.5, patience=10):
@@ -88,11 +93,12 @@ class AucWatcher(object):
         self.best_auc = -1
         self.__is_best = False
         self.__min_eval_count = 4
-        self.logger = get_logger('AucWatcher')
+        self.logger = get_logger("AucWatcher")
 
     @property
     def early_stop(self):
         return self.counter > self.patience
+
     @property
     def is_best(self):
         return self.__is_best
@@ -132,8 +138,10 @@ class AucWatcher(object):
         timestamp = datetime.now(self.jst)
 
         if isinstance(x, list) or isinstance(x, np.ndarray):
-            if x.ndim == 0: x = [x]
-            if y.ndim == 0: y = [y]
+            if x.ndim == 0:
+                x = [x]
+            if y.ndim == 0:
+                y = [y]
             for _x, _y in zip(x, y):
                 self.data.append((_x, _y, timestamp))
         else:

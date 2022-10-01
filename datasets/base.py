@@ -5,7 +5,6 @@ from typing import Any, Dict
 
 import numpy as np
 from torch.utils.data import Dataset
-from torchvision.transforms import transforms
 from utils.logger import Logger, get_logger
 from utils.utils import Config, Phase, is_notebook
 
@@ -19,7 +18,7 @@ class BaseDataset(ABC, Dataset):
     def __init__(self, config: Config, phase=Phase.TRAIN):
         super().__init__()
         self.config = config
-        self.config.add_logger('dataset_log')
+        self.config.add_logger("dataset_log")
         self.dataset_path = Path(self.config.data.data_path)
         self.valid_size = self.config.train.valid_size
         self.test_size = self.config.train.test_size
@@ -33,11 +32,11 @@ class BaseDataset(ABC, Dataset):
         # self.dev_data = {idx: self.train_data[idx] for idx in range(1000)}
 
     def __load_data__(self, dataset_path: PathLike, test_size: float, valid_size: float):
-        '''load train and test data
+        """load train and test data
 
         Returns:
             train_data, valid_data, test_data: dict[index, namedtuple[data, label]]
-        '''
+        """
         # return train_data, test_data, label_data
         raise NotImplementedError()
 
@@ -52,14 +51,14 @@ class BaseDataset(ABC, Dataset):
             return len(self.dev_data)
         elif self.phase == Phase.SUBMISSION:
             return len(self.test_data)
-        raise RuntimeError(f'Unknown phase: {self.phase}')
+        raise RuntimeError(f"Unknown phase: {self.phase}")
 
     def __getitem__(self, index) -> Any:
         if self.phase == Phase.TRAIN:
             raise NotImplementedError()
         elif self.phase == Phase.TEST:
             raise NotImplementedError()
-        raise RuntimeError(f'Unknown phase: {self.phase}')
+        raise RuntimeError(f"Unknown phase: {self.phase}")
 
     # phase change functions
     def to_train(self):

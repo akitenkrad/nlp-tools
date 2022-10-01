@@ -50,10 +50,10 @@ class Text(object):
 class ConferenceText(Text):
     def __init__(
         self,
-        original_title: str,
+        title: str,
+        abstract: str = "",
         preprocessed_title: str = "",
-        original_summary: str = "",
-        preprocessed_summary: str = "",
+        preprocessed_abstract: str = "",
         keywords: List[str] = [],
         pdf_url: str = "",
         authors: List[str] = [],
@@ -61,10 +61,10 @@ class ConferenceText(Text):
         published_at: Optional[datetime] = None,
         **kwargs,
     ):
-        self.original_title: str = original_title
+        self.title: str = title
+        self.abstract: str = abstract
         self.preprocessed_title: str = preprocessed_title
-        self.original_summary: str = original_summary
-        self.preprocessed_summary: str = preprocessed_summary
+        self.preprocessed_abstract: str = preprocessed_abstract
         self.keywords: List[str] = keywords
         self.pdf_url: str = pdf_url
         self.authors: List[str] = authors
@@ -79,10 +79,10 @@ class ConferenceText(Text):
                 setattr(self, name, value)
                 self.attrs.append({"name": name, "value": value})
 
-        self.__text = f"{self.preprocessed_title} {self.preprocessed_summary}"
+        self.__text = f"{self.preprocessed_title} {self.preprocessed_abstract}"
 
     def __str__(self):
-        return f"<ConferenceText {self.original_title[:15]}... (in {self.language})>"
+        return f"<ConferenceText {self.title[:15]}... (in {self.language})>"
 
     def __repr__(self):
         return self.__str__()
@@ -94,10 +94,10 @@ class ConferenceText(Text):
     def to_dict(self) -> Dict[str, Any]:
         res = {
             "text": self.__text,
-            "original_title": self.original_title,
+            "title": self.title,
+            "abstract": self.abstract,
             "preprocessed_title": self.preprocessed_title,
-            "original_summary": self.original_summary,
-            "preprocessed_summary": self.preprocessed_summary,
+            "preprocessed_abstract": self.preprocessed_abstract,
             "keywords": self.keywords,
             "pdf_url": self.pdf_url,
             "authors": self.authors,

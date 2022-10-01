@@ -147,28 +147,48 @@ class Config(object):
         JST = timezone(timedelta(hours=9))
         return datetime.now(JST)
 
+    def __get_device__(self):
+        if torch.cuda.is_available():
+            return "cuda"
+        else:
+            return "cpu"
+
     def __load_config__(self, config_path: PathLike, ex_args: dict = None, silent=False):
         self.__config__ = AttrDict(yaml.safe_load(open(config_path)))
         if ex_args is not None:
             self.__config__ = self.__config__ + ex_args
         self.__config__["config_path"] = Path(config_path)
         self.__config__["timestamp"] = self.now()
-        self.__config__["train"]["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.__config__["train"]["device"] = torch.device(self.__get_device__())
         self.__config__["log"]["log_dir"] = (
             Path(self.__config__["log"]["log_dir"])
             / f"{self.__config__['train']['exp_name']}_{self.__config__['timestamp'].strftime('%Y%m%d%H%M%S')}"
         )
-        self.__config__["log"]["log_file"] = Path(self.__config__["log"]["log_dir"]) / self.__config__["log"]["log_filename"]
-        self.__config__["weights"]["log_weights_dir"] = str(Path(self.__config__["log"]["log_dir"]) / "weights")
+        self.__config__["log"]["log_file"] = (
+            Path(self.__config__["log"]["log_dir"]) / self.__config__["log"]["log_filename"]
+        )
+        self.__config__["weights"]["global_weights_dir"] = Path(self.__config__["weights"]["global_weights_dir"])
+        self.__config__["weights"]["log_weights_dir"] = Path(self.__config__["log"]["log_dir"]) / "weights"
         self.__config__["data"]["data_path"] = Path(self.__config__["data"]["data_path"])
         self.__config__["data"]["cache_path"] = Path(self.__config__["data"]["cache_path"])
-        self.__config__["backup"]["backup_dir"] = Path(self.__config__["backup"]["backup_dir"]) / Path(self.__config__["log"]["log_dir"]).name
+        self.__config__["backup"]["backup_dir"] = Path(self.__config__["backup"]["backup_dir"])
+        self.__config__["output"]["out_dir"] = Path(self.__config__["output"]["out_dir"])
         self.__config__["log"]["loggers"] = {}
 
         if hasattr(self, "__logger") and isinstance(self.__logger, Logger):
             kill_logger(self.__logger)
-        self.__config__["log"]["loggers"]["logger"] = get_logger(name="config", logfile=self.__config__["log"]["log_file"], silent=silent)
+        self.__config__["log"]["loggers"]["logger"] = get_logger(
+            name="config", logfile=self.__config__["log"]["log_file"], silent=silent
+        )
         self.__config__["log"]["logger"] = self.__config__["log"]["loggers"]["logger"]
+
+        # mkdir
+        self.__config__["data"]["data_path"].mkdir(parents=True, exist_ok=True)
+        self.__config__["data"]["cache_path"].mkdir(parents=True, exist_ok=True)
+        self.__config__["backup"]["backup_dir"].mkdir(parents=True, exist_ok=True)
+        self.__config__["output"]["out_dir"].mkdir(parents=True, exist_ok=True)
+        self.__config__["weights"]["global_weights_dir"].mkdir(parents=True, exist_ok=True)
+        self.__config__["weights"]["log_weights_dir"].mkdir(parents=True, exist_ok=True)
 
         self.log.logger.info("====== show config =========")
         attrdict_attrs = list(dir(AttrDict()))
@@ -187,7 +207,13 @@ class Config(object):
 
         # GPU info
         if torch.cuda.is_available():
-            self.describe_gpu()
+            self.describe_cuda()
+
+        # Mac M1 Sillicon
+        self.describe_m1_silicon()
+
+        # fix seed
+        self.fix_seed(self.train.seed)
 
     @property
     def config_dict(self):
@@ -199,7 +225,7 @@ class Config(object):
             self.log.logger.info(f"CPU INFO: {key:20s}: {value}")
         self.log.logger.info("============================")
 
-    def describe_gpu(self, nvidia_smi_path="nvidia-smi", no_units=True):
+    def describe_cuda(self, nvidia_smi_path="nvidia-smi", no_units=True):
         try:
             keys = self.NVIDIA_SMI_DEFAULT_ATTRIBUTES
             nu_opt = "" if not no_units else ",nounits"
@@ -216,7 +242,19 @@ class Config(object):
             self.log.logger.info("=====================================")
         except CalledProcessError:
             self.log.logger.info("====== show GPU information =========")
-            self.log.logger.info("  No GPU was found.")
+            self.log.logger.info("  No NVIDIA GPU was found.")
+            self.log.logger.info("=====================================")
+
+    def describe_m1_silicon(self):
+        try:
+            torch.device("mps")
+            self.log.logger.info("====== show GPU information =========")
+            self.log.logger.info("  Mac-M1 GPU is available.")
+            self.log.logger.info("=====================================")
+
+        except RuntimeError:
+            self.log.logger.info("====== show GPU information =========")
+            self.log.logger.info("  No Mac-M1 GPU was found.")
             self.log.logger.info("=====================================")
 
     def describe_model(self, model: torch.nn.Module, input_size: tuple = None, input_data=None):
@@ -263,7 +301,9 @@ class Config(object):
         shutil.copytree(self.log.log_dir, self.backup.backup_dir)
 
     def add_logger(self, name: str, silent: bool = False):
-        self.__config__["log"]["loggers"][name] = get_logger(name=name, logfile=self.__config__["log"]["log_file"], silent=silent)
+        self.__config__["log"]["loggers"][name] = get_logger(
+            name=name, logfile=self.__config__["log"]["log_file"], silent=silent
+        )
         self.__config__["log"][name] = self.__config__["log"]["loggers"][name]
 
     def fix_seed(self, seed=42):

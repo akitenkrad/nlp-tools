@@ -1,12 +1,17 @@
 import bz2
+import dataclasses
 import json
 import re
+from enum import Enum
 from os import PathLike
 from pathlib import Path
 from typing import List, Optional
 
 import h5py
 import numpy as np
+from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 from torch.utils.data import Dataset
 from utils.data import ConferenceText
 from utils.google_drive import GDriveObjects, download_from_google_drive
@@ -19,7 +24,38 @@ else:
     from tqdm import tqdm
 
 
+@dataclasses.dataclass
+class Table(object):
+    name: str
+    max_digit: int
+
+
+class MsAcademicTable(Enum):
+    Affiliations = Table("Affiliations", -1)
+    Authors = "Authors"
+    ConferenceInstances = "ConferenceInstances"
+    ConferenceSeries = "ConferenceSeries"
+    Journals = "Journals"
+    PaperAuthorAffiliations = "PaperAuthorAffiliations"
+    PaperExtendedAttributes = "PaperExtendedAttributes"
+    PaperReferences = "PaperReferences"
+    PaperResources = "PaperResources"
+    Papers = "Papers"
+    PaperUrls = "PaperUrls"
+    EntityRelatedEntities = "EntityRelatedEntities"
+    FieldOfStudyChildren = "FieldOfStudyChildren"
+    FieldOfStudyExtendedAttributes = "FieldOfStudyExtendedAttributes"
+    FieldsOfStudy = Table("FieldsOfStudy", 10)
+    PaperFieldsOfStudy = "PaperFieldsOfStudy"
+    PaperRecommendations = "PaperRecommendations"
+    RelatedFieldOfStudy = "RelatedFieldOfStudy"
+    PaperCitationContexts = "PaperCitationContexts"
+    PaperTags = "PaperTags"
+
+
 def triple2hdf5(src_triples: PathLike, dst_dir: PathLike):
+    """convert MS-ACADEMIC triples into hdf5"""
+
     def get_field(text: str):
         field = text.split("/")[-1]
         if "#" in field:

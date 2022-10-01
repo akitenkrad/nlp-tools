@@ -6,13 +6,16 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 import numpy as np
-from tqdm import tqdm
 from utils.data import Text, Token
-from utils.tokenizers import (CharTokenizerFactory, Tokenizer,
-                              WordTokenizerFactory)
-from utils.utils import Config, Lang, download
+from utils.tokenizers import CharTokenizerFactory, Tokenizer, WordTokenizerFactory
+from utils.utils import Config, Lang, download, is_notebook
 
 from embeddings.base import Embedding
+
+if is_notebook():
+    from tqdm.notebook import tqdm
+else:
+    from tqdm import tqdm
 
 GloVeInfo = namedtuple("GloVeInfo", ("filename", "zipname", "embedding_dim"))
 
@@ -42,6 +45,19 @@ class GloVe(Embedding):
         filter=None,
         no_cache=False,
     ):
+        """
+        GloVe Embedding
+
+        Args:
+            config (Config): configuration object
+            glove_type (GloVeType): type of glove embedding
+            max_sent_len (int): if max_sent_len > 0, cut the given sentence into specific length
+            max_word_len (int): if max_word_len > 0, cut the given word into specific length
+            remove_punctuations (bool): if True, remove punctuations
+            remove_stopwords (bool): if True, remove stopwords
+            filter (function): filter tokens
+                               ex. lambda tk: tk.pos_tag.startswith("NN") # take only nouns
+        """
         self.config = config
         self.config.add_logger("glove_log")
         self.glove_type: GloVeType = glove_type

@@ -1,10 +1,11 @@
-from pathlib import Path
-from datetime import datetime, timedelta, timezone
 import logging
+from datetime import datetime, timedelta, timezone
+from logging import Formatter, Logger, StreamHandler, getLogger
 from logging.handlers import RotatingFileHandler
-from logging import getLogger, StreamHandler, Formatter, Logger
+from pathlib import Path
 
-def get_json_liner(name:str, logfile:str='') -> Logger:
+
+def get_json_liner(name: str, logfile: str = "") -> Logger:
     """Generate Logger instance
 
     Args:
@@ -17,18 +18,17 @@ def get_json_liner(name:str, logfile:str='') -> Logger:
     # --------------------------------
     # 0. mkdir
     # --------------------------------
-    if logfile == '':
-        JST = timezone(timedelta(hours=+9), 'JST')
-        now =  datetime.now(JST)
+    if logfile == "":
+        JST = timezone(timedelta(hours=+9), "JST")
+        now = datetime.now(JST)
         now = datetime(now.year, now.month, now.day, now.hour, now.minute, 0, tzinfo=JST)
-        log_dir = Path('./logs/log') / now.strftime('%Y%m%d%H%M%S')
+        log_dir = Path("./logs/log") / now.strftime("%Y%m%d%H%M%S")
         log_dir.mkdir(parents=True, exist_ok=True)
         logfile = name
     else:
         log_dir = Path(logfile).parent
         log_dir.mkdir(parents=True, exist_ok=True)
 
-    
     # --------------------------------
     # 1. logger configuration
     # --------------------------------
@@ -38,7 +38,7 @@ def get_json_liner(name:str, logfile:str='') -> Logger:
     logger.setLevel(logging.DEBUG)
 
     if logger.hasHandlers():
-        handler_format = Formatter('')
+        handler_format = Formatter("")
         # --------------------------------
         # 3. log file configuration
         # --------------------------------
@@ -57,7 +57,8 @@ def get_json_liner(name:str, logfile:str='') -> Logger:
 
     return logger
 
-def get_logger(name, logfile:str='', silent:bool=False) -> Logger:
+
+def get_logger(name, logfile: str = "", silent: bool = False) -> Logger:
     """Generate Logger instance
 
     Args:
@@ -71,17 +72,17 @@ def get_logger(name, logfile:str='', silent:bool=False) -> Logger:
     # --------------------------------
     # 0. mkdir
     # --------------------------------
-    if logfile == '':
-        JST = timezone(timedelta(hours=+9), 'JST')
-        now =  datetime.now(JST)
+    if logfile == "":
+        JST = timezone(timedelta(hours=+9), "JST")
+        now = datetime.now(JST)
         now = datetime(now.year, now.month, now.day, now.hour, now.minute, 0, tzinfo=JST)
-        log_dir = Path('./logs/log') / now.strftime('%Y%m%d%H%M%S')
+        log_dir = Path("./logs/log") / now.strftime("%Y%m%d%H%M%S")
         log_dir.mkdir(parents=True, exist_ok=True)
         logfile = name
     else:
         log_dir = Path(logfile).parent
         log_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # --------------------------------
     # 1. logger configuration
     # --------------------------------
@@ -89,7 +90,7 @@ def get_logger(name, logfile:str='', silent:bool=False) -> Logger:
     logger.setLevel(logging.DEBUG)
 
     if not logger.hasHandlers():
-        handler_format = Formatter('%(asctime)s [%(levelname)8s] %(name)15s - %(message)s')
+        handler_format = Formatter("%(asctime)s [%(levelname)8s] %(name)15s - %(message)s")
 
         # --------------------------------
         # 2. handler configuration
@@ -118,6 +119,7 @@ def get_logger(name, logfile:str='', silent:bool=False) -> Logger:
 
     return logger
 
-def kill_logger(logger:Logger):
-   name = logger.name
-   del logging.Logger.manager.loggerDict[name]
+
+def kill_logger(logger: Logger):
+    name = logger.name
+    del logging.Logger.manager.loggerDict[name]
