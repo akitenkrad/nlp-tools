@@ -38,7 +38,7 @@ class Trainer(BaseTrainer):
         kl_loss = nn.KLDivLoss(reduction="batchmean")
         mse_loss = nn.MSELoss()
 
-        def loss_function(t, o):
+        def loss_function(o, t):
             return mse_loss(o, t) + kl_loss(o, t) * -0.5
 
         # initialize learning rate
