@@ -39,7 +39,7 @@ class Trainer(BaseTrainer):
         mse_loss = nn.MSELoss()
 
         def loss_function(t, o):
-            return kl_loss(o, t) + mse_loss(o, t)
+            return mse_loss(o, t) + kl_loss(o, t) * -0.5
 
         # initialize learning rate
         self.optimizer.param_groups[0]["lr"] = self.config.train.lr
