@@ -71,21 +71,20 @@ class MnistDataset(BaseDataset):
         if self.phase == Phase.TRAIN or self.phase == Phase.VALID:
             data: MnistItem = self.train_data[index]
             label = data.label
-
             data = self.transform(np.array(data.data))
             return data, label
 
         elif self.phase == Phase.DEV:
             data: MnistItem = self.dev_data[index]
             label = data.label
-
             data = self.transform(np.array(data.data))
             return data, label
 
         elif self.phase == Phase.TEST:
             data: MnistItem = self.test_data[index]
+            label = data.label
             data = self.transform(np.array(data.data))
-            return data
+            return data, label
 
         raise RuntimeError(f"Unknown phase: {self.pahse}")
 
