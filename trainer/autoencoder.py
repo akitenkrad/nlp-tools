@@ -35,11 +35,8 @@ class Trainer(BaseTrainer):
         global_step = 0
         epochs = self.config.train.epochs
 
-        kl_loss = nn.KLDivLoss(reduction="batchmean")
-        mse_loss = nn.MSELoss()
-
         def loss_function(o, t):
-            return mse_loss(o, t) + kl_loss(o, t) * -0.5
+            return torch.sqrt(torch.mean((o - t) ** 2))
 
         # initialize learning rate
         self.optimizer.param_groups[0]["lr"] = self.config.train.lr
