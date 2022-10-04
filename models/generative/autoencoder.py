@@ -20,6 +20,12 @@ class Encoder(nn.Module):
         self.linear = nn.Linear(3136, 2)
         self.relu = nn.LeakyReLU()
 
+        nn.init.xavier_uniform_(self.conv_0.weight, gain=nn.init.calculate_gain("leaky_relu"))
+        nn.init.xavier_uniform_(self.conv_1.weight, gain=nn.init.calculate_gain("leaky_relu"))
+        nn.init.xavier_uniform_(self.conv_2.weight, gain=nn.init.calculate_gain("leaky_relu"))
+        nn.init.xavier_uniform_(self.conv_3.weight, gain=nn.init.calculate_gain("leaky_relu"))
+        nn.init.xavier_uniform_(self.linear.weight, gain=nn.init.calculate_gain("leaky_relu"))
+
     def forward(self, x):
         out = self.relu(self.conv_0(x))
         out = self.relu(self.conv_1(out))
@@ -49,6 +55,12 @@ class Decoder(nn.Module):
             32, n_channels, kernel_size=3, stride=1, padding=1, dilation=1, output_padding=0
         )
         self.relu = nn.LeakyReLU()
+
+        nn.init.xavier_uniform_(self.linear.weight, gain=nn.init.calculate_gain("leaky_relu"))
+        nn.init.xavier_uniform_(self.conv_t_0.weight, gain=nn.init.calculate_gain("leaky_relu"))
+        nn.init.xavier_uniform_(self.conv_t_1.weight, gain=nn.init.calculate_gain("leaky_relu"))
+        nn.init.xavier_uniform_(self.conv_t_2.weight, gain=nn.init.calculate_gain("leaky_relu"))
+        nn.init.xavier_uniform_(self.conv_t_3.weight, gain=nn.init.calculate_gain("leaky_relu"))
 
     def forward(self, x):
         out = self.linear(x)
