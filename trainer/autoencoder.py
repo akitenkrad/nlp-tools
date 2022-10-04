@@ -136,6 +136,8 @@ class Trainer(BaseTrainer):
             for idx, (x, y) in it:
 
                 # process model and calculate loss
+                x = x.to(self.config.train.device)
+                y = y.to(self.config.train.device)
                 out = self.model(x)
                 loss = self.loss_function(out, x)
 
