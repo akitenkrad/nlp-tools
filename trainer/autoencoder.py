@@ -34,9 +34,7 @@ class Trainer(BaseTrainer):
         self.model.train().to(self.config.train.device)
         global_step = 0
         epochs = self.config.train.epochs
-
-        def loss_function(o, t):
-            return torch.sqrt(torch.mean((o - t) ** 2))
+        loss_function = nn.BCELoss()
 
         # initialize learning rate
         self.optimizer.param_groups[0]["lr"] = self.config.train.lr
