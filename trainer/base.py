@@ -27,6 +27,10 @@ class BaseTrainer(ABC):
         self.lr_scheduler = lr_scheduler
 
     @abstractmethod
+    def find_lr(self, init_value=1e-8, final_value=10.0, beta=0.98):
+        pass
+
+    @abstractmethod
     def fit(self, x):
         pass
 

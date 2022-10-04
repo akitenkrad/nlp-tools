@@ -13,6 +13,7 @@ ipywidgets
 isort
 jupyterlab
 kaggle
+kaleido
 mecab-python3
 mypy
 networkx
