@@ -28,7 +28,7 @@ class Trainer(BaseTrainer):
     ):
         super().__init__(config, name, model, dataset, optimizer, lr_scheduler)
 
-    def loss_function(out, target):
+    def loss_function(self, out, target):
         return torch.sqrt(torch.mean((out - target) ** 2))
 
     def fit(self):
