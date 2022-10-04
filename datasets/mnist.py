@@ -38,8 +38,8 @@ class MnistDataset(BaseDataset):
         >>> dataset = MnistDataset(config, transform)
     """
 
-    MEAN = (72.3,)
-    STD = (90,)
+    MEAN = (0.5,)
+    STD = (0.5,)
 
     def __init__(self, config: Config, transform: transforms.Compose, class_filter: List[int] = []):
         super().__init__(config, Phase.TRAIN)
