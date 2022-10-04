@@ -184,6 +184,7 @@ class Trainer(BaseTrainer):
                 )
             )
             fig.update_yaxes(type="log")
+            fig.update_xaxes(type="log")
             fig.update_layout(xaxis_title="Learning Rate", yaxis_title="Loss")
             fig.write_image(str(save_path.expanduser().absolute()), engine="kaleido")
             fig.show()
