@@ -17,6 +17,8 @@ class Encoder(nn.Module):
         self.conv_1 = nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1, dilation=1)
         self.conv_2 = nn.Conv2d(64, 64, kernel_size=3, stride=2, padding=1, dilation=1)
         self.conv_3 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, dilation=1)
+        self.batch_norm_0 = nn.BatchNorm2d(32)
+        self.batch_norm_1 = nn.BatchNorm2d(64)
         self.linear = nn.Linear(3136, 2)
         self.relu = nn.LeakyReLU()
 
@@ -27,10 +29,10 @@ class Encoder(nn.Module):
         nn.init.xavier_uniform_(self.linear.weight, gain=nn.init.calculate_gain("leaky_relu"))
 
     def forward(self, x):
-        out = self.relu(self.conv_0(x))
-        out = self.relu(self.conv_1(out))
-        out = self.relu(self.conv_2(out))
-        out = self.relu(self.conv_3(out))
+        out = self.relu(self.batch_norm_0(self.conv_0(x)))
+        out = self.relu(self.batch_norm_1(self.conv_1(out)))
+        out = self.relu(self.batch_norm_1(self.conv_2(out)))
+        out = self.relu(self.batch_norm_1(self.conv_3(out)))
         out = out.reshape(-1, 3136)
         out = self.linear(out)
         return out
@@ -54,6 +56,8 @@ class Decoder(nn.Module):
         self.conv_t_3 = nn.ConvTranspose2d(
             32, n_channels, kernel_size=3, stride=1, padding=1, dilation=1, output_padding=0
         )
+        self.batch_norm_0 = nn.BatchNorm2d(64)
+        self.batch_norm_1 = nn.BatchNorm2d(32)
         self.relu = nn.LeakyReLU()
 
         nn.init.xavier_uniform_(self.linear.weight, gain=nn.init.calculate_gain("leaky_relu"))
@@ -65,9 +69,9 @@ class Decoder(nn.Module):
     def forward(self, x):
         out = self.linear(x)
         out = out.reshape(-1, 64, 7, 7)
-        out = self.relu(self.conv_t_0(out))
-        out = self.relu(self.conv_t_1(out))
-        out = self.relu(self.conv_t_2(out))
+        out = self.relu(self.batch_norm_0(self.conv_t_0(out)))
+        out = self.relu(self.batch_norm_0(self.conv_t_1(out)))
+        out = self.relu(self.batch_norm_1(self.conv_t_2(out)))
         out = torch.sigmoid(self.conv_t_3(out))
         return out
 
