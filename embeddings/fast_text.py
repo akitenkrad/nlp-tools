@@ -9,11 +9,11 @@ import gensim
 import numpy as np
 from gensim.models.keyedvectors import KeyedVectors
 from tqdm import tqdm
+
+from embeddings.base import Embedding
 from utils.data import Text, Token
 from utils.tokenizers import CharTokenizerFactory, Tokenizer, WordTokenizerFactory
 from utils.utils import Config, Lang, download
-
-from embeddings.base import Embedding
 
 FastTextInfo = namedtuple("FastTextInfo", ("filename", "language", "embedding_dim"))
 
@@ -140,12 +140,12 @@ class FastText(Embedding):
             word2idx = pickle.load(open(str(word2idx_cache), "rb"))
         else:
             self.config.log.fast_text_log.info("construct weights from the weights file... this takes a few minutes...")
-            weights = gensim.models.KeyedVectors.load_word2vec_format(weights_path, binary=False)
+            weights: KeyedVectors = gensim.models.KeyedVectors.load_word2vec_format(weights_path, binary=False)
 
             vectors = weights.vectors
-            words = [""] * len(weights.key_to_index)
+            words = [""] * len(weights.index2word)
             word2idx = {}
-            for word, index in weights.key_to_index.items():
+            for index, word in enumerate(weights.index2word):
                 words[index] = word
                 word2idx[word] = index
 
