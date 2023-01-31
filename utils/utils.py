@@ -378,6 +378,7 @@ def word_cloud(input_text: str, out_path: PathLike, mask_type=WordCloudMask.RAND
         background_color="white",
         max_words=200,
         stopwords=set(STOPWORDS),
+        collocations=False,
         contour_width=3,
         contour_color="steelblue",
         mask=mask,
