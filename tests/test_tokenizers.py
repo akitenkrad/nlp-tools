@@ -45,7 +45,13 @@ from utils.utils import Lang
             False,
             5,
             None,
-            [Token("もっと", "もっと", "副詞"), Token("自信", "自信", "名詞"), Token("を", "を", "助詞"), Token("持っ", "持つ", "動詞"), Token("て", "て", "助詞")],
+            [
+                Token("もっと", "もっと", "副詞"),
+                Token("自信", "自信", "名詞"),
+                Token("を", "を", "助詞"),
+                Token("持っ", "持つ", "動詞"),
+                Token("て", "て", "助詞"),
+            ],
         ),
         (
             Lang.JAPANESE,
@@ -59,7 +65,13 @@ from utils.utils import Lang
     ],
 )
 def test_english_word_tokenizer(
-    language: Lang, text: Text, remove_punctuations: bool, remove_stopwords: bool, max_sent_len: int, filter: Callable, expected: List[Token]
+    language: Lang,
+    text: Text,
+    remove_punctuations: bool,
+    remove_stopwords: bool,
+    max_sent_len: int,
+    filter: Callable,
+    expected: List[Token],
 ):
     tokenizer = WordTokenizerFactory.get_tokenizer(
         language,
