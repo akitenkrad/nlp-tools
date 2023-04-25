@@ -10,7 +10,7 @@ from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 
-from utils.data import Text, Token
+from utils.data import Token
 from utils.utils import Lang
 
 nltk.download("stopwords", quiet=True)
@@ -25,17 +25,34 @@ JA_PUNCTUATIONS += ["（", "）", "「", "」", "【", "】", "『", "』", "［
 JA_PUNCTUATIONS += ["！", "＠", "？", "：", "；", "”", "’", "ー", "〜", "-", "~", "−", "・", "＄", "％", "＾", "＆", "／", "＝", "＼"]
 
 JA_STOPWORDS = stopwords.words(Lang.ENGLISH.value)
-JA_STOPWORDS += [ss.strip() for ss in open(Path(__file__).parent / "resources/texts/JA_STOPWORDS_SLOTHLIB.txt") if ss.strip() != ""]
+JA_STOPWORDS += [
+    ss.strip() for ss in open(Path(__file__).parent / "resources/texts/JA_STOPWORDS_SLOTHLIB.txt") if ss.strip() != ""
+]
 
 
-class Tokenizer(ABC):
+class WordTokenizer(ABC):
     @abstractmethod
-    def tokenize(self, text: Text, **kwargs) -> List[Union[Token, List[Token]]]:
+    def tokenize(self, text: str, **kwargs) -> List[Token]:
         pass
 
 
-class EnglishWordTokenizer(Tokenizer):
-    def __init__(self, pad=PAD, max_sent_len=-1, remove_stopwords=False, remove_punctuations=True, stemming=False, add_tag=False, filter=None):
+class CharTokenizer(ABC):
+    @abstractmethod
+    def tokenize(self, text: str, **kwargs) -> List[List[Token]]:
+        pass
+
+
+class EnglishWordTokenizer(WordTokenizer):
+    def __init__(
+        self,
+        pad=PAD,
+        max_sent_len=-1,
+        remove_stopwords=False,
+        remove_punctuations=True,
+        stemming=False,
+        add_tag=False,
+        filter=None,
+    ):
         """
         Args:
             pad (str): PAD token
@@ -57,12 +74,12 @@ class EnglishWordTokenizer(Tokenizer):
         self.porter: PorterStemmer = PorterStemmer()
         self.filter: Optional[Callable] = filter
 
-    def tokenize(self, text: Text, **kwargs) -> List[Token]:
+    def tokenize(self, text: str, **kwargs) -> List[Token]:
         """tokenize a sentence into a list of words"""
         disable_max_len = kwargs.get("disable_max_len", False)
 
         # lowercase
-        lower_text = text.text.lower()
+        lower_text = text.lower()
 
         # tokenize
         words = [word for word in word_tokenize(lower_text)]
@@ -104,7 +121,7 @@ class EnglishWordTokenizer(Tokenizer):
         return tokens
 
 
-class JapaneseWordTokenizer(Tokenizer):
+class JapaneseWordTokenizer(WordTokenizer):
     def __init__(self, pad=PAD, max_sent_len=-1, remove_stopwords=False, remove_punctuations=True, filter=None):
         """
         Args:
@@ -122,12 +139,12 @@ class JapaneseWordTokenizer(Tokenizer):
         self.remove_stopwords: bool = remove_stopwords
         self.filter: Optional[Callable] = filter
 
-    def tokenize(self, text: Text, **kwargs):
+    def tokenize(self, text: str, **kwargs):
         """tokenize a text into a list of words"""
         disable_max_len = kwargs.get("disable_max_len", False)
 
         # lowercase
-        lower_text = text.text.lower()
+        lower_text = text.lower()
 
         # add pos and base
         tagger = MeCab.Tagger(f"-d {unidic.DICDIR}")
@@ -167,8 +184,17 @@ class JapaneseWordTokenizer(Tokenizer):
         return tokens
 
 
-class EnglishCharTokenizer(Tokenizer):
-    def __init__(self, pad=PAD, max_sent_len=-1, max_word_len=-1, remove_stopwords=False, remove_punctuations=True, stemming=False, filter=None):
+class EnglishCharTokenizer(CharTokenizer):
+    def __init__(
+        self,
+        pad=PAD,
+        max_sent_len=-1,
+        max_word_len=-1,
+        remove_stopwords=False,
+        remove_punctuations=True,
+        stemming=False,
+        filter=None,
+    ):
         self.language: Lang = Lang.ENGLISH
         self.pad: str = pad
         self.max_sent_len: int = max_sent_len
@@ -179,14 +205,14 @@ class EnglishCharTokenizer(Tokenizer):
         self.porter: PorterStemmer = PorterStemmer()
         self.filter: Optional[Callable] = filter
 
-    def tokenize(self, text: Text, **kwargs) -> List[List[Token]]:
+    def tokenize(self, text: str, **kwargs) -> List[List[Token]]:
         """tokenize a sentence
 
         Return:
             [[c_1_1, c_1_2, ...], [c_2_1, c_2_2, ...], ...]
         """
         # lowercase
-        lower_text = text.text.lower()
+        lower_text = text.lower()
 
         # tokenize
         words = [word for word in word_tokenize(lower_text)]
@@ -236,8 +262,17 @@ class EnglishCharTokenizer(Tokenizer):
         return tokens
 
 
-class JapaneseCharTokenizer(Tokenizer):
-    def __init__(self, pad="<pad>", max_sent_len=-1, max_word_len=-1, remove_stopwords=False, remove_punctuations=True, stemming=False, filter=None):
+class JapaneseCharTokenizer(CharTokenizer):
+    def __init__(
+        self,
+        pad="<pad>",
+        max_sent_len=-1,
+        max_word_len=-1,
+        remove_stopwords=False,
+        remove_punctuations=True,
+        stemming=False,
+        filter=None,
+    ):
         self.language = Lang.JAPANESE
         self.pad = pad
         self.max_sent_len: int = max_sent_len
@@ -247,9 +282,9 @@ class JapaneseCharTokenizer(Tokenizer):
         self.stemming: bool = stemming
         self.filter: Optional[Callable] = filter
 
-    def tokenize(self, text: Text, **kwargs) -> List[List[Token]]:
+    def tokenize(self, text: str, **kwargs) -> List[List[Token]]:
         # lowercase
-        lower_text = text.text.lower()
+        lower_text = text.lower()
 
         # add pos and base
         tagger = MeCab.Tagger(f"-d {unidic.DICDIR}")
@@ -318,7 +353,7 @@ class WordTokenizerFactory(object):
         stemming=False,
         add_tag=False,
         filter=None,
-    ) -> Tokenizer:
+    ) -> WordTokenizer:
         if language == Lang.ENGLISH:
             return EnglishWordTokenizer(
                 pad=pad,
@@ -331,7 +366,11 @@ class WordTokenizerFactory(object):
             )
         elif language == Lang.JAPANESE:
             return JapaneseWordTokenizer(
-                pad=pad, max_sent_len=max_sent_len, remove_stopwords=remove_stopwords, remove_punctuations=remove_punctuations, filter=filter
+                pad=pad,
+                max_sent_len=max_sent_len,
+                remove_stopwords=remove_stopwords,
+                remove_punctuations=remove_punctuations,
+                filter=filter,
             )
         else:
             raise NotImplementedError(f"Tokenizer for {language.value} is not implemented yet.")
@@ -351,7 +390,7 @@ class CharTokenizerFactory(object):
         remove_punctuations=True,
         stemming=False,
         filter=None,
-    ) -> Tokenizer:
+    ) -> CharTokenizer:
         if language == Lang.ENGLISH:
             return EnglishCharTokenizer(
                 pad=pad,

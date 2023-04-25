@@ -12,7 +12,7 @@
     "diffEditor.ignoreTrimWhitespace": false,
     "editor.bracketPairColorization.enabled": true,
     "editor.cursorBlinking": "smooth",
-    "editor.cursorSmoothCaretAnimation": true,
+    "editor.cursorSmoothCaretAnimation": "on",
     "editor.cursorStyle": "line",
     "editor.fontFamily": "CodeM, Utatane, HackGen, Consolas Menlo, Monaco, 'Courier New', monospace",
     "editor.fontSize": 22,
@@ -44,7 +44,12 @@
     "python.linting.flake8CategorySeverity.F": "Error",
     "python.linting.flake8CategorySeverity.E": "Error",
     "[python]": {
-        "editor.defaultFormatter": null
+        "editor.defaultFormatter": null,
+        "editor.wordBasedSuggestions": false,
+        "editor.codeActionsOnSave": {
+            "source.fixAll": true,
+            "source.organizeImports": true
+        },
     },
     "python.formatting.provider": "black",
     "python.formatting.blackPath": "black",
@@ -55,5 +60,28 @@
     "python.linting.maxNumberOfProblems": 10000,
     "python.formatting.blackArgs": [
         "--line-length=120"
-    ]
+    ],
+    "notebook.lineNumbers": "on",
+    "jupyter.askForKernelRestart": false,
+    "terminal.integrated.fontSize": 16,
+    "explorer.confirmDragAndDrop": false,
+    "editor.wordSeparators": "./\\()\"'-:,.;<>~!@#$%^&*|+=[]{}`~?　、。「」【】『』（）！？てにをはがのともへでや",
+    "[tex]": {
+        "editor.suggest.snippetsPreventQuickSuggestions": false,
+        "editor.tabSize": 2,
+        "editor.wordWrap": "on"
+    },
+    "[latex]": {
+        "editor.suggest.snippetsPreventQuickSuggestions": false,
+        "editor.tabSize": 2,
+        "editor.wordWrap": "on"
+    },
+    "[bibtex]": {
+        "editor.tabSize": 2,
+        "editor.wordWrap": "on"
+    },
+    "[json]": {
+        "editor.wordWrap": "wordWrapColumn",
+        "editor.wordWrapColumn": 110
+    }
 }

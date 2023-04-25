@@ -5,7 +5,7 @@ def test_to_instantiate_token():
     token = Token("surface", "base", "pos_tag")
 
     assert token.surface == "surface"
-    assert token.baes == "base"
+    assert token.base == "base"
     assert token.pos_tag == "pos_tag"
 
 

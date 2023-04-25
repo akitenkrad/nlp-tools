@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod, abstractproperty
 from typing import List, Union
 
 import numpy as np
-from utils.data import Text, Token
+
+from utils.data import Sentence, Token
 
 
 class Embedding(ABC):
@@ -19,7 +20,7 @@ class Embedding(ABC):
         pass
 
     @abstractmethod
-    def word_tokenize(self, text: Text) -> List[Token]:
+    def word_tokenize(self, text: Sentence) -> List[Token]:
         """tokenize the input text into a list of words
 
         Args:
@@ -31,7 +32,7 @@ class Embedding(ABC):
         pass
 
     @abstractmethod
-    def char_tokenize(self, text: Text) -> List[List[Token]]:
+    def char_tokenize(self, text: Sentence) -> List[List[Token]]:
         """tokenize the input text into lists of characters
 
         Args:
@@ -67,7 +68,7 @@ class Embedding(ABC):
         pass
 
     @abstractmethod
-    def word_embed(self, input_text: Text) -> np.ndarray:
+    def word_embed(self, input_text: Sentence) -> np.ndarray:
         """embed token index list into vector
 
         Args:
@@ -79,7 +80,7 @@ class Embedding(ABC):
         pass
 
     @abstractmethod
-    def char_embed(self, input_text: Text) -> List[np.ndarray]:
+    def char_embed(self, input_text: Sentence) -> List[np.ndarray]:
         """embed token index list into vector
 
         Args:

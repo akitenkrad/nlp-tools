@@ -1,6 +1,7 @@
 import json
 import tarfile
 from collections import namedtuple
+from dataclasses import dataclass
 from enum import Enum
 from glob import glob
 from os import PathLike
@@ -9,42 +10,65 @@ from typing import Dict, List, Tuple
 
 import numpy as np
 import torch
-from embeddings.base import Embedding
 from sklearn.model_selection import train_test_split
-from utils.data import Text
-from utils.google_drive import GDriveObjects, download_from_google_drive
-from utils.utils import Config, Phase, download, is_notebook
 
 from datasets.base import BaseDataset
+from embeddings.base import Embedding
+from utils.data import Sentence, Token
+from utils.google_drive import GDriveObjects, download_from_google_drive
+from utils.utils import Config, Phase, download, is_notebook
 
 if is_notebook():
     from tqdm.notebook import tqdm
 else:
     from tqdm import tqdm
 
-Passage = namedtuple("Passage", ("is_selected", "passage_text"))
-RougeL = namedtuple("RougeL", ("start_pos", "end_pos", "passage_span", "answer", "rouge_l"))
 
-MsmarcoItemX = namedtuple(
-    "MsmarcoItemX",
-    (
-        "query_id",
-        "query_type",
-        "query_word_tokens",
-        "query_char_tokens",
-        "passage_word_tokens",
-        "passage_char_tokens",
-        "passage_is_selected",
-        "answer_word_tokens",
-        "answer_char_tokens",
-    ),
-)
-MsmarcoItemPos = namedtuple("MsmarcoItemPos", ("start_pos", "end_pos"))
+@dataclass
+class Passage(object):
+    is_selected: bool
+    passage_text: str
+
+
+@dataclass
+class RougeL(object):
+    start_pos: int
+    end_pos: int
+    passage_span: str
+    answer: str
+    rouge_l: float
+
+
+@dataclass
+class MsmarcoItemX(object):
+    query_id: str
+    query_type: str
+    query_word_tokens: List[Token]
+    query_char_tokens: List[Token]
+    passage_word_tokens: List[Token]
+    passage_char_tokens: List[Token]
+    passage_is_selected: bool
+    answer_word_tokens: List[Token]
+    answer_char_tokens: List[Token]
+
+
+@dataclass
+class MsmarcoItemPos(object):
+    start_pos: int
+    end_pos: int
 
 
 class MsmarcoDatasetType(Enum):
     TRAIN = "train"
     DEV = "dev"
+
+
+# @dataclass
+# class MsmarcoRecord(object):
+#     key: str
+#     answers: List[Token]
+#     passages: List[Passage]
+#     query: List[Token]
 
 
 class MsmarcoRecord(object):
@@ -75,14 +99,16 @@ class MsmarcoRecord(object):
         self.key = str(item["key"])
         self.query_id: int = int(item["query_id"])
         self.query_type: str = item["query_type"]
-        self.query: Text = Text(item["query"])
-        self.passages: List[Passage] = [Passage(p["is_selected"], Text(p["passage_text"])) for p in item["passages"]]
-        self.answers: List[Text] = [Text(answer) for answer in item["answers"]]
+        self.query: Sentence = Sentence(item["query"])
+        self.passages: List[Passage] = [
+            Passage(p["is_selected"], Sentence(p["passage_text"])) for p in item["passages"]
+        ]
+        self.answers: List[Sentence] = [Sentence(answer) for answer in item["answers"]]
         self.rouge_l = RougeL(
             int(rouge_l["start_pos"]),
             int(rouge_l["end_pos"]),
-            Text(str(rouge_l["passage_span"])),
-            Text(str(rouge_l["answer"])),
+            Sentence(str(rouge_l["passage_span"])),
+            Sentence(str(rouge_l["answer"])),
             float(rouge_l["rouge_l"]),
         )
 

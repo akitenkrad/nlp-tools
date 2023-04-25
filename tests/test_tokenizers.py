@@ -2,7 +2,7 @@ from typing import Callable, List
 
 import pytest
 
-from utils.data import Text, Token
+from utils.data import Token
 from utils.tokenizers import PAD, WordTokenizerFactory
 from utils.utils import Lang
 
@@ -12,7 +12,7 @@ from utils.utils import Lang
     [
         (
             Lang.ENGLISH,
-            Text("The price of greatness is responsibility."),
+            "The price of greatness is responsibility.",
             True,
             True,
             5,
@@ -27,7 +27,7 @@ from utils.utils import Lang
         ),
         (
             Lang.ENGLISH,
-            Text("The price of greatness is responsibility."),
+            "The price of greatness is responsibility.",
             False,
             False,
             -1,
@@ -40,7 +40,7 @@ from utils.utils import Lang
         ),
         (
             Lang.JAPANESE,
-            Text("もっと自信を持ってよね！"),
+            "もっと自信を持ってよね！",
             True,
             False,
             5,
@@ -55,7 +55,7 @@ from utils.utils import Lang
         ),
         (
             Lang.JAPANESE,
-            Text("もっと自信を持ってよね！"),
+            "もっと自信を持ってよね！",
             False,
             False,
             -1,
@@ -66,7 +66,7 @@ from utils.utils import Lang
 )
 def test_english_word_tokenizer(
     language: Lang,
-    text: Text,
+    text: str,
     remove_punctuations: bool,
     remove_stopwords: bool,
     max_sent_len: int,

@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -6,48 +7,40 @@ import numpy as np
 from utils.utils import Lang
 
 
+@dataclass
 class Token(object):
-    def __init__(self, surface: str, base: str, pos_tag: str):
-        self.surface = surface
-        self.base = base
-        self.pos_tag = pos_tag
+    """Represent a token"""
 
-    def __str__(self) -> str:
-        return f"<Token {self.surface} {self.base} {self.pos_tag}>"
+    surface: str
+    base: str
+    pos_tag: str
 
-    def __repr__(self) -> str:
-        return self.__str__()
+    def __hash__(self) -> int:
+        return hash(self.surface + self.base + self.pos_tag)
 
-    def __eq__(self, __o: object) -> bool:
-        if isinstance(__o, Token):
-            return (self.surface == __o.surface) and (self.base == __o.base) and (self.pos_tag == __o.pos_tag)
-        else:
-            return False
-
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> Dict[str, str]:
         return {"surface": self.surface, "base": self.base, "pos_tag": self.pos_tag}
 
 
-class Text(object):
-    def __init__(self, text: str, language=Lang.ENGLISH):
-        self.__text = text
-        self.language = language
+@dataclass
+class Sentence(object):
+    """Represent a sentence composed of a list of Tokens"""
 
-    def __str__(self) -> str:
-        return f"<Text {self.text[:10]} ...>"
+    tokens: List[Token]
+    language: Lang = Lang.ENGLISH
 
-    def __repr__(self) -> str:
-        return self.__str__()
+    def __hash__(self) -> int:
+        return hash("".join([str(hash(token)) for token in self.tokens]))
+
+    def to_dict(self) -> Dict:
+        return {"tokens": [token.to_dict() for token in self.tokens]}
 
     @property
     def text(self) -> str:
-        return self.__text
-
-    def to_dict(self) -> Dict[str, Any]:
-        return {"text": self.__text, "language": self.language.value}
+        return " ".join([token.surface for token in self.tokens])
 
 
-class ConferenceText(Text):
+class ConferenceText(Sentence):
     def __init__(
         self,
         title: str,
@@ -110,7 +103,7 @@ class ConferenceText(Text):
         return res
 
 
-class QAText(Text):
+class QAText(Sentence):
     def __init__(self, question: str, passages: List[str], answer: str, language=Lang.ENGLISH):
         self.question: str = question
         self.passages: List[str] = passages

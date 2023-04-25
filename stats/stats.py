@@ -10,7 +10,8 @@ import pandas as pd
 from bertopic import BERTopic
 from matplotlib.figure import Figure
 from nltk import FreqDist
-from utils.data import ConferenceText, Text
+
+from utils.data import ConferenceText, Sentence
 from utils.tokenizers import Tokenizer
 from utils.utils import WordCloudMask, is_notebook, word_cloud
 
@@ -64,13 +65,15 @@ class ConferenceTopicModelStats(object):
         else:
             self.topics_per_class = None
 
-        for topic, text, prob in tqdm(zip(topics, texts, probs), total=len(texts), desc="analyzing topics...", leave=False):
+        for topic, text, prob in tqdm(
+            zip(topics, texts, probs), total=len(texts), desc="analyzing topics...", leave=False
+        ):
             text.topic = topic
             text.topic_prob = prob
         self.texts = texts
         self.__meta_data["topics"] = topics
 
-    def get_topic(self, text: Text) -> Tuple[int, str, Dict[int, float]]:
+    def get_topic(self, text: Sentence) -> Tuple[int, str, Dict[int, float]]:
         topics = {idx: 0.0 for idx in self.topic_model.topics.keys()}
         [_topic], _probs = self.topic_model.transform(text.text)
         for topic, prob in zip(_topics, _probs):
@@ -118,7 +121,9 @@ class ConferenceTopicModelStats(object):
             width (int): the argument for BERTopic.visualize_barchart()
         """
         self.__assert_out_path(out_path)
-        fig = self.topic_model.visualize_barchart(top_n_topics=len(self.topic_model.topics), n_words=n_words, width=width)
+        fig = self.topic_model.visualize_barchart(
+            top_n_topics=len(self.topic_model.topics), n_words=n_words, width=width
+        )
         self.__save_fig(fig, out_path)
 
     def save_similarity_matrix(self, out_path: PathLike):
@@ -170,7 +175,7 @@ class ConferenceTopicModelStats(object):
 
 class KeywordStats(object):
     def __init__(self):
-        self.keywords: Dict[str, List[Text]] = defaultdict(lambda: list())
+        self.keywords: Dict[str, List[Sentence]] = defaultdict(lambda: list())
         self.keyword_cnt = FreqDist()
         self.__meta_data = {}
 
@@ -223,7 +228,9 @@ class KeywordStats(object):
                 leave=False,
             )
         ):
-            self.__meta_data["top_n_keywords"].append({"keyword": keyword, "count": cnt, "word_cloud_file": f"{idx:03d}.png"})
+            self.__meta_data["top_n_keywords"].append(
+                {"keyword": keyword, "count": cnt, "word_cloud_file": f"{idx:03d}.png"}
+            )
             texts = self.keywords[keyword]
             input_text = " ".join([text.text for text in texts])
             word_cloud(input_text, Path(out_path) / f"{keyword}.png", mask_type=WordCloudMask.CIRCLE)

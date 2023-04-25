@@ -5,7 +5,8 @@ from pathlib import Path
 from typing import List, Optional
 
 from dateutil.parser import parse as parse_date
-from utils.data import ConferenceText, Text
+
+from utils.data import ConferenceText, Sentence
 from utils.google_drive import GDriveObjects, download_from_google_drive
 from utils.tokenizers import Tokenizer
 from utils.utils import Config, Lang
@@ -35,8 +36,10 @@ class NeurIPS_2021(Conference):
             abstract = paper["abstract"]
 
             if preprocess_tokenizer:
-                title_tokens = preprocess_tokenizer.tokenize(Text(title, language=preprocess_tokenizer.language))
-                abstract_tokens = preprocess_tokenizer.tokenize(Text(abstract, language=preprocess_tokenizer.language))
+                title_tokens = preprocess_tokenizer.tokenize(Sentence(title, language=preprocess_tokenizer.language))
+                abstract_tokens = preprocess_tokenizer.tokenize(
+                    Sentence(abstract, language=preprocess_tokenizer.language)
+                )
                 preprocessed_title = " ".join(token.surface for token in title_tokens)
                 preprocessed_abstract = " ".join(token.surface for token in abstract_tokens)
             else:
@@ -77,8 +80,10 @@ class ANLP_2022(Conference):
             abstract = paper["abstract"]
 
             if preprocess_tokenizer:
-                title_tokens = preprocess_tokenizer.tokenize(Text(title, language=preprocess_tokenizer.language))
-                abstract_tokens = preprocess_tokenizer.tokenize(Text(abstract, language=preprocess_tokenizer.language))
+                title_tokens = preprocess_tokenizer.tokenize(Sentence(title, language=preprocess_tokenizer.language))
+                abstract_tokens = preprocess_tokenizer.tokenize(
+                    Sentence(abstract, language=preprocess_tokenizer.language)
+                )
                 preprocessed_title = " ".join(token.surface for token in title_tokens)
                 preprocessed_abstract = " ".join(token.surface for token in abstract_tokens)
             else:
@@ -116,8 +121,10 @@ class JSAI_2022(Conference):
             abstract = paper["abstract"]
 
             if preprocess_tokenizer:
-                title_tokens = preprocess_tokenizer.tokenize(Text(title, language=preprocess_tokenizer.language))
-                abstract_tokens = preprocess_tokenizer.tokenize(Text(abstract, language=preprocess_tokenizer.language))
+                title_tokens = preprocess_tokenizer.tokenize(Sentence(title, language=preprocess_tokenizer.language))
+                abstract_tokens = preprocess_tokenizer.tokenize(
+                    Sentence(abstract, language=preprocess_tokenizer.language)
+                )
                 preprocessed_title = " ".join(token.surface for token in title_tokens)
                 preprocessed_abstract = " ".join(token.surface for token in abstract_tokens)
             else:
@@ -170,8 +177,10 @@ class ACL_Base(Conference):
             abstract = paper["abstract"]
 
             if preprocess_tokenizer:
-                title_tokens = preprocess_tokenizer.tokenize(Text(title, language=preprocess_tokenizer.language))
-                abstract_tokens = preprocess_tokenizer.tokenize(Text(abstract, language=preprocess_tokenizer.language))
+                title_tokens = preprocess_tokenizer.tokenize(Sentence(title, language=preprocess_tokenizer.language))
+                abstract_tokens = preprocess_tokenizer.tokenize(
+                    Sentence(abstract, language=preprocess_tokenizer.language)
+                )
                 preprocessed_title = " ".join(token.surface for token in title_tokens)
                 preprocessed_abstract = " ".join(token.surface for token in abstract_tokens)
             else:

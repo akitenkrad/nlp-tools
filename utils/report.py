@@ -3,8 +3,7 @@ from os import PathLike
 from pathlib import Path
 from typing import List
 
-from stats.stats import DocStat, DocStatTarget, Text
-
+from stats.stats import DocStat, DocStatTarget, Sentence
 from utils.utils import is_notebook
 
 if is_notebook():
@@ -14,9 +13,7 @@ else:
 
 
 class Report(object):
-    def __init__(
-        self, dataset_name: str, texts: List[Text], targets: List[DocStatTarget]
-    ):
+    def __init__(self, dataset_name: str, texts: List[Sentence], targets: List[DocStatTarget]):
         self.stats: DocStat = DocStat(dataset_name)
         self.stats.analyze(texts, targets)
         self.targets = targets
@@ -88,9 +85,7 @@ class Report(object):
                 )
 
                 # 7. Topic Probability Distribution
-                update_progress(
-                    "Reporting: Topic Model - Topic Probability Distribution"
-                )
+                update_progress("Reporting: Topic Model - Topic Probability Distribution")
                 self.stats.topic_model_stats.save_topic_prob_dist(
                     self.stats.topic_model,
                     topic_model_out_dir / "topic_model_prob_dist",
@@ -104,9 +99,7 @@ class Report(object):
                 self.stats.keyword_stats.save_keywords()
                 # 8. Save Word Cloud
                 update_progress("Reporting: Keyword Statistics - Word Cloud")
-                self.stats.keyword_stats.save_keyword_wordcloud(
-                    keyword_out_dir / "word_cloud", top_n_keywords=50
-                )
+                self.stats.keyword_stats.save_keyword_wordcloud(keyword_out_dir / "word_cloud", top_n_keywords=50)
 
             # save meta data
             # ----------------------------------------------------------

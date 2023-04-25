@@ -3,7 +3,6 @@ beautifulsoup4
 black
 click
 colorama
-daal
 flake8
 gensim
 git+https://github.com/akitenkrad/attrdict#egg=attrdict

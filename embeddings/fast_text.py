@@ -11,8 +11,8 @@ from gensim.models.keyedvectors import KeyedVectors
 from tqdm import tqdm
 
 from embeddings.base import Embedding
-from utils.data import Text, Token
-from utils.tokenizers import CharTokenizerFactory, Tokenizer, WordTokenizerFactory
+from utils.data import Sentence, Token
+from utils.tokenizers import CharTokenizer, CharTokenizerFactory, WordTokenizer, WordTokenizerFactory
 from utils.utils import Config, Lang, download
 
 FastTextInfo = namedtuple("FastTextInfo", ("filename", "language", "embedding_dim"))
@@ -44,7 +44,7 @@ class FastText(Embedding):
         self.config.add_logger("fast_text_log")
         self.fast_text_type: FastTextType = fast_text_type
         self.weights_path: Path = Path(config.weights.global_weights_dir) / "fast_text"
-        self.word_tokenizer: Tokenizer = WordTokenizerFactory.get_tokenizer(
+        self.word_tokenizer: WordTokenizer = WordTokenizerFactory.get_tokenizer(
             language=fast_text_type.value.language,
             pad="PAD",
             max_sent_len=max_sent_len,
@@ -52,7 +52,7 @@ class FastText(Embedding):
             remove_stopwords=remove_stopwords,
             filter=filter,
         )
-        self.char_tokenizer: Tokenizer = CharTokenizerFactory.get_tokenizer(
+        self.char_tokenizer: CharTokenizer = CharTokenizerFactory.get_tokenizer(
             language=fast_text_type.value.language,
             pad="PAD",
             max_sent_len=max_sent_len,
@@ -77,10 +77,10 @@ class FastText(Embedding):
     def weights(self) -> np.ndarray:
         return self.__vectors
 
-    def word_tokenize(self, text: Text) -> List[Token]:
+    def word_tokenize(self, text: Sentence) -> List[Token]:
         return self.word_tokenizer.tokenize(text)
 
-    def char_tokenize(self, text: Text) -> List[List[Token]]:
+    def char_tokenize(self, text: Sentence) -> List[List[Token]]:
         return self.char_tokenizer.tokenize(text)
 
     def index2token(self, index: int) -> str:
@@ -95,15 +95,15 @@ class FastText(Embedding):
         else:
             return self.__word2idx[token]
 
-    def word_embed(self, input_text: Text) -> np.ndarray:
+    def word_embed(self, input_text: Sentence) -> np.ndarray:
         tokens: List[Token] = self.word_tokenize(input_text)
         indices: List[int] = [self.token2index(token.surface) for token in tokens]
         embed_vector: np.ndarray = np.array([self.__vectors[idx] for idx in indices])
         return embed_vector
 
-    def char_embed(self, input_text: Text) -> List[np.ndarray]:
+    def char_embed(self, input_text: Sentence) -> List[np.ndarray]:
         words: List[List[Token]] = self.char_tokenize(input_text)
-        indices: List[List[Token]] = [[self.token2index(token.surface) for token in word] for word in words]
+        indices: List[List[int]] = [[self.token2index(token.surface) for token in word] for word in words]
         embed_vector: List[np.ndarray] = [np.array([self.__vectors[idx] for idx in index]) for index in indices]
         return embed_vector
 
