@@ -1,11 +1,11 @@
 import string
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Callable, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Union
 
+import ipadic
 import MeCab
 import nltk
-import unidic
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
@@ -52,6 +52,7 @@ class EnglishWordTokenizer(WordTokenizer):
         stemming=False,
         add_tag=False,
         filter=None,
+        **kwargs,
     ):
         """
         Args:
@@ -122,7 +123,9 @@ class EnglishWordTokenizer(WordTokenizer):
 
 
 class JapaneseWordTokenizer(WordTokenizer):
-    def __init__(self, pad=PAD, max_sent_len=-1, remove_stopwords=False, remove_punctuations=True, filter=None):
+    def __init__(
+        self, pad=PAD, max_sent_len=-1, remove_stopwords=False, remove_punctuations=True, filter=None, **kwargs
+    ):
         """
         Args:
             pad (str): PAD token
@@ -139,15 +142,24 @@ class JapaneseWordTokenizer(WordTokenizer):
         self.remove_stopwords: bool = remove_stopwords
         self.filter: Optional[Callable] = filter
 
-    def tokenize(self, text: str, **kwargs):
-        """tokenize a text into a list of words"""
+    def tokenize(self, text: str, **kwargs) -> List[Token]:
+        """tokenize a text into a list of words
+
+        Args:
+            text (str): input text
+            mecab_user_dic (str): path to mecab user dictionary (user.dic).
+
+        Returns:
+            List[Token]: list of tokens
+        """
         disable_max_len = kwargs.get("disable_max_len", False)
 
         # lowercase
         lower_text = text.lower()
 
         # add pos and base
-        tagger = MeCab.Tagger(f"-d {unidic.DICDIR}")
+        user_dic = f' -u {Path(kwargs["mecab_user_dic"]).absolute()}' if "mecab_user_dic" in kwargs else ""
+        tagger = MeCab.Tagger(f"{ipadic.MECAB_ARGS}" + user_dic)
         result = tagger.parse(lower_text)
         words = []
         for line in result.split("\n"):
@@ -156,7 +168,7 @@ class JapaneseWordTokenizer(WordTokenizer):
             surface, _attrs = line.split("\t")
             attrs = _attrs.split(",")
             pos = attrs[0]
-            base = attrs[7] if len(attrs) > 7 else surface
+            base = attrs[6] if len(attrs) > 6 else surface
 
             words.append((surface, base, pos))
 
@@ -283,11 +295,21 @@ class JapaneseCharTokenizer(CharTokenizer):
         self.filter: Optional[Callable] = filter
 
     def tokenize(self, text: str, **kwargs) -> List[List[Token]]:
+        """tokenize the input text at character granularity
+
+        Args:
+            text (str): input text
+            mecab_user_dic (str): path to mecab user dictionary (user.dic).
+
+        Returns:
+            List[List[Token]]: list of tokens
+        """
         # lowercase
         lower_text = text.lower()
 
         # add pos and base
-        tagger = MeCab.Tagger(f"-d {unidic.DICDIR}")
+        user_dic = f' -u {Path(kwargs["mecab_user_dic"]).absolute()}' if "mecab_user_dic" in kwargs else ""
+        tagger = MeCab.Tagger(f"{ipadic.MECAB_ARGS}" + user_dic)
         result = tagger.parse(lower_text)
         word_tokens = []
         for line in result.split("\n"):
@@ -296,10 +318,10 @@ class JapaneseCharTokenizer(CharTokenizer):
             surface, _attrs = line.split("\t")
             attrs = _attrs.split(",")
             pos = attrs[0]
-            base = attrs[7] if len(attrs) > 7 else surface
+            base = attrs[6] if len(attrs) > 6 else surface
 
             if self.stemming:
-                word = _attrs[7]
+                word = _attrs[6]
             else:
                 word = surface
             word_tokens.append(Token(word, base, pos))
@@ -353,6 +375,7 @@ class WordTokenizerFactory(object):
         stemming=False,
         add_tag=False,
         filter=None,
+        **kwargs,
     ) -> WordTokenizer:
         if language == Lang.ENGLISH:
             return EnglishWordTokenizer(
@@ -363,6 +386,7 @@ class WordTokenizerFactory(object):
                 stemming=stemming,
                 add_tag=add_tag,
                 filter=filter,
+                **kwargs,
             )
         elif language == Lang.JAPANESE:
             return JapaneseWordTokenizer(
@@ -371,6 +395,7 @@ class WordTokenizerFactory(object):
                 remove_stopwords=remove_stopwords,
                 remove_punctuations=remove_punctuations,
                 filter=filter,
+                **kwargs,
             )
         else:
             raise NotImplementedError(f"Tokenizer for {language.value} is not implemented yet.")

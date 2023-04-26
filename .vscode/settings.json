@@ -44,14 +44,14 @@
     "python.linting.flake8CategorySeverity.F": "Error",
     "python.linting.flake8CategorySeverity.E": "Error",
     "[python]": {
-        "editor.defaultFormatter": null,
+        "editor.defaultFormatter": "ms-python.black-formatter",
         "editor.wordBasedSuggestions": false,
         "editor.codeActionsOnSave": {
             "source.fixAll": true,
             "source.organizeImports": true
         },
     },
-    "python.formatting.provider": "black",
+    "python.formatting.provider": "none",
     "python.formatting.blackPath": "black",
     "editor.codeActionsOnSave": {
         "source.organizeImports": true

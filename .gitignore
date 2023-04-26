@@ -128,9 +128,14 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Mac
 .empty
 .DS_Store
 
+# Mecab user dictionary
+user.dic
+
+# local dirs
 __logs__
 __data__
 __cache__
