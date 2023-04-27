@@ -70,18 +70,12 @@ class MeCabUtil(object):
         # register new word
         for item in items:
             if item.word in words:
-                if item.pos2 == "*":
-                    pos2 = words[item.word][6]
-                else:
-                    words[item.word][6] = pos2
-                if item.pos3 == "*":
-                    pos3 = words[item.word][7]
-                else:
-                    words[item.word][7] = pos3
-                if item.cost == 10:
-                    cost = int(words[item.word][3])
-                else:
-                    words[item.word][3] = str(cost)
+                if item.pos2 != "*":
+                    words[item.word][6] = item.pos2
+                if item.pos3 != "*":
+                    words[item.word][7] = item.pos3
+                if item.cost != 10:
+                    words[item.word][3] = str(item.cost)
             else:
                 words[item.word] = item.to_list()
 
