@@ -77,10 +77,10 @@ class FastText(Embedding):
     def weights(self) -> np.ndarray:
         return self.__vectors
 
-    def word_tokenize(self, text: Sentence) -> List[Token]:
+    def word_tokenize(self, text: str) -> List[Token]:
         return self.word_tokenizer.tokenize(text)
 
-    def char_tokenize(self, text: Sentence) -> List[List[Token]]:
+    def char_tokenize(self, text: str) -> List[List[Token]]:
         return self.char_tokenizer.tokenize(text)
 
     def index2token(self, index: int) -> str:
@@ -95,13 +95,13 @@ class FastText(Embedding):
         else:
             return self.__word2idx[token]
 
-    def word_embed(self, input_text: Sentence) -> np.ndarray:
+    def word_embed(self, input_text: str) -> np.ndarray:
         tokens: List[Token] = self.word_tokenize(input_text)
         indices: List[int] = [self.token2index(token.surface) for token in tokens]
         embed_vector: np.ndarray = np.array([self.__vectors[idx] for idx in indices])
         return embed_vector
 
-    def char_embed(self, input_text: Sentence) -> List[np.ndarray]:
+    def char_embed(self, input_text: str) -> List[np.ndarray]:
         words: List[List[Token]] = self.char_tokenize(input_text)
         indices: List[List[int]] = [[self.token2index(token.surface) for token in word] for word in words]
         embed_vector: List[np.ndarray] = [np.array([self.__vectors[idx] for idx in index]) for index in indices]
@@ -143,9 +143,9 @@ class FastText(Embedding):
             weights: KeyedVectors = gensim.models.KeyedVectors.load_word2vec_format(weights_path, binary=False)
 
             vectors = weights.vectors
-            words = [""] * len(weights.index2word)
+            words = [""] * len(weights.index_to_key)
             word2idx = {}
-            for index, word in enumerate(weights.index2word):
+            for index, word in enumerate(weights.index_to_key):
                 words[index] = word
                 word2idx[word] = index
 

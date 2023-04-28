@@ -15,7 +15,7 @@
     "editor.cursorSmoothCaretAnimation": "on",
     "editor.cursorStyle": "line",
     "editor.fontFamily": "CodeM, Utatane, HackGen, Consolas Menlo, Monaco, 'Courier New', monospace",
-    "editor.fontSize": 22,
+    "editor.fontSize": 18,
     "editor.fontLigatures": true,
     "editor.formatOnSave": true,
     "editor.renderControlCharacters": true,
