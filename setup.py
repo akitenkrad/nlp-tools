@@ -2,8 +2,8 @@
 To install nlp-tools:
     python setup.py install
 """
+import sys
 from setuptools import setup
-
 
 DESCRIPTION = "nlp-tools"
 
@@ -12,6 +12,9 @@ try:
 except:
     LONG_DESCRIPTION = DESCRIPTION
 
+python_min_version = (3, 8, 0)
+python_min_version_str = '.'.join(map(str, python_min_version))
+version_range_max = max(sys.version_info[1], 10) + 1
 
 setup(
     name="nlp-tools",
