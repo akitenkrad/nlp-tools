@@ -141,4 +141,4 @@ __data__
 __cache__
 __weights__
 __outputs__
-utils/resources/fonts/
+nlp_tools/utils/resources/fonts
