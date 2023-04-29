@@ -3,57 +3,6 @@ build-backend = "setuptools.build_meta"
 requires = ["setuptools", "setuptools_scm[toml]"]
 
 [project]
-dependencies = [
-    "arxiv"
-    "beautifulsoup4"
-    "black"
-    "click"
-    "colorama"
-    "flake8"
-    "gensim"
-    "attrdict@git+https://github.com/akitenkrad/attrdict"
-    "h5py"
-    "ipadic"
-    "ipython"
-    "ipywidgets"
-    "isort"
-    "jupyterlab"
-    "kaggle"
-    "kaleido"
-    "mecab-python3"
-    "mypy"
-    "networkx"
-    "nltk"
-    "numpy"
-    "pandas"
-    "patool"
-    "plotly"
-    "progressbar"
-    "py-cpuinfo"
-    "pykakasi"
-    "pytest"
-    "python-dateutil"
-    "python-dotenv"
-    "pyunpack"
-    "PyYAML"
-    "requests"
-    "scikit-learn"
-    "scipy"
-    "seaborn"
-    "sumeval"
-    "tensorboard"
-    "torch"
-    "torchinfo"
-    "torchtext"
-    "torchvision"
-    "tqdm"
-    "types-python-dateutil"
-    "types-PyYAML"
-    "types-requests"
-    "typing-extensions"
-    "unidic"
-    "wordcloud"
-]
 authors = [
   {name = "akitenkrad", email = "akitenkrad@gmail.com"},
 ]
@@ -69,18 +18,66 @@ classifiers = [
   'Topic :: Software Development :: Libraries',
   'Topic :: Software Development :: Libraries :: Python Modules',
 ]
+dependencies = [
+  "arxiv",
+  "beautifulsoup4",
+  "black",
+  "click",
+  "colorama",
+  "flake8",
+  "gensim",
+  "attrdict@git+https://github.com/akitenkrad/attrdict",
+  "h5py",
+  "ipadic",
+  "ipython",
+  "ipywidgets",
+  "isort",
+  "jupyterlab",
+  "kaggle",
+  "kaleido",
+  "mecab-python3",
+  "mypy",
+  "networkx",
+  "nltk",
+  "numpy",
+  "pandas",
+  "patool",
+  "plotly",
+  "progressbar",
+  "py-cpuinfo",
+  "pykakasi",
+  "pytest",
+  "python-dateutil",
+  "python-dotenv",
+  "pyunpack",
+  "PyYAML",
+  "requests",
+  "scikit-learn",
+  "scipy",
+  "seaborn",
+  "sumeval",
+  "tensorboard",
+  "torch",
+  "torchinfo",
+  "torchtext",
+  "torchvision",
+  "tqdm",
+  "types-python-dateutil",
+  "types-PyYAML",
+  "types-requests",
+  "typing-extensions",
+  "unidic",
+  "wordcloud",
+]
 description = "tools natural language processing"
-dynamic = ["dependencies"]
 license = {file = "LICENSE"}
 name = "nlp_tools"
 readme = "README.md"
 requires-python = ">=3.8"
 version = "0.0.1"
+
 [tool.setuptools.packages.find]
 exclude = ["tests"]
-
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
 
 [tool.setuptools]
 package-dir = {"" = "nlp_tools"}
