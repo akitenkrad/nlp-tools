@@ -13,7 +13,8 @@ setuptools.setup(
     version="0.0.1",
     author="akitenkrad",
     author_email="akitenkrad@gmail.com",
-    packages=setuptools.find_packages(),
+    packages=["nlp_tools"],
+    package_dir={"nlp_tools": "nlp_tools"},
     package_data={
         "nlp_tools": [
             "nlp_tools/utils/resources/mask_images/*.png",
