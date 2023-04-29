@@ -13,12 +13,12 @@ setuptools.setup(
     version="0.0.1",
     author="akitenkrad",
     author_email="akitenkrad@gmail.com",
-    packages=["nlp_tools"],
+    packages=setuptools.find_packages(),
     package_data={
         "nlp_tools": [
-            "nlp_tools/utils/resources/mask_images/*.png",
-            "nlp_tools/utils/resources/texts/*.txt",
-            "nlp_tools/config/*.yml",
+            "utils/resources/mask_images/*.png",
+            "utils/resources/texts/*.txt",
+            "config/*.yml",
         ]
     },
     classifiers=[
