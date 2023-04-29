@@ -13,7 +13,7 @@ setuptools.setup(
     version="0.0.1",
     author="akitenkrad",
     author_email="akitenkrad@gmail.com",
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(exclude=["tests"], include=["nlp_tools"]),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
