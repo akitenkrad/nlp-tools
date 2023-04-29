@@ -57,6 +57,12 @@
         "source.organizeImports": true
     },
     "python.linting.mypyEnabled": true,
+    "python.linting.mypyArgs": [
+        "--follow-imports=silent",
+        "--ignore-missing-imports",
+        "--show-column-numbers",
+        "--no-pretty"
+    ],
     "python.linting.maxNumberOfProblems": 10000,
     "python.formatting.blackArgs": [
         "--line-length=120"

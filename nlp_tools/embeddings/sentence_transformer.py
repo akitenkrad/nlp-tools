@@ -6,12 +6,11 @@ from pathlib import Path
 from typing import List
 
 import numpy as np
+from embeddings.base import Embedding
 from sentence_transformers import SentenceTransformer as _SentenceTransformer
 from tqdm import tqdm
 from utils.tokenizers import WordTokenizer
 from utils.utils import Config
-
-from embeddings.base import Embedding
 
 
 class SentenceTransformer(Embedding):

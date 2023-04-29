@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from utils.mecab import MeCabItem, MeCabPos, MeCabUtil
-from utils.tokenizers import WordTokenizerFactory
-from utils.utils import Lang
+from nlp_tools.utils.mecab import MeCabItem, MeCabPos, MeCabUtil
+from nlp_tools.utils.tokenizers import WordTokenizerFactory
+from nlp_tools.utils.utils import Lang
 
 
 def test_mecab_add_words_1():

@@ -1,9 +1,7 @@
 from enum import Enum
-from os import PathLike
 from pathlib import Path
 
 import requests
-
 from utils.utils import is_notebook
 
 if is_notebook():
@@ -12,10 +10,16 @@ else:
     from tqdm import tqdm
 
 
-def download_from_google_drive(id: str, dst_filename: PathLike):
+def download_from_google_drive(id: str, dst_filename: str):
+    """download a shared file from Google Drive
+
+    Args:
+        id (str): _description_
+        dst_filename (str): _description_
+    """
     URL = "https://docs.google.com/uc?export=download"
     session = requests.Session()
-    response = session.get(URL, params={"id": id}, stream=True, timeout=None)
+    response: requests.Response = session.get(URL, params={"id": id}, stream=True, timeout=None)
     token = __get_confirm_token(response)
     if token:
         params = {"id": id, "confirm": token}
@@ -23,13 +27,13 @@ def download_from_google_drive(id: str, dst_filename: PathLike):
     __save_google_drive_content(response, dst_filename)
 
 
-def __get_confirm_token(response):
+def __get_confirm_token(response: requests.Response):
     if "virus scan warning" in response.text.lower():
         return "t"
     return None
 
 
-def __save_google_drive_content(response, dst_filename):
+def __save_google_drive_content(response: requests.Response, dst_filename: str):
     CHUNK_SIZE = 32768
     path = Path(dst_filename)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -41,7 +45,6 @@ def __save_google_drive_content(response, dst_filename):
 
 
 class GDriveObjects(Enum):
-
     # MS-MARCO
     MSMARCO_TRAIN_DATA = "1Ul_5hZ1znlkmjciAVkL-R6mTvN2ZPUcF"
     MSMARCO_TRAIN_ROUGE = "10JXIrBqvWenEdVkI3b0MPeddx0VHr_w-"

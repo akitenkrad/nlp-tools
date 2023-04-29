@@ -1,22 +1,21 @@
-from typing import Iterable, List
 from collections import namedtuple
-import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
+from typing import Iterable, List
 
-from utils.utils import download, Config
-from utils.tokenizers import WordTokenizer
+import numpy as np
 from embeddings.base import Embedding
+from sklearn.feature_extraction.text import TfidfVectorizer
+from utils.tokenizers import WordTokenizer
+from utils.utils import Config, download
+
 
 class Tfidf(Embedding):
-
-    def __init__(self, config:Config, max_sent_len=-1, padding='<PAD>', stemming=False, stop_words=None):
+    def __init__(self, config: Config, max_sent_len=-1, padding="<PAD>", stemming=False, stop_words=None):
         self.config = config
-        self.config.add_logger('tfidf_log')
+        self.config.add_logger("tfidf_log")
         self.tokenizer = WordTokenizer(pad=padding, max_sent_len=max_sent_len, stemming=stemming)
-        self.vectorizer = TfidfVectorizer(encoding='utf-8',
-                                          tokenizer=self.tokenizer.tokenize,
-                                          analyzer='word',
-                                          stop_words=stop_words)
+        self.vectorizer = TfidfVectorizer(
+            encoding="utf-8", tokenizer=self.tokenizer.tokenize, analyzer="word", stop_words=stop_words
+        )
 
     @property
     def embedding_dim(self) -> int:
@@ -26,7 +25,7 @@ class Tfidf(Embedding):
     def tokens(self) -> List[str]:
         return self.vectorizer.get_feature_names_out().tolist()
 
-    def tokenize(self, text:str) -> List[str]:
+    def tokenize(self, text: str) -> List[str]:
         return self.tokenizer.tokenize(text)
 
     def index2token(self, index: int) -> str:
@@ -35,18 +34,18 @@ class Tfidf(Embedding):
     def token2index(self, token: str) -> int:
         raise NotImplementedError('Tfidf does not have "token2index()".')
 
-    def embed(self, input_text:str) -> np.ndarray:
-        '''embed token index list into vector
-        
+    def embed(self, input_text: str) -> np.ndarray:
+        """embed token index list into vector
+
         Args:
             input_text (str): input text
-        
+
         Returns:
             embedded vector. np.array: (embedding_dim)
-        '''
+        """
 
         embed_vector = self.vectorizer.transform([input_text]).squeeze()
         return embed_vector
 
-    def fit(self, raw_documents:Iterable[str]):
+    def fit(self, raw_documents: Iterable[str]):
         self.vectorizer.fit(raw_documents)

@@ -15,8 +15,8 @@ import networkx as nx
 import numpy as np
 from dateutil.parser import ParserError
 from dateutil.parser import parse as date_parse
-from utils.semanticscholar import SemanticScholar
-from utils.utils import is_notebook, now, timedelta2HMS
+from nlp_tools.utils.semanticscholar import SemanticScholar
+from nlp_tools.utils.utils import is_notebook, now, timedelta2HMS
 
 if is_notebook():
     from tqdm.notebook import tqdm
@@ -266,7 +266,6 @@ class ArXivPapers(object):
         """save new paper in hdf5 file"""
         hdf5_path = ArXivPapers.to_hdf5_path(self.hdf5_path, paper.paper_id)
         with h5py.File(hdf5_path, mode="a") as h5wf:
-
             if len(paper.paper_id) > 0 and paper.paper_id not in self.indices:
                 self.indices.append(paper.paper_id)
 
@@ -609,7 +608,6 @@ class ArXivPapers(object):
 
                 # 2. get paper detail
                 try:
-
                     if ci_ref_paper.paper_id in stats["errors"]:
                         raise RuntimeError()
 

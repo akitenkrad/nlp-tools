@@ -1,6 +1,7 @@
 import pickle
 from dataclasses import dataclass
 from glob import glob
+from os import PathLike
 from pathlib import Path
 from typing import Dict, List, Tuple
 
@@ -9,9 +10,9 @@ import torchvision
 import torchvision.transforms as transforms
 from PIL import Image
 from sklearn.model_selection import train_test_split
-from utils.utils import Config, Phase, is_notebook
 
-from datasets.base import BaseDataset
+from nlp_tools.datasets.base import BaseDataset
+from nlp_tools.utils.utils import Config, Phase, is_notebook
 
 if is_notebook():
     from tqdm.notebook import tqdm
@@ -47,7 +48,9 @@ class CIFAR10(BaseDataset):
             idx2cls = {i: c for i, c in enumerate(classes)}
         return cls2idx, idx2cls
 
-    def __load_data__(self) -> Tuple[ItemSet, ItemSet, ItemSet]:
+    def __load_data__(
+        self, dataset_path: PathLike = Path("./cifar10.tar.gz"), test_size: float = 0.2, valid_size: float = 0.2
+    ) -> Tuple[ItemSet, ItemSet, ItemSet]:
         """load imdb corpus dataset
         download tar.gz file if dataset does not exist
 
@@ -103,12 +106,13 @@ class CIFAR10(BaseDataset):
         return train_dict, valid_dict, test_dict
 
     def __getitem__(self, index):
+        data: Item
         if self.phase == Phase.TRAIN:
-            data: Item = self.train_data[index]
+            data = self.train_data[index]
         elif self.phase == Phase.VALID:
-            data: Item = self.valid_data[index]
+            data = self.valid_data[index]
         elif self.phase == Phase.TEST:
-            data: Item = self.test_data[index]
+            data = self.test_data[index]
         else:
             raise ValueError(f"Invalid Phase: {self.phase}")
 

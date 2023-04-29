@@ -5,11 +5,10 @@ from os import PathLike
 from pathlib import Path
 from typing import Dict, List, Tuple
 
+from datasets.base import BaseDataset
 from embeddings.base import Embedding
 from sklearn.model_selection import train_test_split
 from utils.utils import Config, Phase, download
-
-from datasets.base import BaseDataset
 
 Item = namedtuple("Item", ("filepath", "label"))
 ItemSet = Dict[int, Item]
@@ -72,12 +71,13 @@ class ImdbDataset(BaseDataset):
         return text
 
     def __getitem__(self, index):
+        data: Item
         if self.phase == Phase.TRAIN or self.phase == Phase.DEV:
-            data: Item = self.train_data[index]
+            data = self.train_data[index]
         elif self.phase == Phase.VALID:
-            data: Item = self.valid_data[index]
+            data = self.valid_data[index]
         elif self.phase == Phase.TEST or self.phase == Phase.SUBMISSION:
-            data: Item = self.test_data[index]
+            data = self.test_data[index]
         else:
             raise ValueError(f"Invalid Phase: {self.phase}")
 

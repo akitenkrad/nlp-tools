@@ -5,8 +5,9 @@ from typing import Any, Dict
 
 import numpy as np
 from torch.utils.data import Dataset
-from utils.logger import Logger, get_logger
-from utils.utils import Config, Phase, is_notebook
+
+from nlp_tools.utils.logger import Logger, get_logger
+from nlp_tools.utils.utils import Config, Phase, is_notebook
 
 if is_notebook():
     from tqdm.notebook import tqdm
@@ -28,14 +29,20 @@ class BaseDataset(ABC, Dataset):
         self.valid_data: Dict = {}
         self.test_data: Dict = {}
         self.dev_data: Dict = {}
-        # self.train_data, self.valid_data, self.test_data = self.__load_data__(self.dataset_path, config.train.test_size, config.train.valid_size)
+        # self.train_data, self.valid_data, self.test_data = self.__load_data__(
+        #   self.dataset_path, config.train.test_size, config.train.valid_size)
         # self.dev_data = {idx: self.train_data[idx] for idx in range(1000)}
 
-    def __load_data__(self, dataset_path: PathLike, test_size: float, valid_size: float):
-        """load train and test data
+    def __load_data__(self, dataset_path: PathLike = Path("./ds.csv"), test_size: float = 0.2, valid_size: float = 0.2):
+        """load dataset
 
-        Returns:
-            train_data, valid_data, test_data: dict[index, namedtuple[data, label]]
+        Args:
+            dataset_path (PathLike, optional): Path to dataset. Defaults to Path("./ds.csv").
+            test_size (float, optional): Test dataset size (0.0 - 1.0). Defaults to 0.2.
+            valid_size (float, optional): Valid dataset size (0.0 - 1.0). Defaults to 0.2.
+
+        Raises:
+            NotImplementedError
         """
         # return train_data, test_data, label_data
         raise NotImplementedError()

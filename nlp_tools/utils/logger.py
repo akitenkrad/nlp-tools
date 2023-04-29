@@ -22,12 +22,13 @@ def get_json_liner(name: str, logfile: str = "") -> Logger:
         JST = timezone(timedelta(hours=+9), "JST")
         now = datetime.now(JST)
         now = datetime(now.year, now.month, now.day, now.hour, now.minute, 0, tzinfo=JST)
-        log_dir = Path("./logs/log") / now.strftime("%Y%m%d%H%M%S")
+        log_dir = Path("./logs") / now.strftime("%Y%m%d%H%M%S")
         log_dir.mkdir(parents=True, exist_ok=True)
         logfile = name
     else:
         log_dir = Path(logfile).parent
         log_dir.mkdir(parents=True, exist_ok=True)
+        logfile = Path(logfile).name
 
     # --------------------------------
     # 1. logger configuration
@@ -42,7 +43,7 @@ def get_json_liner(name: str, logfile: str = "") -> Logger:
         # --------------------------------
         # 3. log file configuration
         # --------------------------------
-        fh = RotatingFileHandler(str(log_dir / name), maxBytes=3145728, backupCount=3000)
+        fh = RotatingFileHandler(str(log_dir / name), maxBytes=2**30, backupCount=3000)
         fh.setLevel(logging.DEBUG)
         fh.setFormatter(handler_format)
         logger.addHandler(fh)
@@ -50,7 +51,7 @@ def get_json_liner(name: str, logfile: str = "") -> Logger:
         # --------------------------------
         # 4. error log file configuration
         # --------------------------------
-        er_fh = RotatingFileHandler(str(log_dir / name), maxBytes=3145728, backupCount=3000)
+        er_fh = RotatingFileHandler(str(log_dir / name), maxBytes=2**30, backupCount=3000)
         er_fh.setLevel(logging.ERROR)
         er_fh.setFormatter(handler_format)
         logger.addHandler(er_fh)
@@ -76,17 +77,20 @@ def get_logger(name, logfile: str = "", silent: bool = False) -> Logger:
         JST = timezone(timedelta(hours=+9), "JST")
         now = datetime.now(JST)
         now = datetime(now.year, now.month, now.day, now.hour, now.minute, 0, tzinfo=JST)
-        log_dir = Path("./logs/log") / now.strftime("%Y%m%d%H%M%S")
+        log_dir = Path("./logs") / now.strftime("%Y%m%d%H%M%S")
         log_dir.mkdir(parents=True, exist_ok=True)
         logfile = name
     else:
         log_dir = Path(logfile).parent
         log_dir.mkdir(parents=True, exist_ok=True)
+        logfile = Path(logfile).name
 
     # --------------------------------
     # 1. logger configuration
     # --------------------------------
     logger = getLogger(name)
+    for h in logger.handlers:
+        logger.removeHandler(h)
     logger.setLevel(logging.DEBUG)
 
     if not logger.hasHandlers():

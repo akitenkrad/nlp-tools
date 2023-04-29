@@ -6,7 +6,7 @@ import string
 import subprocess
 import sys
 import urllib.request
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from enum import Enum
 from glob import glob
 from logging import Logger
@@ -27,9 +27,8 @@ from IPython import get_ipython
 from PIL import Image
 from pyunpack import Archive
 from torchinfo import summary
-from wordcloud import STOPWORDS, WordCloud
-
 from utils.logger import get_logger, kill_logger
+from wordcloud import STOPWORDS, WordCloud
 
 if not (Path(nltk.downloader.Downloader().download_dir) / "tokenizers" / "punkt").exists():
     nltk.download("punkt", quiet=True)
@@ -123,7 +122,7 @@ class Config(object):
         "utilization.memory",
     )
 
-    def __init__(self, config_path: PathLike, ex_args: dict = None, silent=False):
+    def __init__(self, config_path: PathLike, ex_args: dict = {}, silent=False):
         self.__load_config__(config_path, ex_args, silent)
 
         nltk.download("punkt", quiet=True)
@@ -153,9 +152,9 @@ class Config(object):
         else:
             return "cpu"
 
-    def __load_config__(self, config_path: PathLike, ex_args: dict = None, silent=False):
+    def __load_config__(self, config_path: PathLike, ex_args: dict = {}, silent=False):
         self.__config__ = AttrDict(yaml.safe_load(open(config_path)))
-        if ex_args is not None:
+        if len(ex_args) > 0:
             self.__config__ = self.__config__ + ex_args
         self.__config__["config_path"] = Path(config_path)
         self.__config__["timestamp"] = self.now()
@@ -210,7 +209,8 @@ class Config(object):
             self.describe_cuda()
 
         # Mac M1 Sillicon
-        self.describe_m1_silicon()
+        if torch.backends.mps.is_available():
+            self.describe_m1_silicon()
 
         # fix seed
         self.fix_seed(self.train.seed)
@@ -246,18 +246,11 @@ class Config(object):
             self.log.logger.info("=====================================")
 
     def describe_m1_silicon(self):
-        try:
-            torch.device("mps")
-            self.log.logger.info("====== show GPU information =========")
-            self.log.logger.info("  Mac-M1 GPU is available.")
-            self.log.logger.info("=====================================")
+        self.log.logger.info("====== show GPU information =========")
+        self.log.logger.info("  Mac-M1 GPU is available.")
+        self.log.logger.info("=====================================")
 
-        except RuntimeError:
-            self.log.logger.info("====== show GPU information =========")
-            self.log.logger.info("  No Mac-M1 GPU was found.")
-            self.log.logger.info("=====================================")
-
-    def describe_model(self, model: torch.nn.Module, input_size: tuple = None, input_data=None):
+    def describe_model(self, model: torch.nn.Module, input_size: tuple = (), input_data=None):
         if input_data is None:
             summary_str = summary(
                 model,
@@ -395,3 +388,21 @@ def get_mask(mask_type: WordCloudMask) -> np.ndarray:
     mask = np.array(mask_image, "f")
     mask = (mask > 128) * 255
     return mask
+
+
+class JsonEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif hasattr(obj, "__iter__"):
+            return list(obj)
+        elif isinstance(obj, datetime):
+            return obj.strftime("%Y%m%d %H:%M:%S.%f")
+        elif isinstance(obj, date):
+            return datetime(obj.year, obj.month, obj.day, 0, 0, 0).strftime("%Y%m%d %H:%M:%S.%f")
+        else:
+            return super().default(obj)

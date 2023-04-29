@@ -25,7 +25,15 @@ class GRU_Highway(BaseModel):
         name (str): name of the model
     """
 
-    def __init__(self, config: Config, embedding_dim: int, hidden_dim: int, n_highway_layers: int = 1, n_class: int = 1, name: str = "dnn-l1"):
+    def __init__(
+        self,
+        config: Config,
+        embedding_dim: int,
+        hidden_dim: int,
+        n_highway_layers: int = 1,
+        n_class: int = 1,
+        name: str = "dnn-l1",
+    ):
         super().__init__(config, name)
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim

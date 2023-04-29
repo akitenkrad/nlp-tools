@@ -6,22 +6,22 @@ from typing import List, Optional
 
 from dateutil.parser import parse as parse_date
 
-from utils.data import ConferenceText, Sentence
-from utils.google_drive import GDriveObjects, download_from_google_drive
-from utils.tokenizers import Tokenizer
-from utils.utils import Config, Lang
+from nlp_tools.utils.data import ConferenceText
+from nlp_tools.utils.google_drive import GDriveObjects, download_from_google_drive
+from nlp_tools.utils.tokenizers import WordTokenizer
+from nlp_tools.utils.utils import Config, Lang
 
 
 class Conference(ABC):
     @classmethod
     @abstractmethod
-    def load(cls, preprocess_tokenizer: Optional[Tokenizer] = None) -> List[ConferenceText]:
+    def load(cls, preprocess_tokenizer: Optional[WordTokenizer] = None) -> List[ConferenceText]:
         pass
 
 
 class NeurIPS_2021(Conference):
     @classmethod
-    def load(cls, preprocess_tokenizer: Optional[Tokenizer] = None) -> List[ConferenceText]:
+    def load(cls, preprocess_tokenizer: Optional[WordTokenizer] = None) -> List[ConferenceText]:
         data_path = Path("data/conference/NeurIPS/neurips_2021.json")
 
         if not data_path.exists():
@@ -31,15 +31,12 @@ class NeurIPS_2021(Conference):
         papers = json.load(open(data_path))
         texts = []
         for paper in papers:
-
             title = paper["title"]
             abstract = paper["abstract"]
 
             if preprocess_tokenizer:
-                title_tokens = preprocess_tokenizer.tokenize(Sentence(title, language=preprocess_tokenizer.language))
-                abstract_tokens = preprocess_tokenizer.tokenize(
-                    Sentence(abstract, language=preprocess_tokenizer.language)
-                )
+                title_tokens = preprocess_tokenizer.tokenize(title)
+                abstract_tokens = preprocess_tokenizer.tokenize(abstract)
                 preprocessed_title = " ".join(token.surface for token in title_tokens)
                 preprocessed_abstract = " ".join(token.surface for token in abstract_tokens)
             else:
@@ -63,7 +60,7 @@ class NeurIPS_2021(Conference):
 
 class ANLP_2022(Conference):
     @classmethod
-    def load(self, preprocess_tokenizer: Optional[Tokenizer] = None) -> List[ConferenceText]:
+    def load(self, preprocess_tokenizer: Optional[WordTokenizer] = None) -> List[ConferenceText]:
         data_path = Path("data/conference/ANLP/ANLP-2022.json")
 
         if not data_path.exists():
@@ -75,15 +72,12 @@ class ANLP_2022(Conference):
         papers = data["papers"]
         texts = []
         for paper in papers:
-
             title = paper["title"]
             abstract = paper["abstract"]
 
             if preprocess_tokenizer:
-                title_tokens = preprocess_tokenizer.tokenize(Sentence(title, language=preprocess_tokenizer.language))
-                abstract_tokens = preprocess_tokenizer.tokenize(
-                    Sentence(abstract, language=preprocess_tokenizer.language)
-                )
+                title_tokens = preprocess_tokenizer.tokenize(title)
+                abstract_tokens = preprocess_tokenizer.tokenize(abstract)
                 preprocessed_title = " ".join(token.surface for token in title_tokens)
                 preprocessed_abstract = " ".join(token.surface for token in abstract_tokens)
             else:
@@ -107,12 +101,12 @@ class ANLP_2022(Conference):
 
 class JSAI_2022(Conference):
     @classmethod
-    def load(self, preprocess_tokenizer: Optional[Tokenizer] = None) -> List[ConferenceText]:
+    def load(self, preprocess_tokenizer: Optional[WordTokenizer] = None) -> List[ConferenceText]:
         data_path = Path("data/conference/JSAI/JSAI_2022.json")
 
         if not data_path.exists():
             data_path.parent.mkdir(parents=True, exist_ok=True)
-            download_from_google_drive(GDriveObjects.JSAI_20222.value, str(data_path))
+            download_from_google_drive(GDriveObjects.JSAI_2022.value, str(data_path))
 
         papers = json.load(open(data_path))
         texts = []
@@ -121,10 +115,8 @@ class JSAI_2022(Conference):
             abstract = paper["abstract"]
 
             if preprocess_tokenizer:
-                title_tokens = preprocess_tokenizer.tokenize(Sentence(title, language=preprocess_tokenizer.language))
-                abstract_tokens = preprocess_tokenizer.tokenize(
-                    Sentence(abstract, language=preprocess_tokenizer.language)
-                )
+                title_tokens = preprocess_tokenizer.tokenize(title)
+                abstract_tokens = preprocess_tokenizer.tokenize(abstract)
                 preprocessed_title = " ".join(token.surface for token in title_tokens)
                 preprocessed_abstract = " ".join(token.surface for token in abstract_tokens)
             else:
@@ -162,7 +154,7 @@ class ACL_Base(Conference):
     GDRIVE_OBJECT = GDriveObjects.ACL_2022
 
     @classmethod
-    def load(self, preprocess_tokenizer: Optional[Tokenizer] = None) -> List[ConferenceText]:
+    def load(self, preprocess_tokenizer: Optional[WordTokenizer] = None) -> List[ConferenceText]:
         data_path = Path(f"data/conference/ACL/{self.GDRIVE_OBJECT.name}.json")
 
         if not data_path.exists():
@@ -172,15 +164,12 @@ class ACL_Base(Conference):
         papers = json.load(open(data_path))
         texts = []
         for paper in papers:
-
             title = paper["title"]
             abstract = paper["abstract"]
 
             if preprocess_tokenizer:
-                title_tokens = preprocess_tokenizer.tokenize(Sentence(title, language=preprocess_tokenizer.language))
-                abstract_tokens = preprocess_tokenizer.tokenize(
-                    Sentence(abstract, language=preprocess_tokenizer.language)
-                )
+                title_tokens = preprocess_tokenizer.tokenize(title)
+                abstract_tokens = preprocess_tokenizer.tokenize(abstract)
                 preprocessed_title = " ".join(token.surface for token in title_tokens)
                 preprocessed_abstract = " ".join(token.surface for token in abstract_tokens)
             else:

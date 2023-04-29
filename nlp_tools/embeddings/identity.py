@@ -1,16 +1,26 @@
-from typing import List
 from collections import Counter
-import numpy as np
+from typing import List
 
-from utils.utils import Lang
-from utils.tokenizers import WordTokenizer
+import numpy as np
 from embeddings.base import Embedding
+from utils.tokenizers import WordTokenizer
+from utils.utils import Lang
 
 
 class IdentityEmbedding(Embedding):
-
-    def __init__(self, pad='<pad>', unk='<unk>', sos='<sos>', eos='<eos>', max_sent_len=-1, language=Lang.ENGLISH,
-                 remove_stopwords=False, remove_punctuations=True, stemming=False, add_tag=False):
+    def __init__(
+        self,
+        pad="<pad>",
+        unk="<unk>",
+        sos="<sos>",
+        eos="<eos>",
+        max_sent_len=-1,
+        language=Lang.ENGLISH,
+        remove_stopwords=False,
+        remove_punctuations=True,
+        stemming=False,
+        add_tag=False,
+    ):
         self.__token2idx = {}
         self.__idx2token = {}
         self.counter = Counter()
@@ -18,9 +28,15 @@ class IdentityEmbedding(Embedding):
         self.UNK = unk
         self.SOS = sos
         self.EOS = eos
-        self.tokenizer = WordTokenizer(pad=pad, max_sent_len=max_sent_len, language=language, remove_stopwords=remove_stopwords,
-                                       remove_punctuations=remove_punctuations, stemming=stemming, add_tag=add_tag)
-
+        self.tokenizer = WordTokenizer(
+            pad=pad,
+            max_sent_len=max_sent_len,
+            language=language,
+            remove_stopwords=remove_stopwords,
+            remove_punctuations=remove_punctuations,
+            stemming=stemming,
+            add_tag=add_tag,
+        )
         self.add_token(pad)
         self.add_token(unk)
         self.add_token(sos)
@@ -37,16 +53,16 @@ class IdentityEmbedding(Embedding):
 
     @property
     def embedding_dim(self) -> int:
-        '''embedding dim'''
+        """embedding dim"""
         return -1
 
     @property
     def tokens(self) -> List[str]:
-        '''token list'''
+        """token list"""
         return list(self.__token2idx.keys())
 
     def add_token(self, token):
-        '''used to add a token from corpus'''
+        """used to add a token from corpus"""
         if token not in self.__token2idx:
             new_idx = self.__next_token_idx
             self.__token2idx[token] = new_idx

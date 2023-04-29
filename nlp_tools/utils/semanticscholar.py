@@ -45,7 +45,6 @@ class SemanticScholar(object):
         return retry
 
     def get_paper_id(self, title: str) -> str:
-
         # remove punctuation
         title = title
         for punc in string.punctuation:
@@ -61,7 +60,9 @@ class SemanticScholar(object):
                     "offset": 0,
                     "limit": 100,
                 }
-                response = urllib.request.urlopen(self.__api.search_by_title.format(QUERY=urllib.parse.urlencode(params)), timeout=5.0)
+                response = urllib.request.urlopen(
+                    self.__api.search_by_title.format(QUERY=urllib.parse.urlencode(params)), timeout=5.0
+                )
                 content = json.loads(response.read().decode("utf-8"))
                 time.sleep(3.5)
                 break
@@ -92,7 +93,6 @@ class SemanticScholar(object):
         return ""
 
     def get_paper_detail(self, paper_id: str) -> Optional[Dict]:
-
         retry = 0
         while retry < 5:
             try:
@@ -113,7 +113,9 @@ class SemanticScholar(object):
                     "references",
                 ]
                 params = f'fields={",".join(fields)}'
-                response = urllib.request.urlopen(self.__api.search_by_id.format(PAPER_ID=paper_id, PARAMS=params), timeout=5.0)
+                response = urllib.request.urlopen(
+                    self.__api.search_by_id.format(PAPER_ID=paper_id, PARAMS=params), timeout=5.0
+                )
                 time.sleep(3.5)
                 break
 
@@ -140,11 +142,17 @@ class SemanticScholar(object):
         dict_data["year"] = content["year"] if content["year"] else 0
         dict_data["reference_count"] = content["referenceCount"] if content["referenceCount"] else 0
         dict_data["citation_count"] = content["citationCount"] if content["citationCount"] else 0
-        dict_data["influential_citation_count"] = content["influentialCitationCount"] if content["influentialCitationCount"] else 0
+        dict_data["influential_citation_count"] = (
+            content["influentialCitationCount"] if content["influentialCitationCount"] else 0
+        )
         dict_data["is_open_access"] = content["isOpenAccess"] if content["isOpenAccess"] else False
         dict_data["fields_of_study"] = content["fieldsOfStudy"] if content["fieldsOfStudy"] else []
         dict_data["authors"] = (
-            [{"author_id": item["authorId"], "author_name": item["name"]} for item in content["authors"] if item["authorId"]]
+            [
+                {"author_id": item["authorId"], "author_name": item["name"]}
+                for item in content["authors"]
+                if item["authorId"]
+            ]
             if content["authors"]
             else []
         )

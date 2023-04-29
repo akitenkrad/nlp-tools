@@ -9,7 +9,6 @@ import nltk
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
-
 from utils.data import Token
 from utils.utils import Lang
 

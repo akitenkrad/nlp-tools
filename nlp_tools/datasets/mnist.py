@@ -6,12 +6,11 @@ from typing import List, Tuple
 
 import numpy as np
 import requests
+from datasets.base import BaseDataset
 from sklearn.model_selection import train_test_split
 from torchvision.transforms import transforms
 from utils.logger import Logger
 from utils.utils import Config, Phase, is_notebook
-
-from datasets.base import BaseDataset
 
 if is_notebook():
     from tqdm.notebook import tqdm
@@ -28,7 +27,7 @@ class MnistItem(object):
 class MnistDataset(BaseDataset):
     """
 
-    examples:
+    Examples:
         >>> transform = transforms.Compose(
             [
                 transforms.ToTensor(),
@@ -70,7 +69,6 @@ class MnistDataset(BaseDataset):
         return train_dict, valid_dict, test_dict
 
     def __getitem__(self, index):
-
         if self.phase == Phase.TRAIN or self.phase == Phase.VALID:
             data: MnistItem = self.train_data[index]
             label = data.label
