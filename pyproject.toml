@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "setuptools.build_meta"
-requires = ["setuptools", "setuptools_scm[toml]"]
+requires = ["setuptools"]
 
 [project]
 authors = [
@@ -71,13 +71,10 @@ dependencies = [
 ]
 description = "tools natural language processing"
 license = {file = "LICENSE"}
-name = "nlp-tools"
+name = "nlp_tools"
 readme = "README.md"
 requires-python = ">=3.8"
 version = "0.0.1"
 
 [tool.setuptools.packages.find]
 exclude = ["tests"]
-
-[tool.setuptools]
-package-dir = {"" = "nlp_tools"}
