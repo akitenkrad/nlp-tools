@@ -14,7 +14,6 @@ setuptools.setup(
     author="akitenkrad",
     author_email="akitenkrad@gmail.com",
     packages=["nlp_tools"],
-    package_dir={"nlp_tools": "nlp_tools"},
     package_data={
         "nlp_tools": [
             "nlp_tools/utils/resources/mask_images/*.png",
