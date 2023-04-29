@@ -1,0 +1,39 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools", "setuptools_scm"]
+
+[project]
+authors = [
+  {name = "akitenkrad", email = "akitenkrad@gmail.com"},
+]
+classifiers = [
+  'Development Status :: 5 - Production/Stable',
+  'Intended Audience :: Developers',
+  'Intended Audience :: Education',
+  'Intended Audience :: Science/Research',
+  'Topic :: Scientific/Engineering',
+  'Topic :: Scientific/Engineering :: Mathematics',
+  'Topic :: Scientific/Engineering :: Artificial Intelligence',
+  'Topic :: Software Development',
+  'Topic :: Software Development :: Libraries',
+  'Topic :: Software Development :: Libraries :: Python Modules',
+]
+description = "tools natural language processing"
+dynamic = ["version", "dependencies"]
+license = {file = "LICENSE"}
+name = "nlp_tools"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[tool.setuptools.packages.find]
+exclude = ["tests"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+version = {attr = "nlp_tools.version"}
+
+[tool.setuptools_scm]
+write_to = "nlp_tools/_version.py"
+
+[tool.setuptools]
+package-dir = {"" = "nlp_tools"}
