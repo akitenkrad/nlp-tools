@@ -21,7 +21,7 @@ setup(
     version="0.0.1",
     author="akitenkrad",
     author_email="akitenkrad@gmail.com",
-    packages=("nlp-tools",),
+    packages=("nlp_tools",),
     url="https://github.com/akintekrad/nlp-tools",
     license="MIT License",
     description=DESCRIPTION,
