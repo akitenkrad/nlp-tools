@@ -71,7 +71,7 @@ dependencies = [
 ]
 description = "tools natural language processing"
 license = {file = "LICENSE"}
-name = "nlp_tools"
+name = "nlp-tools"
 readme = "README.md"
 requires-python = ">=3.8"
 version = "0.0.1"
