@@ -14,11 +14,13 @@ setuptools.setup(
     author="akitenkrad",
     author_email="akitenkrad@gmail.com",
     packages=setuptools.find_packages(),
-    data_files=[
-        ("png_images", "nlp_tools/utils/resources/mask_images/*.png"),
-        ("text_files", "nlp_tools/utils/resources/texts/*.txt"),
-        ("config", "nlp_tools/config/*.yml"),
-    ],
+    package_data={
+        "nlp_tools": [
+            "nlp_tools/utils/resources/mask_images/*.png",
+            "nlp_tools/utils/resources/texts/*.txt",
+            "nlp_tools/config/*.yml",
+        ]
+    },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
