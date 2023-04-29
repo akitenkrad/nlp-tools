@@ -17,7 +17,7 @@ python_min_version_str = '.'.join(map(str, python_min_version))
 version_range_max = max(sys.version_info[1], 10) + 1
 
 setup(
-    name="nlp-tools",
+    name="nlp_tools",
     version="0.0.1",
     author="akitenkrad",
     author_email="akitenkrad@gmail.com",
