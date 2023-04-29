@@ -30,10 +30,10 @@ exclude = ["tests"]
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
-version = {attr = "nlp_tools.version"}
+version = {attr = "version"}
 
 [tool.setuptools_scm]
-write_to = "nlp_tools/_version.py"
+write_to = "_version.py"
 
 [tool.setuptools]
 package-dir = {"" = "nlp_tools"}
