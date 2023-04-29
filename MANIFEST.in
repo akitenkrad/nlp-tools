@@ -1,0 +1,2 @@
+recursive-include nlp_tools/utils/resources *.txt *.png
+recursive-include nlp_tools/config *.yml
