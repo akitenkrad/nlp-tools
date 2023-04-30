@@ -1,4 +1,4 @@
-from utils.data import Token
+from nlp_tools.utils.data import Token
 
 
 def test_to_instantiate_token():

@@ -391,6 +391,40 @@ def get_mask(mask_type: WordCloudMask) -> np.ndarray:
     return mask
 
 
+def isint(s: str) -> bool:
+    """Check the argument string is integer or not.
+
+    Args:
+        s (str): string value.
+
+    Returns:
+        bool: If the given string is integer or not.
+    """
+    try:
+        int(s, 10)
+    except ValueError:
+        return False
+    else:
+        return True
+
+
+def isfloat(s: str) -> bool:
+    """Check the argument string is float or not.
+
+    Args:
+        s (str): string value.
+
+    Returns:
+        bool: If the given string is float or not.
+    """
+    try:
+        float(s)
+    except ValueError:
+        return False
+    else:
+        return True
+
+
 class JsonEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.integer):

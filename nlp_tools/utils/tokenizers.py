@@ -11,7 +11,7 @@ from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 
 from nlp_tools.utils.data import Token
-from nlp_tools.utils.utils import Lang
+from nlp_tools.utils.utils import Lang, isfloat, isint
 
 nltk.download("stopwords", quiet=True)
 nltk.download("punkt", quiet=True)
@@ -45,13 +45,14 @@ class CharTokenizer(ABC):
 class EnglishWordTokenizer(WordTokenizer):
     def __init__(
         self,
-        pad=PAD,
-        max_sent_len=-1,
-        remove_stopwords=False,
-        remove_punctuations=True,
-        stemming=False,
-        add_tag=False,
-        filter=None,
+        pad: str = PAD,
+        max_sent_len: int = -1,
+        remove_stopwords: bool = False,
+        remove_punctuations: bool = True,
+        remove_numbers: bool = False,
+        stemming: bool = False,
+        add_tag: bool = False,
+        filter: Optional[Callable] = None,
         **kwargs,
     ):
         """
@@ -70,6 +71,7 @@ class EnglishWordTokenizer(WordTokenizer):
         self.max_sent_len: int = max_sent_len
         self.remove_punctuations: bool = remove_punctuations
         self.remove_stopwords: bool = remove_stopwords
+        self.remove_numbers: bool = remove_numbers
         self.add_tag: bool = add_tag
         self.stemming: bool = stemming
         self.porter: PorterStemmer = PorterStemmer()
@@ -93,6 +95,10 @@ class EnglishWordTokenizer(WordTokenizer):
         if self.remove_stopwords:
             stop_words = stopwords.words(self.language.value)
             words = [word for word in words if word not in stop_words]
+
+        # remove numbers
+        if self.remove_numbers:
+            words = [word for word in words if (not isint(word)) and (not isfloat(word))]
 
         # add tag
         if self.add_tag or self.filter is not None:
@@ -124,7 +130,14 @@ class EnglishWordTokenizer(WordTokenizer):
 
 class JapaneseWordTokenizer(WordTokenizer):
     def __init__(
-        self, pad=PAD, max_sent_len=-1, remove_stopwords=False, remove_punctuations=True, filter=None, **kwargs
+        self,
+        pad: str = PAD,
+        max_sent_len: int = -1,
+        remove_stopwords: bool = False,
+        remove_punctuations: bool = True,
+        remove_numbers: bool = False,
+        filter: Optional[Callable] = None,
+        **kwargs,
     ):
         """
         Args:
@@ -135,11 +148,12 @@ class JapaneseWordTokenizer(WordTokenizer):
             filter (function): filter tokens
                                ex. lambda tk: tk.pos_tag.startswith("NN") # take only nouns
         """
-        self.language = Lang.JAPANESE
+        self.language: Lang = Lang.JAPANESE
         self.pad: str = pad
         self.max_sent_len: int = max_sent_len
         self.remove_punctuations: bool = remove_punctuations
         self.remove_stopwords: bool = remove_stopwords
+        self.remove_numbers: bool = remove_numbers
         self.filter: Optional[Callable] = filter
 
     def tokenize(self, text: str, **kwargs) -> List[Token]:
@@ -178,7 +192,11 @@ class JapaneseWordTokenizer(WordTokenizer):
 
         # remove stopwords
         if self.remove_stopwords:
-            words = [word for word in words if word[0] not in JA_STOPWORDS]
+            words = [word for word in words if word[1] not in JA_STOPWORDS]
+
+        # remove numbers
+        if self.remove_numbers:
+            words = [word for word in words if (not isint(word[1])) and (not isfloat(word[1]))]
 
         # pad sentence
         if self.max_sent_len > 0 and not disable_max_len:
@@ -199,13 +217,14 @@ class JapaneseWordTokenizer(WordTokenizer):
 class EnglishCharTokenizer(CharTokenizer):
     def __init__(
         self,
-        pad=PAD,
-        max_sent_len=-1,
-        max_word_len=-1,
-        remove_stopwords=False,
-        remove_punctuations=True,
-        stemming=False,
-        filter=None,
+        pad: str = PAD,
+        max_sent_len: int = -1,
+        max_word_len: int = -1,
+        remove_stopwords: bool = False,
+        remove_punctuations: bool = True,
+        remove_numbers: bool = False,
+        stemming: bool = False,
+        filter: Optional[Callable] = None,
     ):
         self.language: Lang = Lang.ENGLISH
         self.pad: str = pad
@@ -213,6 +232,7 @@ class EnglishCharTokenizer(CharTokenizer):
         self.max_word_len: int = max_word_len
         self.remove_stopwords: bool = remove_stopwords
         self.remove_punctuations: bool = remove_punctuations
+        self.remove_numbers: bool = remove_numbers
         self.stemming: bool = stemming
         self.porter: PorterStemmer = PorterStemmer()
         self.filter: Optional[Callable] = filter
@@ -237,6 +257,10 @@ class EnglishCharTokenizer(CharTokenizer):
         if self.remove_stopwords:
             stop_words = stopwords.words(self.language.value)
             words = [word for word in words if word not in stop_words]
+
+        # remove numbers
+        if self.remove_numbers:
+            words = [word for word in words if (not isint(word[1])) and (not isfloat(word[1]))]
 
         # add tag
         words = nltk.pos_tag(words)
@@ -277,13 +301,14 @@ class EnglishCharTokenizer(CharTokenizer):
 class JapaneseCharTokenizer(CharTokenizer):
     def __init__(
         self,
-        pad="<pad>",
-        max_sent_len=-1,
-        max_word_len=-1,
-        remove_stopwords=False,
-        remove_punctuations=True,
-        stemming=False,
-        filter=None,
+        pad: str = "<pad>",
+        max_sent_len: int = -1,
+        max_word_len: int = -1,
+        remove_stopwords: bool = False,
+        remove_punctuations: bool = True,
+        remove_numbers: bool = False,
+        stemming: bool = False,
+        filter: Optional[Callable] = None,
     ):
         self.language = Lang.JAPANESE
         self.pad = pad
@@ -291,6 +316,7 @@ class JapaneseCharTokenizer(CharTokenizer):
         self.max_word_len: int = max_word_len
         self.remove_stopwords: bool = remove_stopwords
         self.remove_punctuations: bool = remove_punctuations
+        self.remove_numbers: bool = remove_numbers
         self.stemming: bool = stemming
         self.filter: Optional[Callable] = filter
 
@@ -333,6 +359,10 @@ class JapaneseCharTokenizer(CharTokenizer):
         # remove stopwords
         if self.remove_stopwords:
             word_tokens = [word for word in word_tokens if word.surface not in JA_STOPWORDS]
+
+        # remove numbers
+        if self.remove_numbers:
+            word_tokens = [word for word in word_tokens if (not isint(word.surface)) and (not isfloat(word.surface))]
 
         # apply filter
         if self.filter is not None:

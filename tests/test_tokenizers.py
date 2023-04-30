@@ -2,19 +2,29 @@ from typing import Callable, List
 
 import pytest
 
-from utils.data import Token
-from utils.tokenizers import PAD, WordTokenizerFactory
-from utils.utils import Lang
+from nlp_tools.utils.data import Token
+from nlp_tools.utils.tokenizers import PAD, WordTokenizerFactory
+from nlp_tools.utils.utils import Lang
 
 
 @pytest.mark.parametrize(
-    ("language", "text", "remove_punctuations", "remove_stopwords", "max_sent_len", "filter", "expected"),
+    (
+        "language",
+        "text",
+        "remove_punctuations",
+        "remove_stopwords",
+        "remove_numbers",
+        "max_sent_len",
+        "filter",
+        "expected",
+    ),
     [
         (
             Lang.ENGLISH,
             "The price of greatness is responsibility.",
             True,
             True,
+            False,
             5,
             None,
             [
@@ -30,6 +40,7 @@ from utils.utils import Lang
             "The price of greatness is responsibility.",
             False,
             False,
+            False,
             -1,
             lambda tok: tok.pos_tag.startswith("NN"),
             [
@@ -42,6 +53,7 @@ from utils.utils import Lang
             Lang.JAPANESE,
             "もっと自信を持ってよね！",
             True,
+            False,
             False,
             5,
             None,
@@ -58,6 +70,30 @@ from utils.utils import Lang
             "もっと自信を持ってよね！",
             False,
             False,
+            False,
+            -1,
+            lambda tk: tk.pos_tag == "名詞",
+            [Token("自信", "自信", "名詞")],
+        ),
+        (
+            Lang.ENGLISH,
+            "The price is 100 dollars.",
+            False,
+            False,
+            True,
+            -1,
+            lambda tok: tok.pos_tag.startswith("NN"),
+            [
+                Token("price", "price", "NN"),
+                Token("dollars", "dollar", "NNS"),
+            ],
+        ),
+        (
+            Lang.JAPANESE,
+            "もっと自信を持ってよね 100！",
+            False,
+            False,
+            True,
             -1,
             lambda tk: tk.pos_tag == "名詞",
             [Token("自信", "自信", "名詞")],
@@ -69,6 +105,7 @@ def test_english_word_tokenizer(
     text: str,
     remove_punctuations: bool,
     remove_stopwords: bool,
+    remove_numbers: bool,
     max_sent_len: int,
     filter: Callable,
     expected: List[Token],
@@ -78,6 +115,7 @@ def test_english_word_tokenizer(
         pad=PAD,
         remove_punctuations=remove_punctuations,
         remove_stopwords=remove_stopwords,
+        remove_numbers=remove_numbers,
         stemming=True,
         add_tag=True,
         max_sent_len=max_sent_len,
