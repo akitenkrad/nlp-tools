@@ -115,16 +115,16 @@ class JSAI_BASE(Conference):
         texts = []
         for paper in papers:
             title = paper["title"]
-            abstract = paper["abstract"]
+            summary = paper["summary"]
 
             if preprocess_tokenizer:
                 title_tokens = preprocess_tokenizer.tokenize(title)
-                abstract_tokens = preprocess_tokenizer.tokenize(abstract)
+                summary_tokens = preprocess_tokenizer.tokenize(summary)
                 preprocessed_title = " ".join(token.surface for token in title_tokens)
-                preprocessed_abstract = " ".join(token.surface for token in abstract_tokens)
+                preprocessed_summary = " ".join(token.surface for token in summary_tokens)
             else:
                 preprocessed_title = title
-                preprocessed_abstract = preprocessed_abstract
+                preprocessed_summary = preprocessed_summary
 
             if paper["language"] == "japanese":
                 language = Lang.JAPANESE
@@ -133,15 +133,15 @@ class JSAI_BASE(Conference):
             else:
                 language = Lang.JAPANESE
 
-            if preprocessed_abstract == "n/a":
+            if preprocessed_summary == "n/a":
                 continue
 
             texts.append(
                 ConferenceText(
                     title=title,
-                    abstract=abstract,
+                    summary=summary,
                     preprocessed_title=preprocessed_title,
-                    preprocessed_abstract=preprocessed_abstract,
+                    preprocessed_summary=preprocessed_summary,
                     keywords=paper["keywords"],
                     pdf_url=paper["url"],
                     authors=paper["authors"],

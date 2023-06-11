@@ -44,9 +44,9 @@ class ConferenceText(Sentence):
     def __init__(
         self,
         title: str,
-        abstract: str = "",
+        summary: str = "",
         preprocessed_title: str = "",
-        preprocessed_abstract: str = "",
+        preprocessed_summary: str = "",
         keywords: List[str] = [],
         pdf_url: str = "",
         authors: List[str] = [],
@@ -55,9 +55,9 @@ class ConferenceText(Sentence):
         **kwargs,
     ):
         self.title: str = title
-        self.abstract: str = abstract
+        self.summary: str = summary 
         self.preprocessed_title: str = preprocessed_title
-        self.preprocessed_abstract: str = preprocessed_abstract
+        self.preprocessed_summary: str = preprocessed_summary
         self.keywords: List[str] = keywords
         self.pdf_url: str = pdf_url
         self.authors: List[str] = authors
@@ -72,7 +72,7 @@ class ConferenceText(Sentence):
                 setattr(self, name, value)
                 self.attrs.append({"name": name, "value": value})
 
-        self.__text = f"{self.preprocessed_title} {self.preprocessed_abstract}"
+        self.__text = f"{self.preprocessed_title} {self.preprocessed_summary}"
 
     def __str__(self):
         return f"<ConferenceText {self.title[:15]}... (in {self.language})>"
@@ -88,9 +88,9 @@ class ConferenceText(Sentence):
         res = {
             "text": self.__text,
             "title": self.title,
-            "abstract": self.abstract,
+            "summary": self.summary,
             "preprocessed_title": self.preprocessed_title,
-            "preprocessed_abstract": self.preprocessed_abstract,
+            "preprocessed_summary": self.preprocessed_summary,
             "keywords": self.keywords,
             "pdf_url": self.pdf_url,
             "authors": self.authors,
