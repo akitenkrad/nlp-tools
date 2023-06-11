@@ -99,14 +99,17 @@ class ANLP_2022(Conference):
         return texts
 
 
-class JSAI_2022(Conference):
+class JSAI_BASE(Conference):
+    GDRIVE_OBJECT = GDriveObjects.JSAI_2022
+    DATASET_PATH = Path("data/conference/JSAI/JSAI_2022.json")
+
     @classmethod
-    def load(self, preprocess_tokenizer: Optional[WordTokenizer] = None) -> List[ConferenceText]:
-        data_path = Path("data/conference/JSAI/JSAI_2022.json")
+    def load(cls, preprocess_tokenizer: Optional[WordTokenizer] = None) -> List[ConferenceText]:
+        data_path = cls.DATASET_PATH
 
         if not data_path.exists():
             data_path.parent.mkdir(parents=True, exist_ok=True)
-            download_from_google_drive(GDriveObjects.JSAI_2022.value, str(data_path))
+            download_from_google_drive(cls.GDRIVE_OBJECT.value, str(data_path))
 
         papers = json.load(open(data_path))
         texts = []
@@ -148,6 +151,16 @@ class JSAI_2022(Conference):
                 )
             )
         return texts
+
+
+class JSAI_2023(JSAI_BASE):
+    GDRIVE_OBJECT = GDriveObjects.JSAI_2023
+    DATASET_PATH = Path("data/conference/JSAI/JSAI_2023.json")
+
+
+class JSAI_2022(JSAI_BASE):
+    GDRIVE_OBJECT = GDriveObjects.JSAI_2022
+    DATASET_PATH = Path("data/conference/JSAI/JSAI_2022.json")
 
 
 class ACL_Base(Conference):

@@ -56,7 +56,11 @@ class GDriveObjects(Enum):
     # Conference Datasets
     NeurIPS_2021 = "1JmYpSatyr2OTCPpovUDQa3PzJmz39USV"
     ANLP_2022 = "1A3Kk_tpaPPAd543j5xApco89gHAnKMCF"
+
+    # --- JSAI
+    JSAI_2023 = "1mU0ct3hjq6G16-qVKKhUd9VES5iRNALS"
     JSAI_2022 = "1-93EeiCJp5vyXatK7H6uLSIyozLeUFIL"
+
     # --- ACL
     ACL_2022 = "1-PtEnglF1SNk38H-yDMg4chAQf7KqsJe"
     ACL_2021 = "1-4QDQyhncgxD9gm7kL-d-tt_C3DSozcm"
