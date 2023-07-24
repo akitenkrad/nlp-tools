@@ -2,15 +2,16 @@ import pickle
 import zipfile
 from collections import namedtuple
 from enum import Enum
+from logging import Logger
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
 from nlp_tools.embeddings.base import Embedding
 from nlp_tools.utils.data import Token
 from nlp_tools.utils.tokenizers import CharTokenizer, CharTokenizerFactory, WordTokenizer, WordTokenizerFactory
-from nlp_tools.utils.utils import Config, Lang, download, is_notebook
+from nlp_tools.utils.utils import Lang, download, is_notebook
 
 if is_notebook():
     from tqdm.notebook import tqdm
@@ -36,8 +37,9 @@ class GloVeType(Enum):
 class GloVe(Embedding):
     def __init__(
         self,
-        config: Config,
+        weights_path: str,
         glove_type: GloVeType,
+        logger: Optional[Logger] = None,
         max_sent_len=-1,
         max_word_len=-1,
         remove_punctuations=True,
@@ -49,7 +51,7 @@ class GloVe(Embedding):
         GloVe Embedding
 
         Args:
-            config (Config): configuration object
+            weights_path (str): path to save weights
             glove_type (GloVeType): type of glove embedding
             max_sent_len (int): if max_sent_len > 0, cut the given sentence into specific length
             max_word_len (int): if max_word_len > 0, cut the given word into specific length
@@ -58,10 +60,8 @@ class GloVe(Embedding):
             filter (function): filter tokens
                                ex. lambda tk: tk.pos_tag.startswith("NN") # take only nouns
         """
-        self.config = config
-        self.config.add_logger("glove_log")
         self.glove_type: GloVeType = glove_type
-        self.weights_path: Path = Path(config.weights.global_weights_dir) / "glove"
+        self.weights_path: Path = Path(weights_path)
         self.word_tokenizer: WordTokenizer = WordTokenizerFactory.get_tokenizer(
             language=Lang.ENGLISH,
             pad="padding",
@@ -82,6 +82,15 @@ class GloVe(Embedding):
 
         self.__vectors, self.__words, self.__word2idx = self.__load_glove__(no_cache)
         self.__idx2word = {i: w for w, i in self.__word2idx.items()}
+        self.__logger = logger
+
+        self.weights_path.mkdir(parents=True, exist_ok=True)
+
+    def __print(self, msg: str):
+        if self.__logger is not None:
+            self.__logger.info(msg)
+        else:
+            print(msg)
 
     @property
     def embedding_dim(self) -> int:
@@ -139,25 +148,25 @@ class GloVe(Embedding):
         weights_zip_path = self.weights_path / self.glove_type.value.zipname
 
         if not weights_zip_path.exists():
-            self.config.log.glove_log.info("download glove weights from the Internet.")
+            self.__print("download glove weights from the Internet.")
             url = f"http://nlp.stanford.edu/data/{self.glove_type.value.zipname}"
             download(url, weights_zip_path)
 
         # cache path
         tokens, dim = self.glove_type.value.filename.split(".")[-3:-1]
-        cache_dir = self.config.data.cache_path / "glove" / f"glove.{tokens}"
+        cache_dir = self.weights_path / f"glove.{tokens}"
         vector_cache = cache_dir / f"glove.{tokens}.{dim}_vectors.pickle"
         words_cache = cache_dir / f"glove.{tokens}.{dim}_words.pickle"
         word2idx_cache = cache_dir / f"glove.{tokens}.{dim}_word2idx.pickle"
         cache_dir.mkdir(parents=True, exist_ok=True)
 
         if not no_cache and vector_cache.exists() and words_cache.exists() and word2idx_cache.exists():
-            self.config.log.glove_log.info("restore weights from cache.")
+            self.__print("restore weights from cache.")
             vectors = pickle.load(open(str(vector_cache), "rb"))
             words = pickle.load(open(str(words_cache), "rb"))
             word2idx = pickle.load(open(str(word2idx_cache), "rb"))
         else:
-            self.config.log.glove_log.info("construct weights from the weights file.")
+            self.__print("construct weights from the weights file.")
             words = []
             idx = 0
             word2idx = {}
@@ -190,7 +199,7 @@ class GloVe(Embedding):
             pickle.dump(words, open(str(words_cache), "wb"))
             pickle.dump(word2idx, open(str(word2idx_cache), "wb"))
 
-        self.config.log.glove_log.info(f"Finished loading glove tokens: total={len(words)} words.")
+        self.__print(f"Finished loading glove tokens: total={len(words)} words.")
         return np.array(vectors), words, word2idx
 
     def get_weights_matrix(self) -> np.ndarray:

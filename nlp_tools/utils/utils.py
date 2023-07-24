@@ -375,7 +375,7 @@ class Config(object):
         # set logger
         if hasattr(settings, "logger") and isinstance(settings.logger, Logger):
             kill_logger(settings.logger)
-        settings.logger = get_logger(name="config", logfile=settings.log_settings.log_file, silent=silent)
+        settings.logger = get_logger(name="config", logfile=str(settings.log_settings.log_file), silent=silent)
 
         # show config
         settings.logger.info("====== show config =========")
@@ -495,7 +495,7 @@ class Config(object):
         shutil.copytree(self.log_settings.log_dir, self.log_settings.backup_dir)
 
     def add_logger(self, name: str, silent: bool = False):
-        self.ex_logger[name] = get_logger(name=name, logfile=self.log_settings.log_file, silent=silent)
+        self.ex_logger[name] = get_logger(name=name, logfile=str(self.log_settings.log_file), silent=silent)
 
     def fix_seed(self, seed=42):
         self.print(self.__TEXT.format(KEY_1="root", KEY_2="seed", VALUE=seed))
