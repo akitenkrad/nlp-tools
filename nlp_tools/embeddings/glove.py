@@ -60,8 +60,11 @@ class GloVe(Embedding):
             filter (function): filter tokens
                                ex. lambda tk: tk.pos_tag.startswith("NN") # take only nouns
         """
+        self.__logger = logger
         self.glove_type: GloVeType = glove_type
         self.weights_path: Path = Path(weights_path)
+        self.weights_path.mkdir(parents=True, exist_ok=True)
+
         self.word_tokenizer: WordTokenizer = WordTokenizerFactory.get_tokenizer(
             language=Lang.ENGLISH,
             pad="padding",
@@ -79,12 +82,8 @@ class GloVe(Embedding):
             remove_stopwords=remove_stopwords,
             filter=filter,
         )
-
         self.__vectors, self.__words, self.__word2idx = self.__load_glove__(no_cache)
         self.__idx2word = {i: w for w, i in self.__word2idx.items()}
-        self.__logger = logger
-
-        self.weights_path.mkdir(parents=True, exist_ok=True)
 
     def __print(self, msg: str):
         if self.__logger is not None:
