@@ -1,3 +1,4 @@
+attrdict @ git+https://github.com/akitenkrad/attrdict
 arxiv
 beautifulsoup4
 black
@@ -5,7 +6,6 @@ click
 colorama
 flake8
 gensim
-git+https://github.com/akitenkrad/attrdict#egg=attrdict
 h5py
 ipadic
 ipython

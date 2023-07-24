@@ -126,4 +126,5 @@ def get_logger(name, logfile: str = "", silent: bool = False) -> Logger:
 
 def kill_logger(logger: Logger):
     name = logger.name
-    del logging.Logger.manager.loggerDict[name]
+    if name in logging.Logger.manager.loggerDict:
+        del logging.Logger.manager.loggerDict[name]
