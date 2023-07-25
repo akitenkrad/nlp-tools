@@ -205,6 +205,10 @@ class ACL_Base(Conference):
         return texts
 
 
+class ACL_2023(ACL_Base):
+    GDRIVE_OBJECT = GDriveObjects.ACL_2023
+
+
 class ACL_2022(ACL_Base):
     GDRIVE_OBJECT = GDriveObjects.ACL_2022
 
