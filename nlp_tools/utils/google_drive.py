@@ -62,6 +62,7 @@ class GDriveObjects(Enum):
     JSAI_2022 = "1-93EeiCJp5vyXatK7H6uLSIyozLeUFIL"
 
     # --- ACL
+    ACL_2023 = "1zPVtt8PeiODN4mog0rWiZ5Zc8KQcc6Nj"
     ACL_2022 = "1-PtEnglF1SNk38H-yDMg4chAQf7KqsJe"
     ACL_2021 = "1-4QDQyhncgxD9gm7kL-d-tt_C3DSozcm"
     ACL_2020 = "1-Tr5OC6vNF6JqNXHCJzp6OP5jjRmyH9z"
