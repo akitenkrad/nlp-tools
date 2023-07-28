@@ -37,7 +37,7 @@ from torchinfo import summary
 from wordcloud import STOPWORDS, WordCloud
 
 if sys.version_info.minor < 11:
-    import toml as tomllib
+    import toml
 else:
     import tomllib
 
@@ -358,10 +358,13 @@ class Config(object):
     def generate(cls, config_path: str, silent: bool = False, extra_config: dict[str, Any] = {}) -> Config:
         settings = cls(logger=Logger(""), mlflow_writer=MlflowWriter("", ""), config_path=Path(config_path))
 
-        with open(config_path, mode="rb") as f:
-            config: dict = tomllib.load(f)
-            if len(extra_config) > 0:
-                config.update(extra_config)
+        if sys.version_info.minor < 11:
+            config: dict = toml.load(config_path)
+        else:
+            with open(config_path, mode="rb") as f:
+                config = tomllib.load(f)
+        if len(extra_config) > 0:
+            config.update(extra_config)
 
         # set attributes
         settings.timestamp = settings.now()
