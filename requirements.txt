@@ -45,5 +45,6 @@ types-python-dateutil
 types-PyYAML
 types-requests
 typing-extensions
+types-toml
 unidic
 wordcloud

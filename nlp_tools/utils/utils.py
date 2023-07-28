@@ -7,7 +7,6 @@ import shutil
 import string
 import subprocess
 import sys
-import tomllib
 import urllib.request
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone
@@ -36,6 +35,11 @@ from PIL import Image
 from pyunpack import Archive
 from torchinfo import summary
 from wordcloud import STOPWORDS, WordCloud
+
+if sys.version_info.minor < 11:
+    import toml as tomllib
+else:
+    import tomllib
 
 from nlp_tools.utils.logger import get_logger, kill_logger
 

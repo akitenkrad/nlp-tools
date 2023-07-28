@@ -60,6 +60,7 @@ setuptools.setup(
         "seaborn",
         "sumeval",
         "tensorboard",
+        "toml",
         "torch",
         "torchinfo",
         "torchtext",
@@ -80,6 +81,7 @@ setuptools.setup(
             "types-PyYAML",
             "types-requests",
             "typing-extensions",
+            "types-toml",
         ]
     },
 )
