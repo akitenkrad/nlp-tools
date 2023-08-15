@@ -13,6 +13,11 @@ from attrdict import AttrDict
 from sumeval.metrics.rouge import RougeCalculator
 
 
+class NoPaperFoundException(Exception):
+    def __init__(self, *args, **kwargs):
+        super().__init_(*args, **kwargs)
+
+
 class SemanticScholar(object):
     API: Dict[str, str] = {
         "search_by_title": "https://api.semanticscholar.org/graph/v1/paper/search?{QUERY}",
@@ -29,14 +34,17 @@ class SemanticScholar(object):
     def threshold(self) -> float:
         return self.__threshold
 
-    def __retry_and_wait(self, msg: str, ex: Union[HTTPError, URLError, socket.timeout, Exception], retry: int) -> int:
+    def __retry_and_wait(
+        self, msg: str, ex: Union[HTTPError, URLError, socket.timeout, Exception], retry: int, silent: bool = True
+    ) -> int:
         retry += 1
         if 5 < retry:
             raise ex
         if retry == 1:
             msg = "\n" + msg
 
-        print(msg)
+        if not silent:
+            print(msg)
 
         if isinstance(ex, HTTPError) and ex.errno == -3:
             time.sleep(300.0)
@@ -77,8 +85,7 @@ class SemanticScholar(object):
                 retry = self.__retry_and_wait(f"{str(ex)} -> Retry: {retry}", ex, retry)
 
             if 5 <= retry:
-                print(f"No paper-id found @ {title}")
-                return ""
+                raise NoPaperFoundException(f"No paper-id found @ {title}")
 
         for item in content["data"]:
             # remove punctuation
@@ -92,7 +99,7 @@ class SemanticScholar(object):
                 return item["paperId"].strip()
         return ""
 
-    def get_paper_detail(self, paper_id: str) -> Optional[Dict]:
+    def get_paper_detail(self, paper_id: str, silent: bool = True) -> Optional[Dict]:
         retry = 0
         while retry < 5:
             try:
