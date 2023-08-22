@@ -16,7 +16,7 @@ from logging import Logger
 from os import PathLike
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 import cpuinfo
 import mlflow
@@ -403,11 +403,11 @@ class Config(object):
         settings.logger.info("============================")
 
         # CPU info
-        settings.describe_cpu()
+        settings.describe_cpu(print_fn=settings.print)
 
         # NVIDIA GPU info
         if torch.cuda.is_available():
-            settings.describe_gpu()
+            settings.describe_gpu(print_fn=settings.print)
 
         # mkdir
         settings.__mkdirs()
@@ -440,13 +440,15 @@ class Config(object):
     def close_mlflow(self):
         self.mlflow_writer.terminate()
 
-    def describe_cpu(self):
-        self.print("====== cpu info ============")
+    @classmethod
+    def describe_cpu(cls, print_fn: Callable = print):
+        print_fn("====== cpu info ============")
         for key, value in cpuinfo.get_cpu_info().items():
-            self.print(f"CPU INFO: {key:20s}: {value}")
-        self.print("============================")
+            print_fn(f"CPU INFO: {key:20s}: {value}")
+        print_fn("============================")
 
-    def describe_gpu(self, nvidia_smi_path="nvidia-smi", no_units=True):
+    @classmethod
+    def describe_gpu(cls, nvidia_smi_path="nvidia-smi", no_units=True, print_fn: Callable = print):
         try:
             keys = NVIDIA_SMI_DEFAULT_ATTRIBUTES
             nu_opt = "" if not no_units else ",nounits"
@@ -455,22 +457,33 @@ class Config(object):
             raw_lines = [line.strip() for line in output.decode().split("\n") if line.strip() != ""]
             lines = [{k: v for k, v in zip(keys, line.split(", "))} for line in raw_lines]
 
-            self.print("====== show GPU information =========")
+            print_fn("====== show GPU information =========")
             for line in lines:
                 for k, v in line.items():
-                    self.print(f"{k:25s}: {v}")
-            self.print("=====================================")
+                    print_fn(f"{k:25s}: {v}")
+            print_fn("=====================================")
         except CalledProcessError:
-            self.print("====== show GPU information =========")
-            self.print("  No GPU was found.")
-            self.print("=====================================")
+            print_fn("====== show GPU information =========")
+            print_fn("  No GPU was found.")
+            print_fn("=====================================")
 
-    def describe_m1_silicon(self):
-        self.log.logger.info("====== show GPU information =========")
-        self.log.logger.info("  Mac-M1 GPU is available.")
-        self.log.logger.info("=====================================")
+    @classmethod
+    def describe_m1_silicon(cls, print_fn: Callable = print):
+        print_fn("====== show GPU information =========")
+        if torch.backends.mps.is_available():
+            print_fn("  Mac-M1 GPU is available.")
+        else:
+            print_fn("  Mac-M1 GPU is NOT available.")
+        print_fn("=====================================")
 
-    def describe_model(self, model: torch.nn.Module, input_size: Optional[tuple[int]] = None, input_data=None):
+    @classmethod
+    def describe_model(
+        cls,
+        model: torch.nn.Module,
+        input_size: Optional[tuple[int]] = None,
+        input_data=None,
+        print_fn: Callable = print,
+    ):
         if input_data is None:
             summary_str = summary(
                 model,
@@ -491,7 +504,7 @@ class Config(object):
             )
 
         for line in summary_str.__str__().split("\n"):
-            self.print(line)
+            print_fn(line)
 
     def backup_logs(self):
         """copy log directory to config.backup"""
