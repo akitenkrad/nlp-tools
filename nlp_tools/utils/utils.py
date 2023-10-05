@@ -364,7 +364,9 @@ class Config(object):
             with open(config_path, mode="rb") as f:
                 config = tomllib.load(f)
         if len(extra_config) > 0:
-            config.update(extra_config)
+            for s in ["train_settings", "log_settings", "data_settings"]:
+                if s in extra_config:
+                    config[s].update(extra_config[s])
 
         # set attributes
         settings.timestamp = settings.now()
@@ -484,6 +486,7 @@ class Config(object):
         input_data=None,
         print_fn: Callable = print,
     ):
+        # TODO add **kwargs
         if input_data is None:
             summary_str = summary(
                 model,

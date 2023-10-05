@@ -43,6 +43,7 @@ class Sentence(object):
 class ConferenceText(Sentence):
     def __init__(
         self,
+        index: int,
         title: str,
         summary: str = "",
         preprocessed_title: str = "",
@@ -54,8 +55,9 @@ class ConferenceText(Sentence):
         published_at: Optional[datetime] = None,
         **kwargs,
     ):
+        self.index: int = index
         self.title: str = title
-        self.summary: str = summary 
+        self.summary: str = summary
         self.preprocessed_title: str = preprocessed_title
         self.preprocessed_summary: str = preprocessed_summary
         self.keywords: List[str] = keywords
@@ -75,7 +77,7 @@ class ConferenceText(Sentence):
         self.__text = f"{self.preprocessed_title} {self.preprocessed_summary}"
 
     def __str__(self):
-        return f"<ConferenceText {self.title[:15]}... (in {self.language})>"
+        return f"<ConferenceText {self.index:05d} {self.title[:15]}... (in {self.language})>"
 
     def __repr__(self):
         return self.__str__()
@@ -86,6 +88,7 @@ class ConferenceText(Sentence):
 
     def to_dict(self) -> Dict[str, Any]:
         res = {
+            "index": self.index,
             "text": self.__text,
             "title": self.title,
             "summary": self.summary,
