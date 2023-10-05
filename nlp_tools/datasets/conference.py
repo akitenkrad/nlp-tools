@@ -176,7 +176,7 @@ class ACL_Base(Conference):
 
         papers = json.load(open(data_path))
         texts = []
-        for paper in papers:
+        for index, paper in enumerate(papers):
             title = paper["title"]
             abstract = paper["abstract"]
 
@@ -191,7 +191,7 @@ class ACL_Base(Conference):
 
             texts.append(
                 ConferenceText(
-                    index=paper.get("index", -1),
+                    index=index,
                     title=title,
                     abstract=abstract,
                     preprocessed_title=preprocessed_title,
