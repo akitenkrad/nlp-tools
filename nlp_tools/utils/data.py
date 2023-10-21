@@ -86,6 +86,12 @@ class ConferenceText(Sentence):
     def text(self) -> str:
         return self.__text
 
+    def get_attr(self, key: str) -> str:
+        for attr in self.attrs:
+            if attr["name"] == key:
+                return attr["value"]
+        raise KeyError(f"Unexpected key: {key}")
+
     def to_dict(self) -> Dict[str, Any]:
         res = {
             "index": self.index,
