@@ -205,7 +205,7 @@ class ACL_Base(Conference):
                     pdf_url=paper.pop("pdf_url") if "pdf_url" in paper else "",
                     authors=paper.pop("authors"),
                     language=Lang.ENGLISH,
-                    published_at=parse_date(f"{paper.['year']} {paper['month']}"),
+                    published_at=parse_date(f"{paper['year']} {paper['month']}"),
                     venue=venue,
                     **paper
                 )
