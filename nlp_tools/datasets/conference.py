@@ -189,6 +189,12 @@ class ACL_Base(Conference):
                 preprocessed_title = ""
                 preprocessed_abstract = ""
 
+            venue = ""
+            if "venue" in paper:
+                venue = paper["venue"]
+            elif "venues" in paper:
+                venue = paper["venues"]
+
             texts.append(
                 ConferenceText(
                     index=index,
@@ -200,7 +206,7 @@ class ACL_Base(Conference):
                     authors=paper["authors"],
                     language=Lang.ENGLISH,
                     published_at=parse_date(f"{paper['year']} {paper['month']}"),
-                    venue=paper["venue"] if "venue" in paper else "",
+                    venue=venue,
                 )
             )
         return texts
