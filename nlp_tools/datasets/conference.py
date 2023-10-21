@@ -177,8 +177,8 @@ class ACL_Base(Conference):
         papers = json.load(open(data_path))
         texts = []
         for index, paper in enumerate(papers):
-            title = paper["title"]
-            abstract = paper["abstract"]
+            title = paper.pop("title")
+            abstract = paper.pop("abstract")
 
             if preprocess_tokenizer:
                 title_tokens = preprocess_tokenizer.tokenize(title)
@@ -191,9 +191,9 @@ class ACL_Base(Conference):
 
             venue = ""
             if "venue" in paper:
-                venue = paper["venue"]
+                venue = paper.pop("venue")
             elif "venues" in paper:
-                venue = paper["venues"]
+                venue = paper.pop("venues")
 
             texts.append(
                 ConferenceText(
@@ -202,11 +202,12 @@ class ACL_Base(Conference):
                     abstract=abstract,
                     preprocessed_title=preprocessed_title,
                     preprocessed_abstract=preprocessed_abstract,
-                    pdf_url=paper["pdf_url"] if "pdf_url" in paper else "",
-                    authors=paper["authors"],
+                    pdf_url=paper.pop("pdf_url") if "pdf_url" in paper else "",
+                    authors=paper.pop("authors"),
                     language=Lang.ENGLISH,
-                    published_at=parse_date(f"{paper['year']} {paper['month']}"),
+                    published_at=parse_date(f"{paper.['year']} {paper['month']}"),
                     venue=venue,
+                    **paper
                 )
             )
         return texts
