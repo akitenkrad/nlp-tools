@@ -26,18 +26,19 @@ class Token(object):
 class Sentence(object):
     """Represent a sentence composed of a list of Tokens"""
 
-    tokens: List[Token]
+    tokens: list[Token]
+    preprocessed_text: str
     language: Lang = Lang.ENGLISH
 
     def __hash__(self) -> int:
         return hash("".join([str(hash(token)) for token in self.tokens]))
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {"tokens": [token.to_dict() for token in self.tokens]}
 
     @property
     def text(self) -> str:
-        return " ".join([token.surface for token in self.tokens])
+        return " ".join([token.surface for token in self.tokens]) + "."
 
 
 class ConferenceText(Sentence):

@@ -30,7 +30,7 @@ class NeurIPS_2021(Conference):
 
         papers = json.load(open(data_path))
         texts = []
-        for paper in papers:
+        for index, paper in enumerate(papers):
             title = paper["title"]
             abstract = paper["abstract"]
 
@@ -45,6 +45,7 @@ class NeurIPS_2021(Conference):
 
             texts.append(
                 ConferenceText(
+                    index=index,
                     title=title,
                     abstract=abstract,
                     preprocessed_title=preprocessed_title,
@@ -71,7 +72,7 @@ class ANLP_2022(Conference):
         keywords = data["categories"]
         papers = data["papers"]
         texts = []
-        for paper in papers:
+        for index, paper in enumerate(papers):
             title = paper["title"]
             abstract = paper["abstract"]
 
@@ -86,6 +87,7 @@ class ANLP_2022(Conference):
 
             texts.append(
                 ConferenceText(
+                    index=index,
                     title=title,
                     abstract=abstract,
                     preprocessed_title=preprocessed_title,
@@ -113,7 +115,7 @@ class JSAI_BASE(Conference):
 
         papers = json.load(open(data_path))
         texts = []
-        for paper in papers:
+        for index, paper in enumerate(papers):
             title = paper["title"]
             summary = paper["summary"]
 
@@ -138,6 +140,7 @@ class JSAI_BASE(Conference):
 
             texts.append(
                 ConferenceText(
+                    index=index,
                     title=title,
                     summary=summary,
                     preprocessed_title=preprocessed_title,
@@ -207,7 +210,7 @@ class ACL_Base(Conference):
                     language=Lang.ENGLISH,
                     published_at=parse_date(f"{paper['year']} {paper['month']}"),
                     venue=venue,
-                    **paper
+                    **paper,
                 )
             )
         return texts
