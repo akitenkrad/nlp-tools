@@ -31,13 +31,19 @@ JA_STOPWORDS += [
 ]
 
 
-class WordTokenizer(ABC):
+class Tokenizer(ABC):
     @abstractmethod
     def tokenize(self, text: str, **kwargs) -> List[Token]:
         pass
 
 
-class CharTokenizer(ABC):
+class WordTokenizer(Tokenizer):
+    @abstractmethod
+    def tokenize(self, text: str, **kwargs) -> List[Token]:
+        pass
+
+
+class CharTokenizer(Tokenizer):
     @abstractmethod
     def tokenize(self, text: str, **kwargs) -> List[List[Token]]:
         pass
