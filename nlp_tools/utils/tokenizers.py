@@ -9,6 +9,7 @@ import nltk
 from nltk import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
+from transformers import AutoTokenizer
 
 from nlp_tools.utils.data import Token
 from nlp_tools.utils.utils import Lang, isfloat, isint
@@ -214,6 +215,15 @@ class JapaneseWordTokenizer(WordTokenizer):
         return tokens
 
 
+class TFTokenizer(WordTokenizer):
+    def __init__(self, pretrained_model_name_or_path: str):
+        self.__tf_tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path)
+
+    def tokenize(self, text: str, **kwargs) -> List[Token]:
+        text_tokens = self.__tf_tokenizer.tokenize(text)
+        return [Token(tok, "", "") for tok in text_tokens]
+
+
 class EnglishCharTokenizer(CharTokenizer):
     def __init__(
         self,
@@ -405,9 +415,13 @@ class WordTokenizerFactory(object):
         stemming=False,
         add_tag=False,
         filter=None,
+        pretrained_model_name_or_path="",
         **kwargs,
     ) -> WordTokenizer:
-        if language == Lang.ENGLISH:
+        if pretrained_model_name_or_path != "":
+            return TFTokenizer(pretrained_model_name_or_path)
+
+        elif language == Lang.ENGLISH:
             return EnglishWordTokenizer(
                 pad=pad,
                 max_sent_len=max_sent_len,
@@ -418,6 +432,7 @@ class WordTokenizerFactory(object):
                 filter=filter,
                 **kwargs,
             )
+
         elif language == Lang.JAPANESE:
             return JapaneseWordTokenizer(
                 pad=pad,
@@ -427,6 +442,7 @@ class WordTokenizerFactory(object):
                 filter=filter,
                 **kwargs,
             )
+
         else:
             raise NotImplementedError(f"Tokenizer for {language.value} is not implemented yet.")
 

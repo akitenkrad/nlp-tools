@@ -59,6 +59,7 @@ setuptools.setup(
         "scipy",
         "seaborn",
         "sumeval",
+        "transformers",
         "tensorboard",
         "toml",
         "torch",
