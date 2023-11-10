@@ -33,19 +33,19 @@ JA_STOPWORDS += [
 
 class Tokenizer(ABC):
     @abstractmethod
-    def tokenize(self, text: str, **kwargs) -> List[Token]:
+    def tokenize(self, text: str, **kwargs) -> list[Union[Token, list[Token]]]:
         pass
 
 
 class WordTokenizer(Tokenizer):
     @abstractmethod
-    def tokenize(self, text: str, **kwargs) -> List[Token]:
+    def tokenize(self, text: str, **kwargs) -> list[Union[Token, list[Token]]]:
         pass
 
 
 class CharTokenizer(Tokenizer):
     @abstractmethod
-    def tokenize(self, text: str, **kwargs) -> List[List[Token]]:
+    def tokenize(self, text: str, **kwargs) -> list[Union[Token, list[Token]]]:
         pass
 
 
@@ -84,7 +84,7 @@ class EnglishWordTokenizer(WordTokenizer):
         self.porter: PorterStemmer = PorterStemmer()
         self.filter: Optional[Callable] = filter
 
-    def tokenize(self, text: str, **kwargs) -> List[Token]:
+    def tokenize(self, text: str, **kwargs) -> list[Union[Token, list[Token]]]:
         """tokenize a sentence into a list of words"""
         disable_max_len = kwargs.get("disable_max_len", False)
 
@@ -126,7 +126,7 @@ class EnglishWordTokenizer(WordTokenizer):
             words = words[: self.max_sent_len]
 
         # Tuple -> Token
-        tokens = [Token(*word) for word in words]
+        tokens: list[Union[Token, list[Token]]] = [Token(*word) for word in words]
 
         # apply filter
         if self.filter is not None:
@@ -163,7 +163,7 @@ class JapaneseWordTokenizer(WordTokenizer):
         self.remove_numbers: bool = remove_numbers
         self.filter: Optional[Callable] = filter
 
-    def tokenize(self, text: str, **kwargs) -> List[Token]:
+    def tokenize(self, text: str, **kwargs) -> list[Union[Token, list[Token]]]:
         """tokenize a text into a list of words
 
         Args:
@@ -212,7 +212,7 @@ class JapaneseWordTokenizer(WordTokenizer):
             words = words[: self.max_sent_len]
 
         # Tuple -> Token
-        tokens = [Token(*word) for word in words]
+        tokens: list[Union[Token, list[Token]]] = [Token(*word) for word in words]
 
         # apply filter
         if self.filter is not None:
@@ -225,7 +225,7 @@ class TFTokenizer(WordTokenizer):
     def __init__(self, pretrained_model_name_or_path: str):
         self.__tf_tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path)
 
-    def tokenize(self, text: str, **kwargs) -> List[Token]:
+    def tokenize(self, text: str, **kwargs) -> list[Union[Token, list[Token]]]:
         text_tokens = self.__tf_tokenizer.tokenize(text)
         return [Token(tok, "", "") for tok in text_tokens]
 
@@ -253,7 +253,7 @@ class EnglishCharTokenizer(CharTokenizer):
         self.porter: PorterStemmer = PorterStemmer()
         self.filter: Optional[Callable] = filter
 
-    def tokenize(self, text: str, **kwargs) -> List[List[Token]]:
+    def tokenize(self, text: str, **kwargs) -> list[Union[Token, list[Token]]]:
         """tokenize a sentence
 
         Return:
@@ -309,9 +309,7 @@ class EnglishCharTokenizer(CharTokenizer):
             chars = chars[: self.max_sent_len]
 
         # Tuple -> Token
-        tokens = [[Token(char, "", "") for char in sent] for sent in chars]
-
-        return tokens
+        return [[Token(char, "", "") for char in sent] for sent in chars]
 
 
 class JapaneseCharTokenizer(CharTokenizer):
@@ -336,7 +334,7 @@ class JapaneseCharTokenizer(CharTokenizer):
         self.stemming: bool = stemming
         self.filter: Optional[Callable] = filter
 
-    def tokenize(self, text: str, **kwargs) -> List[List[Token]]:
+    def tokenize(self, text: str, **kwargs) -> list[Union[Token, list[Token]]]:
         """tokenize the input text at character granularity
 
         Args:
@@ -402,9 +400,7 @@ class JapaneseCharTokenizer(CharTokenizer):
             chars = chars[: self.max_sent_len]
 
         # Tuple -> Token
-        tokens = [[Token(char, "", "") for char in sent] for sent in chars]
-
-        return tokens
+        return [[Token(char, "", "") for char in sent] for sent in chars]
 
 
 class WordTokenizerFactory(object):
