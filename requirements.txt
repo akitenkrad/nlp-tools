@@ -1,4 +1,5 @@
 attrdict @ git+https://github.com/akitenkrad/attrdict
+ml_tools @ git+https://github.com/akitenkrad/ml_tools
 arxiv
 beautifulsoup4
 black
@@ -15,6 +16,7 @@ jupyterlab
 kaggle
 kaleido
 mecab-python3
+mlflow
 mypy
 networkx
 nltk

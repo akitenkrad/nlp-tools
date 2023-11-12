@@ -136,9 +136,9 @@ dmypy.json
 user.dic
 
 # local dirs
-__logs__
-__data__
-__cache__
-__weights__
-__outputs__
-nlp_tools/utils/resources/fonts
+/nlp_tools/utils/resources/fonts
+/docker-compose.yml
+/tests/output
+/tests/utils
+/__cache__
+/update_packages.sh
