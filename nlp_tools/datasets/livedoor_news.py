@@ -7,9 +7,9 @@ from typing import Dict, Tuple
 
 from sklearn.model_selection import train_test_split
 
-from nlp_tools.datasets.base import BaseDataset
+from ml_tools.datasets.base import BaseDataset
 from nlp_tools.embeddings.base import Embedding
-from nlp_tools.utils.utils import Config, Phase, download
+from ml_tools.utils.utils import Config, Phase, download
 
 LivedoorNewsItem = namedtuple("LivedoorNewsItem", ("filepath", "label"))
 LivedoorDs = Dict[int, LivedoorNewsItem]

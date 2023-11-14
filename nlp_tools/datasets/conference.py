@@ -9,7 +9,8 @@ from dateutil.parser import parse as parse_date
 from nlp_tools.utils.data import ConferenceText
 from nlp_tools.utils.google_drive import GDriveObjects, download_from_google_drive
 from nlp_tools.utils.tokenizers import WordTokenizer
-from nlp_tools.utils.utils import Config, Lang
+from nlp_tools.utils.utils import Lang
+from ml_tools.utils.utils import Config
 
 
 class Conference(ABC):

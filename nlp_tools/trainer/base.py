@@ -6,8 +6,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from nlp_tools.datasets.base import BaseDataset
-from nlp_tools.utils.utils import Config
+from ml_tools.datasets.base import BaseDataset
+from ml_tools.utils.utils import Config
 
 
 class BaseTrainer(ABC):

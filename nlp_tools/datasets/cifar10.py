@@ -11,8 +11,8 @@ import torchvision.transforms as transforms
 from PIL import Image
 from sklearn.model_selection import train_test_split
 
-from nlp_tools.datasets.base import BaseDataset
-from nlp_tools.utils.utils import Config, Phase, is_notebook
+from ml_tools.datasets.base import BaseDataset
+from ml_tools.utils.utils import Config, Phase, is_notebook
 
 if is_notebook():
     from tqdm.notebook import tqdm

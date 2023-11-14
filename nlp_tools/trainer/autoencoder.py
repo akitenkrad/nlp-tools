@@ -7,9 +7,9 @@ from sklearn.model_selection import KFold
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-from nlp_tools.trainer.base import BaseTrainer
-from nlp_tools.utils.utils import Config, is_notebook
-from nlp_tools.utils.watchers import LossWatcher
+from ml_tools.trainer.base import BaseTrainer
+from ml_tools.utils.utils import Config, is_notebook
+from ml_tools.utils.watchers import LossWatcher
 
 if is_notebook():
     from tqdm.notebook import tqdm

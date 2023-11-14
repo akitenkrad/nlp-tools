@@ -11,7 +11,7 @@ from sentence_transformers import SentenceTransformer as _SentenceTransformer
 from tqdm import tqdm
 
 from nlp_tools.utils.tokenizers import WordTokenizer
-from nlp_tools.utils.utils import Config
+from ml_tools.utils.utils import Config
 
 
 class SentenceTransformer(Embedding):

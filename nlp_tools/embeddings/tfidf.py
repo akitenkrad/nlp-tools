@@ -7,7 +7,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from nlp_tools.embeddings.base import Embedding
 from nlp_tools.utils.data import Token
 from nlp_tools.utils.tokenizers import WordTokenizer, WordTokenizerFactory
-from nlp_tools.utils.utils import Config, Lang, download
+from ml_tools.utils.utils import Config, Lang, download
 
 
 class Tfidf(Embedding):

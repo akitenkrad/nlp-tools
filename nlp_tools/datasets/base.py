@@ -6,8 +6,7 @@ from typing import Any, Dict
 import numpy as np
 from torch.utils.data import Dataset
 
-from nlp_tools.utils.logger import Logger, get_logger
-from nlp_tools.utils.utils import Config, Phase, is_notebook
+from ml_tools.utils.utils import Config, Phase, is_notebook
 
 if is_notebook():
     from tqdm.notebook import tqdm

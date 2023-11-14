@@ -3,9 +3,9 @@ from typing import Callable, Tuple
 import torch
 import torch.nn as nn
 
-from nlp_tools.models.base import BaseModel
+from ml_tools.models.base import BaseModel
 from nlp_tools.models.layers.resnet import LinearNet
-from nlp_tools.utils.utils import Config
+from ml_tools.utils.utils import Config
 
 
 class GRU_Linear(BaseModel):

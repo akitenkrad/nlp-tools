@@ -13,7 +13,7 @@ from tqdm import tqdm
 from nlp_tools.embeddings.base import Embedding
 from nlp_tools.utils.data import Sentence, Token
 from nlp_tools.utils.tokenizers import CharTokenizer, CharTokenizerFactory, WordTokenizer, WordTokenizerFactory
-from nlp_tools.utils.utils import Config, Lang, download
+from ml_tools.utils.utils import Config, Lang, download
 
 FastTextInfo = namedtuple("FastTextInfo", ("filename", "language", "embedding_dim"))
 
