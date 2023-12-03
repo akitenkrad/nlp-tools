@@ -201,7 +201,7 @@ class ACL_Base(Conference):
 
             texts.append(
                 ConferenceText(
-                    index=paper["index"],
+                    index=paper.pop("index"),
                     title=title,
                     abstract=abstract,
                     preprocessed_title=preprocessed_title,
