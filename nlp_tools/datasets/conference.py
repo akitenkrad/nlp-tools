@@ -180,7 +180,7 @@ class ACL_Base(Conference):
 
         papers = json.load(open(data_path))
         texts = []
-        for index, paper in enumerate(papers):
+        for paper in papers:
             title = paper.pop("title")
             abstract = paper.pop("abstract")
 
@@ -201,7 +201,7 @@ class ACL_Base(Conference):
 
             texts.append(
                 ConferenceText(
-                    index=index,
+                    index=paper["index"],
                     title=title,
                     abstract=abstract,
                     preprocessed_title=preprocessed_title,
