@@ -6,61 +6,100 @@ import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
-from typing import Dict, Optional, Union
+from typing import Any, Callable, Optional, Union
 from urllib.error import HTTPError, URLError
 
 from attrdict import AttrDict
+from dateutil.parser import parse as parse_date
 from sumeval.metrics.rouge import RougeCalculator
+from tqdm import tqdm
 
 
 class NoPaperFoundException(Exception):
-    def __init__(self, *args, **kwargs):
-        super().__init_(*args, **kwargs)
+    def __init__(self, msg: str):
+        self.__msg = msg
+
+    def __repr__(self) -> str:
+        return f"NO PAPER FUND EXCEPTION: {self.__msg}"
+
+    def __str__(self) -> str:
+        return f"NO PAPER FUND EXCEPTION: {self.__msg}"
 
 
 class SemanticScholar(object):
-    API: Dict[str, str] = {
+    API: dict[str, str] = {
         "search_by_title": "https://api.semanticscholar.org/graph/v1/paper/search?{QUERY}",
         "search_by_id": "https://api.semanticscholar.org/graph/v1/paper/{PAPER_ID}?{PARAMS}",
+        "search_by_author_id": "https://api.semanticscholar.org/graph/v1/author/{AUTHOR_ID}?{PARAMS}",
     }
     CACHE_PATH: Path = Path("__cache__/papers.pickle")
 
-    def __init__(self, threshold: float = 0.95):
+    def __init__(
+        self, threshold: float = 0.95, silent: bool = True, max_retry_count: int = 5, print_fn: Callable = print
+    ):
         self.__api = AttrDict(self.API)
         self.__rouge = RougeCalculator(stopwords=True, stemming=False, word_limit=-1, length_limit=-1, lang="en")
         self.__threshold = threshold
+        self.__silent = silent
+        self.__max_retry_count = max_retry_count
+        self.__print_fn = print_fn
 
     @property
     def threshold(self) -> float:
         return self.__threshold
 
-    def __retry_and_wait(
-        self, msg: str, ex: Union[HTTPError, URLError, socket.timeout, Exception], retry: int, silent: bool = True
-    ) -> int:
+    def __clean(self, dic: dict, key: str, default: Any) -> Any:
+        if key in dic and dic[key] is not None and dic[key] != "" and dic[key] != [] and dic[key] != {}:
+            res = dic[key]
+        else:
+            res = default
+        return res
+
+    def __retry_and_wait(self, msg: str, ex: Union[HTTPError, URLError, socket.timeout, Exception], retry: int) -> int:
         retry += 1
-        if 5 < retry:
+        if self.__max_retry_count < retry:
             raise ex
         if retry == 1:
             msg = "\n" + msg
 
-        if not silent:
-            print(msg)
+        if not self.__silent:
+            self.__print_fn(msg)
 
         if isinstance(ex, HTTPError) and ex.errno == -3:
-            time.sleep(300.0)
+            it = (
+                tqdm(range(60, 0, -1), desc="-3 API Limit Exceeded: Waiting for 1 min")
+                if not self.__silent
+                else range(60, 0, -1)
+            )
+            for _ in it:
+                time.sleep(1.0)
+        elif isinstance(ex, HTTPError) and ex.code == 429:
+            it = (
+                tqdm(range(60, 0, -1), desc="429 API Limit Exceeded: Waiting for 1 min")
+                if not self.__silent
+                else range(60, 0, -1)
+            )
+            for _ in it:
+                time.sleep(1.0)
+        elif isinstance(ex, HTTPError) and ex.code == 403:
+            it = (
+                tqdm(range(300, 0, -1), desc="403 API Limit Exceeded: Waiting for 5 min")
+                if not self.__silent
+                else range(300, 0, -1)
+            )
+            for _ in it:
+                time.sleep(1.0)
         else:
             time.sleep(5.0)
         return retry
 
-    def get_paper_id(self, title: str) -> str:
-        # remove punctuation
-        title = title
-        for punc in string.punctuation:
-            title = title.replace(punc, " ")
+    def get_paper_id_from_title(self, title: str, sleep: float = 3.0) -> str:
+        # for punc in string.punctuation:
+        #     title = title.replace(punc, " ")
         title = re.sub(r"\s\s+", " ", title, count=1000)
 
         retry = 0
-        while retry < 5:
+        while retry < self.__max_retry_count:
             try:
                 params = {
                     "query": title,
@@ -69,29 +108,29 @@ class SemanticScholar(object):
                     "limit": 100,
                 }
                 response = urllib.request.urlopen(
-                    self.__api.search_by_title.format(QUERY=urllib.parse.urlencode(params)), timeout=5.0
+                    self.__api.search_by_title.format(QUERY=urllib.parse.urlencode(params)), timeout=30.0
                 )
                 content = json.loads(response.read().decode("utf-8"))
-                time.sleep(3.5)
+                time.sleep(sleep)
                 break
 
             except HTTPError as ex:
-                retry = self.__retry_and_wait(f"{str(ex)} -> Retry: {retry}", ex, retry)
+                retry = self.__retry_and_wait(f"WARNING: {str(ex)} -> Retry: {retry}", ex, retry)
             except URLError as ex:
-                retry = self.__retry_and_wait(f"{str(ex)} -> Retry: {retry}", ex, retry)
+                retry = self.__retry_and_wait(f"WARNING: {str(ex)} -> Retry: {retry}", ex, retry)
             except socket.timeout as ex:
-                retry = self.__retry_and_wait(f"API Timeout -> Retry: {retry}", ex, retry)
+                retry = self.__retry_and_wait(f"WARNING: API Timeout -> Retry: {retry}", ex, retry)
             except Exception as ex:
-                retry = self.__retry_and_wait(f"{str(ex)} -> Retry: {retry}", ex, retry)
+                retry = self.__retry_and_wait(f"WARNING: {str(ex)} -> Retry: {retry}", ex, retry)
 
-            if 5 <= retry:
-                raise NoPaperFoundException(f"No paper-id found @ {title}")
+            if self.__max_retry_count <= retry:
+                raise NoPaperFoundException(f"Exceeded Max Retry Count @ {title}")
 
         for item in content["data"]:
             # remove punctuation
             ref_str = item["title"].lower()
-            for punc in string.punctuation:
-                ref_str = ref_str.replace(punc, " ")
+            # for punc in string.punctuation:
+            #     ref_str = ref_str.replace(punc, " ")
             ref_str = re.sub(r"\s\s+", " ", ref_str, count=1000)
 
             score = self.__rouge.rouge_l(summary=title.lower(), references=ref_str)
@@ -99,9 +138,9 @@ class SemanticScholar(object):
                 return item["paperId"].strip()
         return ""
 
-    def get_paper_detail(self, paper_id: str, silent: bool = True) -> Optional[Dict]:
+    def get_paper_detail(self, paper_id: str, sleep: float = 3.0) -> Optional[dict]:
         retry = 0
-        while retry < 5:
+        while retry < self.__max_retry_count:
             try:
                 fields = [
                     "paperId",
@@ -110,6 +149,7 @@ class SemanticScholar(object):
                     "abstract",
                     "venue",
                     "year",
+                    "publicationDate",
                     "referenceCount",
                     "citationCount",
                     "influentialCitationCount",
@@ -121,9 +161,9 @@ class SemanticScholar(object):
                 ]
                 params = f'fields={",".join(fields)}'
                 response = urllib.request.urlopen(
-                    self.__api.search_by_id.format(PAPER_ID=paper_id, PARAMS=params), timeout=5.0
+                    self.__api.search_by_id.format(PAPER_ID=paper_id, PARAMS=params), timeout=30.0
                 )
-                time.sleep(3.5)
+                time.sleep(sleep)
                 break
 
             except HTTPError as ex:
@@ -135,25 +175,24 @@ class SemanticScholar(object):
             except Exception as ex:
                 retry = self.__retry_and_wait(f"{str(ex)} -> Retry: {retry}", ex, retry)
 
-            if 5 <= retry:
-                raise Exception(f"No paper found @ {paper_id}")
+            if self.__max_retry_count <= retry:
+                raise NoPaperFoundException(f"Exceeded Max Retry Count @ {paper_id}")
 
         content = json.loads(response.read().decode("utf-8"))
 
         dict_data = {}
         dict_data["paper_id"] = content["paperId"]
-        dict_data["url"] = content["url"] if content["url"] else ""
-        dict_data["title"] = content["title"]
-        dict_data["abstract"] = content["abstract"] if content["abstract"] else ""
-        dict_data["venue"] = content["venue"] if content["venue"] else ""
-        dict_data["year"] = content["year"] if content["year"] else 0
-        dict_data["reference_count"] = content["referenceCount"] if content["referenceCount"] else 0
-        dict_data["citation_count"] = content["citationCount"] if content["citationCount"] else 0
-        dict_data["influential_citation_count"] = (
-            content["influentialCitationCount"] if content["influentialCitationCount"] else 0
-        )
-        dict_data["is_open_access"] = content["isOpenAccess"] if content["isOpenAccess"] else False
-        dict_data["fields_of_study"] = content["fieldsOfStudy"] if content["fieldsOfStudy"] else []
+        dict_data["url"] = self.__clean(content, "url", "")
+        dict_data["title"] = self.__clean(content, "title", "")
+        dict_data["abstract"] = self.__clean(content, "abstract", "")
+        dict_data["venue"] = self.__clean(content, "venue", "")
+        dict_data["year"] = self.__clean(content, "year", 0)
+        dict_data["publication_date"] = parse_date(self.__clean(content, "publicationDate", f"{dict_data['year']}-1-1"))
+        dict_data["reference_count"] = self.__clean(content, "referenceCount", 0)
+        dict_data["citation_count"] = self.__clean(content, "citationCount", 0)
+        dict_data["influential_citation_count"] = self.__clean(content, "influentialCitationCount", 0)
+        dict_data["is_open_access"] = self.__clean(content, "isOpenAccess", False)
+        dict_data["fields_of_study"] = self.__clean(content, "fieldsOfStudy", [])
         dict_data["authors"] = (
             [
                 {"author_id": item["authorId"], "author_name": item["name"]}
@@ -173,13 +212,49 @@ class SemanticScholar(object):
             if content["references"]
             else []
         )
-        dict_data["doi"] = ""
-        dict_data["updated"] = ""
-        dict_data["published"] = ""
-        dict_data["arxiv_hash"] = ""
-        dict_data["arxiv_id"] = ""
-        dict_data["arxiv_title"] = ""
-        dict_data["arxiv_primary_category"] = ""
-        dict_data["arxiv_categories"] = ""
+        return dict_data
+
+    def get_author_detail(self, author_id: str, sleep: float = 3.0) -> Optional[dict]:
+        retry = 0
+        while retry < self.__max_retry_count:
+            try:
+                fields = [
+                    "authorId",
+                    "url",
+                    "name",
+                    "affiliations",
+                    "paperCount",
+                    "citationCount",
+                    "hIndex",
+                ]
+                params = f'fields={",".join(fields)}'
+                response = urllib.request.urlopen(
+                    self.__api.search_by_author_id.format(AUTHOR_ID=author_id, PARAMS=params), timeout=30.0
+                )
+                time.sleep(sleep)
+                break
+
+            except HTTPError as ex:
+                retry = self.__retry_and_wait(f"{str(ex)} -> Retry: {retry}", ex, retry)
+            except URLError as ex:
+                retry = self.__retry_and_wait(f"{str(ex)} -> Retry: {retry}", ex, retry)
+            except socket.timeout as ex:
+                retry = self.__retry_and_wait(f"API Timeout -> Retry: {retry}", ex, retry)
+            except Exception as ex:
+                retry = self.__retry_and_wait(f"{str(ex)} -> Retry: {retry}", ex, retry)
+
+            if self.__max_retry_count <= retry:
+                raise Exception(f"Exceeded Max Retry Count @ {author_id}")
+
+        content = json.loads(response.read().decode("utf-8"))
+
+        dict_data = {}
+        dict_data["author_id"] = content["authorId"]
+        dict_data["url"] = self.__clean(content, "url", "")
+        dict_data["name"] = self.__clean(content, "name", "")
+        dict_data["affiliations"] = self.__clean(content, "affiliations", [])
+        dict_data["paper_count"] = self.__clean(content, "paperCount", 0)
+        dict_data["citation_count"] = self.__clean(content, "citationCount", 0)
+        dict_data["hindex"] = self.__clean(content, "hIndex", 0)
 
         return dict_data
