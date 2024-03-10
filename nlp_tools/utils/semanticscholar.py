@@ -167,13 +167,13 @@ class SemanticScholar(object):
                 break
 
             except HTTPError as ex:
-                retry = self.__retry_and_wait(f"{str(ex)} -> Retry: {retry}", ex, retry)
+                retry = self.__retry_and_wait(f"WARNING: {str(ex)} -> Retry: {retry}", ex, retry)
             except URLError as ex:
-                retry = self.__retry_and_wait(f"{str(ex)} -> Retry: {retry}", ex, retry)
+                retry = self.__retry_and_wait(f"WARNING: {str(ex)} -> Retry: {retry}", ex, retry)
             except socket.timeout as ex:
-                retry = self.__retry_and_wait(f"API Timeout -> Retry: {retry}", ex, retry)
+                retry = self.__retry_and_wait(f"WARNING: API Timeout -> Retry: {retry}", ex, retry)
             except Exception as ex:
-                retry = self.__retry_and_wait(f"{str(ex)} -> Retry: {retry}", ex, retry)
+                retry = self.__retry_and_wait(f"WARNING: {str(ex)} -> Retry: {retry}", ex, retry)
 
             if self.__max_retry_count <= retry:
                 raise NoPaperFoundException(f"Exceeded Max Retry Count @ {paper_id}")
@@ -235,13 +235,13 @@ class SemanticScholar(object):
                 break
 
             except HTTPError as ex:
-                retry = self.__retry_and_wait(f"{str(ex)} -> Retry: {retry}", ex, retry)
+                retry = self.__retry_and_wait(f"WARNING: {str(ex)} -> Retry: {retry}", ex, retry)
             except URLError as ex:
-                retry = self.__retry_and_wait(f"{str(ex)} -> Retry: {retry}", ex, retry)
+                retry = self.__retry_and_wait(f"WARNING: {str(ex)} -> Retry: {retry}", ex, retry)
             except socket.timeout as ex:
-                retry = self.__retry_and_wait(f"API Timeout -> Retry: {retry}", ex, retry)
+                retry = self.__retry_and_wait(f"WARNING: API Timeout -> Retry: {retry}", ex, retry)
             except Exception as ex:
-                retry = self.__retry_and_wait(f"{str(ex)} -> Retry: {retry}", ex, retry)
+                retry = self.__retry_and_wait(f"WARNING: {str(ex)} -> Retry: {retry}", ex, retry)
 
             if self.__max_retry_count <= retry:
                 raise Exception(f"Exceeded Max Retry Count @ {author_id}")
