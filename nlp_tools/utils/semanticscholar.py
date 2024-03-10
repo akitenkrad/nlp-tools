@@ -1,12 +1,12 @@
 import json
 import re
 import socket
-import string
 import time
 import urllib.parse
 import urllib.request
+from logging import Logger
 from pathlib import Path
-from typing import Any, Callable, Optional, Union
+from typing import Any, Optional, Union
 from urllib.error import HTTPError, URLError
 
 from attrdict import AttrDict
@@ -35,14 +35,14 @@ class SemanticScholar(object):
     CACHE_PATH: Path = Path("__cache__/papers.pickle")
 
     def __init__(
-        self, threshold: float = 0.95, silent: bool = True, max_retry_count: int = 5, print_fn: Callable = print
+        self, threshold: float = 0.95, silent: bool = True, max_retry_count: int = 5, logger: Optional[Logger] = None
     ):
         self.__api = AttrDict(self.API)
         self.__rouge = RougeCalculator(stopwords=True, stemming=False, word_limit=-1, length_limit=-1, lang="en")
         self.__threshold = threshold
         self.__silent = silent
         self.__max_retry_count = max_retry_count
-        self.__print_fn = print_fn
+        self.__logger = logger
 
     @property
     def threshold(self) -> float:
@@ -63,7 +63,9 @@ class SemanticScholar(object):
             msg = "\n" + msg
 
         if not self.__silent:
-            self.__print_fn(msg)
+            tqdm.write(msg)
+            if self.__logger:
+                self.__logger.warning(msg)
 
         if isinstance(ex, HTTPError) and ex.errno == -3:
             it = (
