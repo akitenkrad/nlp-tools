@@ -7,7 +7,6 @@ click
 colorama
 flake8
 gensim
-h5py
 ipadic
 ipython
 ipywidgets
