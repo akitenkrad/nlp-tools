@@ -34,7 +34,6 @@ setuptools.setup(
         "click",
         "colorama",
         "gensim",
-        "h5py",
         "ipadic",
         "ipython",
         "ipywidgets",
