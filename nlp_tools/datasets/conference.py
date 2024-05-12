@@ -5,12 +5,12 @@ from pathlib import Path
 from typing import List, Optional
 
 from dateutil.parser import parse as parse_date
+from ml_tools.utils.utils import Config
 
 from nlp_tools.utils.data import ConferenceText
 from nlp_tools.utils.google_drive import GDriveObjects, download_from_google_drive
 from nlp_tools.utils.tokenizers import WordTokenizer
 from nlp_tools.utils.utils import Lang
-from ml_tools.utils.utils import Config
 
 
 class Conference(ABC):
@@ -118,16 +118,16 @@ class JSAI_BASE(Conference):
         texts = []
         for index, paper in enumerate(papers):
             title = paper["title"]
-            summary = paper["summary"]
+            abstract = paper["summary"]
 
             if preprocess_tokenizer:
                 title_tokens = preprocess_tokenizer.tokenize(title)
-                summary_tokens = preprocess_tokenizer.tokenize(summary)
+                abstract_tokens = preprocess_tokenizer.tokenize(abstract)
                 preprocessed_title = " ".join(token.surface for token in title_tokens)
-                preprocessed_summary = " ".join(token.surface for token in summary_tokens)
+                preprocessed_abstract = " ".join(token.surface for token in abstract_tokens)
             else:
                 preprocessed_title = title
-                preprocessed_summary = preprocessed_summary
+                preprocessed_abstract = preprocessed_abstract
 
             if paper["language"] == "japanese":
                 language = Lang.JAPANESE
@@ -136,16 +136,16 @@ class JSAI_BASE(Conference):
             else:
                 language = Lang.JAPANESE
 
-            if preprocessed_summary == "n/a":
+            if preprocessed_abstract == "n/a":
                 continue
 
             texts.append(
                 ConferenceText(
                     index=index,
                     title=title,
-                    summary=summary,
+                    abstract=abstract,
                     preprocessed_title=preprocessed_title,
-                    preprocessed_summary=preprocessed_summary,
+                    preprocessed_abstract=preprocessed_abstract,
                     keywords=paper["keywords"],
                     pdf_url=paper["url"],
                     authors=paper["authors"],

@@ -2,8 +2,7 @@ import json
 from pathlib import Path
 from typing import List
 
-from stats.stats import Sentence
-
+from nlp_tools.utils.data import Sentence
 from nlp_tools.utils.google_drive import GDriveObjects, download_from_google_drive
 
 
