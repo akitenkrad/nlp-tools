@@ -196,10 +196,10 @@ class JapaneseWordTokenizer(WordTokenizer):
 
 class TFTokenizer(WordTokenizer):
     def __init__(self, pretrained_model_name_or_path: str, **kwargs):
-        self.__tf_tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path, **kwargs)
+        self.tf_tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path, **kwargs)
 
     def tokenize(self, text: str, **kwargs) -> list[Union[Token, list[Token]]]:
-        text_tokens = self.__tf_tokenizer.tokenize(text, **kwargs)
+        text_tokens = self.tf_tokenizer(text, **kwargs)
         return [Token(tok, "", "") for tok in text_tokens]
 
 
