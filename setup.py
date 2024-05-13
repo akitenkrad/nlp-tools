@@ -16,8 +16,8 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     package_data={
         "nlp_tools": [
+            "tokenizers/resources/texts/*.txt",
             "utils/resources/mask_images/*.png",
-            "utils/resources/texts/*.txt",
             "config/*.yml",
         ]
     },
