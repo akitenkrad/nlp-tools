@@ -2,8 +2,9 @@ from typing import Callable, List
 
 import pytest
 
+from nlp_tools.tokenizers import WordTokenizerFactory
+from nlp_tools.tokenizers.base import PAD
 from nlp_tools.utils.data import Token
-from nlp_tools.utils.tokenizers import PAD, WordTokenizerFactory
 from nlp_tools.utils.utils import Lang
 
 

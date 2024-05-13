@@ -15,7 +15,7 @@ from sqlalchemy.orm import sessionmaker
 from torch.utils.data import Dataset
 from utils.data import ConferenceText
 from utils.google_drive import GDriveObjects, download_from_google_drive
-from utils.tokenizers import Tokenizer
+from utils.tokenizers import BaseTokenizer
 from utils.utils import Lang, is_notebook
 
 if is_notebook():

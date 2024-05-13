@@ -142,3 +142,4 @@ user.dic
 /tests/utils
 /__cache__
 /update_packages.sh
+/data

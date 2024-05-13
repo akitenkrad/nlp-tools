@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
+from nlp_tools.tokenizers import WordTokenizerFactory
 from nlp_tools.utils.mecab import MeCabItem, MeCabPos, MeCabUtil
-from nlp_tools.utils.tokenizers import WordTokenizerFactory
 from nlp_tools.utils.utils import Lang
 
 
